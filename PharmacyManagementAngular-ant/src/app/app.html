@@ -1,6 +1,13 @@
-<app-header></app-header>
-<app-navbar></app-navbar>
+@if (!isDashboardRoute()) {
+  <app-header></app-header>
+  <app-navbar></app-navbar>
+}
+
 <main class="flex-grow-1">
   <router-outlet></router-outlet>
 </main>
-<app-footer></app-footer>
+
+@if (!isDashboardRoute()) {
+  <app-footer></app-footer>
+}
+

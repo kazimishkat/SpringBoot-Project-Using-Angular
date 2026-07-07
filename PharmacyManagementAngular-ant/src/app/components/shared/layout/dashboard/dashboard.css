@@ -1,0 +1,128 @@
+/* Dashboard Layout Wrapper Stylesheet */
+
+.dashboard-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  overflow: hidden;
+  background-color: #fafdfc;
+}
+
+/* Sidebar Container (Sticky on Desktop) */
+.dashboard-sidebar-container {
+  flex-shrink: 0;
+  width: 260px;
+  height: 100vh;
+  z-index: 100;
+}
+
+/* Main Workspace Area */
+.dashboard-workspace {
+  height: 100vh;
+  background-color: #fafdfc;
+}
+
+/* Topbar Header Custom Styles */
+.dashboard-topbar {
+  height: 70px;
+  flex-shrink: 0;
+  z-index: 50;
+  border-bottom: 1px solid rgba(15, 168, 149, 0.08) !important;
+}
+
+.workspace-title-area .breadcrumb {
+  font-size: 0.78rem;
+  letter-spacing: 0.5px;
+}
+
+.workspace-title-area .breadcrumb-item a {
+  color: #0fa895; /* Brand Teal */
+  transition: color 0.2s ease;
+}
+
+.workspace-title-area .breadcrumb-item a:hover {
+  color: #0a4f45; /* Dark Teal */
+}
+
+.workspace-title-area h4 {
+  font-size: 1.15rem;
+  letter-spacing: -0.2px;
+}
+
+/* Admin Role Pill Badge */
+.bg-teal-light {
+  background-color: rgba(15, 168, 149, 0.08) !important;
+}
+
+.admin-role-pill {
+  border: 1px solid rgba(15, 168, 149, 0.15);
+  font-size: 0.78rem;
+  letter-spacing: 0.8px;
+}
+
+.pulse-indicator-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #0fa895;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(15, 168, 149, 0.5);
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(15, 168, 149, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(15, 168, 149, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(15, 168, 149, 0);
+  }
+}
+
+/* Content Canvas (Scrollable view) */
+.bg-light-teal {
+  background-color: #f2f9f8 !important; /* Soft, very light mint/teal background */
+}
+
+.dashboard-content-canvas {
+  height: calc(100vh - 70px);
+  outline: none;
+}
+
+/* Mobile Offcanvas Custom styles */
+.bg-teal-dark {
+  background-color: #0a4f45 !important;
+}
+
+/* Custom Scrollbar for modern look */
+.dashboard-content-canvas::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dashboard-content-canvas::-webkit-scrollbar-track {
+  background: #f2f9f8;
+}
+
+.dashboard-content-canvas::-webkit-scrollbar-thumb {
+  background: rgba(15, 168, 149, 0.25);
+  border-radius: 4px;
+}
+
+.dashboard-content-canvas::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 168, 149, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+  .dashboard-topbar {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}

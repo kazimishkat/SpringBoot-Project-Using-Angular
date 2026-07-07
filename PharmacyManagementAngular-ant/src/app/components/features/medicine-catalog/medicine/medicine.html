@@ -1,0 +1,415 @@
+<div class="medicine-container">
+  <div class="container-fluid px-lg-5">
+    
+    <!-- Page Header & Stats Banner -->
+    <div class="page-header-banner">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-6 col-12">
+          <div class="d-flex align-items-center gap-3">
+            <div class="stats-icon bg-white text-teal fs-2 shadow-sm d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+              <i class="bi bi-capsule-pill"></i>
+            </div>
+            <div>
+              <h1 class="h2 fw-bold mb-1">Medicine Catalog</h1>
+              <p class="mb-0 text-light opacity-90">Manage medicine definitions, dosage forms, manufacturer details, and pricing rules.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 col-12">
+          <div class="row g-3 justify-content-lg-end">
+            <div class="col-sm-5 col-6">
+              <div class="stats-card">
+                <div class="stats-icon">
+                  <i class="bi bi-clipboard2-data-fill"></i>
+                </div>
+                <div>
+                  <div class="stats-value text-white">{{ medicines.length }}</div>
+                  <div class="stats-label text-white">Total Medicines</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="row g-4">
+      
+      <!-- Medicine Form Column -->
+      <div class="col-xl-5 col-lg-6 col-12">
+        <div class="custom-card">
+          <div class="card-header-custom">
+            <h2 class="card-title-custom">
+              <i class="bi" [ngClass]="isEdit ? 'bi-pencil-square text-teal' : 'bi-plus-circle-fill text-teal'"></i>
+              <span>{{ isEdit ? 'Edit Medicine Profile' : 'Register New Medicine' }}</span>
+            </h2>
+            <span *ngIf="isEdit" class="badge bg-warning text-dark fw-bold px-2.5 py-1.5 rounded-pill">EDIT MODE</span>
+          </div>
+          
+          <div class="card-body-custom">
+            <form (ngSubmit)="medicineForm.form.valid && save()" #medicineForm="ngForm" novalidate>
+              
+              <!-- Section 1: General Info -->
+              <div class="form-section-title">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>General Information</span>
+              </div>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-6 col-12">
+                  <label for="medicineCode" class="form-label">Medicine Code <span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    id="medicineCode" 
+                    name="medicineCode" 
+                    class="form-control" 
+                    placeholder="e.g. MED-001" 
+                    [(ngModel)]="medicine.medicineCode" 
+                    #medCode="ngModel"
+                    required
+                    [class.is-invalid]="medicineForm.submitted && medCode.invalid">
+                  <div class="invalid-feedback">Medicine Code is required.</div>
+                </div>
+                
+                <div class="col-md-6 col-12">
+                  <label for="brandName" class="form-label">Brand Name <span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    id="brandName" 
+                    name="brandName" 
+                    class="form-control" 
+                    placeholder="e.g. Napa Extra" 
+                    [(ngModel)]="medicine.brandName" 
+                    #brandName="ngModel"
+                    required
+                    [class.is-invalid]="medicineForm.submitted && brandName.invalid">
+                  <div class="invalid-feedback">Brand Name is required.</div>
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="genericMedicineId" class="form-label">Generic ID <span class="text-danger">*</span></label>
+                  <input 
+                    type="number" 
+                    id="genericMedicineId" 
+                    name="genericMedicineId" 
+                    class="form-control" 
+                    placeholder="e.g. 1" 
+                    [(ngModel)]="medicine.genericMedicineId"
+                    #genId="ngModel"
+                    required
+                    [class.is-invalid]="medicineForm.submitted && genId.invalid">
+                  <div class="invalid-feedback">Generic ID is required.</div>
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="manufacturer" class="form-label">Manufacturer</label>
+                  <input 
+                    type="text" 
+                    id="manufacturer" 
+                    name="manufacturer" 
+                    class="form-control" 
+                    placeholder="e.g. Beximco Pharma" 
+                    [(ngModel)]="medicine.manufacturer">
+                </div>
+              </div>
+
+              <!-- Section 2: Form & Strength -->
+              <div class="form-section-title">
+                <i class="bi bi-capsule"></i>
+                <span>Specification Details</span>
+              </div>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-6 col-12">
+                  <label for="dosageForm" class="form-label">Dosage Form</label>
+                  <select 
+                    id="dosageForm" 
+                    name="dosageForm" 
+                    class="form-select" 
+                    [(ngModel)]="medicine.dosageForm">
+                    <option value="" disabled>Select Form</option>
+                    <option *ngFor="let df of dosageForms" [value]="df">{{ df }}</option>
+                  </select>
+                </div>
+                
+                <div class="col-md-6 col-12">
+                  <label for="strength" class="form-label">Strength</label>
+                  <input 
+                    type="text" 
+                    id="strength" 
+                    name="strength" 
+                    class="form-control" 
+                    placeholder="e.g. 500mg" 
+                    [(ngModel)]="medicine.strength">
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="unitOfMeasure" class="form-label">Unit of Measure</label>
+                  <select 
+                    id="unitOfMeasure" 
+                    name="unitOfMeasure" 
+                    class="form-select" 
+                    [(ngModel)]="medicine.unitOfMeasure">
+                    <option value="" disabled>Select UOM</option>
+                    <option *ngFor="let uom of unitOfMeasures" [value]="uom">{{ uom }}</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="unitsPerPack" class="form-label">Units per Pack</label>
+                  <input 
+                    type="number" 
+                    id="unitsPerPack" 
+                    name="unitsPerPack" 
+                    class="form-control" 
+                    placeholder="e.g. 10" 
+                    [(ngModel)]="medicine.unitsPerPack">
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="drugSchedule" class="form-label">Drug Schedule</label>
+                  <select 
+                    id="drugSchedule" 
+                    name="drugSchedule" 
+                    class="form-select" 
+                    [(ngModel)]="medicine.drugSchedule">
+                    <option value="" disabled>Select Schedule</option>
+                    <option *ngFor="let ds of drugSchedules" [value]="ds">{{ ds }}</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="storageCondition" class="form-label">Storage Condition</label>
+                  <select 
+                    id="storageCondition" 
+                    name="storageCondition" 
+                    class="form-select" 
+                    [(ngModel)]="medicine.storageCondition">
+                    <option value="" disabled>Select Condition</option>
+                    <option *ngFor="let sc of storageConditions" [value]="sc">{{ sc }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Section 3: Pricing & Reordering -->
+              <div class="form-section-title">
+                <i class="bi bi-currency-dollar"></i>
+                <span>Pricing & Inventory Controls</span>
+              </div>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-6 col-12">
+                  <label for="defaultPurchasePrice" class="form-label">Purchase Price ($)</label>
+                  <input 
+                    type="number" 
+                    id="defaultPurchasePrice" 
+                    name="defaultPurchasePrice" 
+                    class="form-control" 
+                    placeholder="e.g. 1.20" 
+                    step="0.01"
+                    [(ngModel)]="medicine.defaultPurchasePrice">
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="defaultSellingPrice" class="form-label">Selling Price ($)</label>
+                  <input 
+                    type="number" 
+                    id="defaultSellingPrice" 
+                    name="defaultSellingPrice" 
+                    class="form-control" 
+                    placeholder="e.g. 1.50" 
+                    step="0.01"
+                    [(ngModel)]="medicine.defaultSellingPrice">
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="reorderLevel" class="form-label">Reorder Level</label>
+                  <input 
+                    type="number" 
+                    id="reorderLevel" 
+                    name="reorderLevel" 
+                    class="form-control" 
+                    placeholder="e.g. 50" 
+                    [(ngModel)]="medicine.reorderLevel">
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="reorderQuantity" class="form-label">Reorder Quantity</label>
+                  <input 
+                    type="number" 
+                    id="reorderQuantity" 
+                    name="reorderQuantity" 
+                    class="form-control" 
+                    placeholder="e.g. 200" 
+                    [(ngModel)]="medicine.reorderQuantity">
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="vatPercentage" class="form-label">VAT Percentage (%)</label>
+                  <input 
+                    type="number" 
+                    id="vatPercentage" 
+                    name="vatPercentage" 
+                    class="form-control" 
+                    placeholder="e.g. 5" 
+                    step="0.01"
+                    [(ngModel)]="medicine.vatPercentage">
+                </div>
+              </div>
+
+              <!-- Section 4: Details & Images -->
+              <div class="form-section-title">
+                <i class="bi bi-image-fill"></i>
+                <span>Details & Media</span>
+              </div>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-12">
+                  <label for="description" class="form-label">Description</label>
+                  <textarea 
+                    id="description" 
+                    name="description" 
+                    class="form-control" 
+                    rows="2"
+                    placeholder="e.g. Fast acting pain relief tablets..." 
+                    [(ngModel)]="medicine.description"></textarea>
+                </div>
+
+                <div class="col-12">
+                  <label for="imageFile" class="form-label">Medicine Photo</label>
+                  <input 
+                    type="file" 
+                    id="imageFile" 
+                    name="imageFile" 
+                    class="form-control" 
+                    (change)="onFileSelected($event)">
+                  <div class="form-text text-muted">Upload an image file for this medicine catalog entry.</div>
+                </div>
+              </div>
+
+              <!-- Section 5: Status -->
+              <div class="form-section-title">
+                <i class="bi bi-toggle-on"></i>
+                <span>Status</span>
+              </div>
+              
+              <div class="mb-4">
+                <label class="custom-switch">
+                  <input 
+                    type="checkbox" 
+                    id="isActive" 
+                    name="isActive" 
+                    class="switch-input" 
+                    [(ngModel)]="medicine.isActive">
+                  <span class="switch-label"></span>
+                  <span class="fw-semibold text-dark">{{ medicine.isActive ? 'Active Catalog Item' : 'Inactive Item' }}</span>
+                </label>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-custom btn-teal-secondary" (click)="reset()">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                  <span>Reset Form</span>
+                </button>
+                <button type="submit" class="btn btn-custom btn-teal-primary">
+                  <i class="bi bi-check2-circle"></i>
+                  <span>{{ isEdit ? 'Update Medicine' : 'Save Medicine' }}</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medicine Directory Column -->
+      <div class="col-xl-7 col-lg-6 col-12">
+        <div class="custom-card">
+          <div class="card-header-custom">
+            <h2 class="card-title-custom">
+              <i class="bi bi-database-fill text-teal"></i>
+              <span>Medicine Catalog Directory</span>
+            </h2>
+            <span class="badge bg-light text-dark-teal border fw-bold px-2 py-1">{{ medicines.length }} Items</span>
+          </div>
+
+          <div class="card-body-custom">
+            <!-- Empty State -->
+            <div *ngIf="!medicines || medicines.length === 0" class="empty-state">
+              <i class="bi bi-capsule-pill empty-state-icon"></i>
+              <h4 class="fw-bold text-dark-teal">No Medicines in Catalog</h4>
+              <p class="text-muted mx-auto" style="max-width: 320px;">The medicine database is empty. Create a new medicine profile to get started.</p>
+            </div>
+
+            <!-- Table View -->
+            <div *ngIf="medicines && medicines.length > 0" class="table-responsive">
+              <table class="table table-custom table-hover">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Medicine Info</th>
+                    <th>Specification</th>
+                    <th>Prices</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let m of medicines">
+                    <td>
+                      <span class="fw-bold text-dark-teal">{{ m.medicineCode }}</span>
+                    </td>
+                    <td>
+                      <div class="fw-bold text-dark">{{ m.brandName }}</div>
+                      <div class="text-muted small" *ngIf="m.manufacturer">
+                        By: {{ m.manufacturer }}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="small fw-semibold text-dark">{{ m.dosageForm }} {{ m.strength }}</div>
+                      <div class="small text-muted" *ngIf="m.drugSchedule">
+                        Schedule: {{ m.drugSchedule }}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="small text-dark"><strong>Sell:</strong> ${{ m.defaultSellingPrice || 'N/A' }}</div>
+                      <div class="small text-muted"><strong>Buy:</strong> ${{ m.defaultPurchasePrice || 'N/A' }}</div>
+                    </td>
+                    <td>
+                      <span class="badge-custom" [ngClass]="m.isActive ? 'badge-active' : 'badge-inactive'">
+                        <span class="badge-dot"></span>
+                        <span>{{ m.isActive ? 'Active' : 'Inactive' }}</span>
+                      </span>
+                    </td>
+                    <td class="text-end">
+                      <div class="d-inline-flex gap-1">
+                        <button 
+                          type="button" 
+                          class="btn-table-action btn-action-edit" 
+                          title="Edit Medicine" 
+                          (click)="edit(m)">
+                          <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button 
+                          type="button" 
+                          class="btn-table-action btn-action-delete" 
+                          title="Delete Medicine" 
+                          (click)="delete(m.id!)">
+                          <i class="bi bi-trash3-fill"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

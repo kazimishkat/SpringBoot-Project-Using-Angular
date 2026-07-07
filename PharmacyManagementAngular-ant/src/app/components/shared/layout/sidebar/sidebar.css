@@ -1,0 +1,163 @@
+/* Sidebar Component Stylesheet */
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.sidebar-container {
+  background-color: #ffffff; /* White background */
+  color: #334155; /* Slate-700 for text */
+  font-family: 'Outfit', 'Inter', sans-serif;
+  width: 260px;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.04);
+  border-right: 1px solid #e2e8f0;
+}
+
+/* Sidebar Brand / Header */
+.sidebar-header {
+  height: 70px;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  border-color: #f1f5f9 !important;
+}
+
+.sidebar-brand .logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: #0fa895; /* Brand Teal */
+}
+
+.sidebar-brand .logo-icon i {
+  font-size: 1.1rem;
+}
+
+.sidebar-brand .logo-text {
+  font-size: 1.25rem;
+  color: #0a4f45; /* Dark Teal */
+  letter-spacing: 0.5px;
+}
+
+/* Admin Profile Info Card */
+.admin-profile {
+  padding: 1.5rem;
+  background-color: #f8fafc; /* Light grey backdrop */
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-avatar {
+  width: 48px;
+  height: 48px;
+  border: 2px solid #e2e8f0;
+}
+
+.status-indicator-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #10b981; /* Green Accent */
+  border: 2px solid #ffffff;
+}
+
+.admin-meta {
+  flex-grow: 1;
+}
+
+.admin-name {
+  color: #1e293b; /* Dark slate text */
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+}
+
+.bg-mint {
+  background-color: #d1fae5 !important; /* Soft mint */
+}
+
+.text-dark-teal {
+  color: #065f46 !important; /* Dark emerald text */
+}
+
+.badge {
+  font-size: 0.7rem;
+  border-radius: 50px;
+  letter-spacing: 0.5px;
+}
+
+/* Menu Customization */
+.menu-section-label {
+  color: #94a3b8; /* Slate-400 */
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.nav-link {
+  color: #475569; /* Slate-600 */
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px !important;
+  padding: 0.75rem 1rem;
+  transition: all 0.25s ease;
+  margin: 0 0.5rem;
+}
+
+.nav-link i {
+  font-size: 1.1rem;
+  opacity: 0.8;
+}
+
+.nav-link:hover {
+  color: #0a4f45;
+  background-color: #f0fdf4; /* Very light mint hover */
+  transform: translateX(4px);
+}
+
+.nav-link.active {
+  color: #ffffff !important;
+  background-color: #0fa895 !important; /* Brand Teal active background */
+  box-shadow: 0 4px 12px rgba(15, 168, 149, 0.2);
+  font-weight: 600;
+}
+
+.nav-link.active i {
+  opacity: 1;
+}
+
+/* Placeholder links */
+.nav-link.disabled-placeholder {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.nav-link.disabled-placeholder:hover {
+  background-color: transparent;
+  color: #475569;
+  transform: none;
+}
+
+/* Sidebar Footer & Logout */
+.sidebar-footer {
+  border-color: #f1f5f9 !important;
+  background-color: #f8fafc;
+}
+
+.btn-outline-logout {
+  color: #0fa895;
+  border: 1px solid rgba(15, 168, 149, 0.4);
+  border-radius: 8px;
+  background-color: transparent;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-logout:hover {
+  color: #ffffff;
+  background-color: #0fa895;
+  border-color: #0fa895;
+  box-shadow: 0 4px 10px rgba(15, 168, 149, 0.15);
+}
+

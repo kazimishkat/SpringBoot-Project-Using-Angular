@@ -1,1 +1,97 @@
-<p>sidebar works!</p>
+<div class="sidebar-container d-flex flex-column h-100">
+  <!-- Brand Header -->
+  <div class="sidebar-header border-bottom">
+    <a routerLink="/" class="sidebar-brand d-flex align-items-center gap-2 text-decoration-none">
+      <div class="logo-icon d-flex align-items-center justify-content-center">
+        <i class="bi bi-heart-pulse-fill text-white"></i>
+      </div>
+      <span class="logo-text fw-bold">MPhram</span>
+    </a>
+  </div>
+
+  <!-- Admin Profile Card -->
+  <div class="admin-profile d-flex align-items-center gap-3">
+    <div class="position-relative">
+      <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop" 
+           alt="Admin Avatar" 
+           class="admin-avatar object-fit-cover rounded-circle shadow-sm" />
+      <span class="status-indicator-dot"></span>
+    </div>
+    <div class="admin-meta overflow-hidden">
+      <h6 class="admin-name fw-bold mb-0 text-truncate">Dr. Sarah Jenkins</h6>
+      <span class="badge bg-mint text-dark-teal fw-semibold mt-1 py-1 px-2.5">System Admin</span>
+    </div>
+  </div>
+
+  <!-- Navigation Menu -->
+  <div class="sidebar-menu flex-grow-1 py-3 px-2">
+    <div class="menu-section-label px-3 mb-2">SYSTEM PORTAL</div>
+    <ul class="nav nav-pills flex-column gap-1">
+      
+      <!-- Dashboard Overview Link (Placeholder) -->
+      <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+          <i class="bi bi-grid-1x2-fill"></i>
+          <span>Overview</span>
+        </a>
+      </li>
+
+      <!-- Medicines Link -->
+      <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/medicines" routerLinkActive="active">
+          <i class="bi bi-capsule-pill"></i>
+          <span>Medicines</span>
+        </a>
+      </li>
+
+      <!-- Suppliers Link -->
+      <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/suppliers" routerLinkActive="active">
+          <i class="bi bi-truck-flatbed"></i>
+          <span>Suppliers</span>
+        </a>
+      </li>
+
+      <!-- Branches Link -->
+      <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/branches" routerLinkActive="active">
+          <i class="bi bi-shop-window"></i>
+          <span>Branches</span>
+        </a>
+      </li>
+
+      <!-- Branch Inventory Link -->
+      <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/branch-inventories" routerLinkActive="active">
+          <i class="bi bi-boxes"></i>
+          <span>Branch Inventory</span>
+        </a>
+      </li>
+
+      <!-- Generics List Link (Placeholder) -->
+      <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-3 disabled-placeholder" routerLink="/dashboard/generics">
+          <i class="bi bi-bookmark-plus-fill"></i>
+          <span>Generics DB</span>
+        </a>
+      </li>
+
+      <!-- Settings Link (Placeholder) -->
+      <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-3 disabled-placeholder" routerLink="/dashboard/settings">
+          <i class="bi bi-gear-fill"></i>
+          <span>Settings</span>
+        </a>
+      </li>
+
+    </ul>
+  </div>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer border-top p-3">
+    <a routerLink="/" class="btn btn-outline-logout w-100 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold">
+      <i class="bi bi-box-arrow-left"></i>
+      <span>Back to Site</span>
+    </a>
+  </div>
+</div>

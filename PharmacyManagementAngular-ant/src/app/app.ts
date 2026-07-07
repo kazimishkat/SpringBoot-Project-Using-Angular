@@ -1,5 +1,5 @@
 import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router } from '@angular/router';
 import { Header } from './components/shared/layout/header/header';
 import { Navbar } from './components/shared/layout/navbar/navbar';
 import { Footer } from './components/shared/layout/footer/footer';
@@ -12,4 +12,11 @@ import { Footer } from './components/shared/layout/footer/footer';
 })
 export class App {
   protected readonly title = signal('PharmacyManagementAngular');
+
+  constructor(private router: Router) {}
+
+  isDashboardRoute(): boolean {
+    return this.router.url.startsWith('/dashboard');
+  }
 }
+

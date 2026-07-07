@@ -1,0 +1,365 @@
+<div class="branch-container">
+  <div class="container-fluid px-lg-5">
+    
+    <!-- Page Header & Stats Banner -->
+    <div class="page-header-banner">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-6 col-12">
+          <div class="d-flex align-items-center gap-3">
+            <div class="stats-icon bg-white text-teal fs-2 shadow-sm d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+              <i class="bi bi-shop-window"></i>
+            </div>
+            <div>
+              <h1 class="h2 fw-bold mb-1">Branch Management</h1>
+              <p class="mb-0 text-light opacity-90">Manage pharmacy branches, addresses, licenses, and branch types.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 col-12">
+          <div class="row g-3 justify-content-lg-end">
+            <div class="col-sm-5 col-6">
+              <div class="stats-card">
+                <div class="stats-icon">
+                  <i class="bi bi-clipboard2-data-fill"></i>
+                </div>
+                <div>
+                  <div class="stats-value text-white">{{ branches.length }}</div>
+                  <div class="stats-label text-white">Total Branches</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="row g-4">
+      
+      <!-- Branch Form Column -->
+      <div class="col-xl-5 col-lg-6 col-12">
+        <div class="custom-card">
+          <div class="card-header-custom">
+            <h2 class="card-title-custom">
+              <i class="bi" [ngClass]="isEdit ? 'bi-pencil-square text-teal' : 'bi-plus-circle-fill text-teal'"></i>
+              <span>{{ isEdit ? 'Edit Branch Profile' : 'Register New Branch' }}</span>
+            </h2>
+            <span *ngIf="isEdit" class="badge bg-warning text-dark fw-bold px-2.5 py-1.5 rounded-pill">EDIT MODE</span>
+          </div>
+          
+          <div class="card-body-custom">
+            <form (ngSubmit)="branchForm.form.valid && save()" #branchForm="ngForm" novalidate>
+              
+              <!-- Section 1: General Info -->
+              <div class="form-section-title">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>General Information</span>
+              </div>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-6 col-12">
+                  <label for="branchCode" class="form-label">Branch Code <span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    id="branchCode" 
+                    name="branchCode" 
+                    class="form-control" 
+                    placeholder="e.g. BR-001" 
+                    [(ngModel)]="branch.branchCode" 
+                    #branchCode="ngModel"
+                    required
+                    [class.is-invalid]="branchForm.submitted && branchCode.invalid">
+                  <div class="invalid-feedback">Branch Code is required.</div>
+                </div>
+                
+                <div class="col-md-6 col-12">
+                  <label for="name" class="form-label">Branch Name <span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    class="form-control" 
+                    placeholder="e.g. Dhaka Main Branch" 
+                    [(ngModel)]="branch.name" 
+                    #name="ngModel"
+                    required
+                    [class.is-invalid]="branchForm.submitted && name.invalid">
+                  <div class="invalid-feedback">Branch Name is required.</div>
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="branchType" class="form-label">Branch Type <span class="text-danger">*</span></label>
+                  <select 
+                    id="branchType" 
+                    name="branchType" 
+                    class="form-select" 
+                    [(ngModel)]="branch.branchType" 
+                    #branchTypeVal="ngModel"
+                    required
+                    [class.is-invalid]="branchForm.submitted && branchTypeVal.invalid">
+                    <option value="" disabled>Select Type</option>
+                    <option *ngFor="let type of branchTypes" [value]="type">{{ type }}</option>
+                  </select>
+                  <div class="invalid-feedback">Branch Type is required.</div>
+                </div>
+
+                <div class="col-md-6 col-12">
+                  <label for="managerName" class="form-label">Manager Name</label>
+                  <input 
+                    type="text" 
+                    id="managerName" 
+                    name="managerName" 
+                    class="form-control" 
+                    placeholder="e.g. Jane Smith" 
+                    [(ngModel)]="branch.managerName">
+                </div>
+              </div>
+
+              <!-- Section 2: Contact Details -->
+              <div class="form-section-title">
+                <i class="bi bi-telephone-fill"></i>
+                <span>Contact Details</span>
+              </div>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-6 col-12">
+                  <label for="phone" class="form-label">Phone Number</label>
+                  <input 
+                    type="tel" 
+                    id="phone" 
+                    name="phone" 
+                    class="form-control" 
+                    placeholder="e.g. +880 1712-345678" 
+                    [(ngModel)]="branch.phone">
+                </div>
+                
+                <div class="col-md-6 col-12">
+                  <label for="email" class="form-label">Email Address</label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-control" 
+                    placeholder="e.g. branch@mphram.com" 
+                    [(ngModel)]="branch.email"
+                    #email="ngModel"
+                    email
+                    [class.is-invalid]="branchForm.submitted && email.invalid">
+                  <div class="invalid-feedback">Please enter a valid email address.</div>
+                </div>
+
+                <div class="col-12">
+                  <label for="licenseNumber" class="form-label">Drug License Number</label>
+                  <input 
+                    type="text" 
+                    id="licenseNumber" 
+                    name="licenseNumber" 
+                    class="form-control" 
+                    placeholder="e.g. DL-12345-XYZ" 
+                    [(ngModel)]="branch.licenseNumber">
+                </div>
+              </div>
+
+              <!-- Section 3: Address Details -->
+              <div class="form-section-title">
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>Address Details</span>
+              </div>
+              
+              <div class="row g-3 mb-4" *ngIf="branch.address">
+                <div class="col-12">
+                  <label for="addressLine1" class="form-label">Address Line 1</label>
+                  <input 
+                    type="text" 
+                    id="addressLine1" 
+                    name="addressLine1" 
+                    class="form-control" 
+                    placeholder="e.g. House 12, Road 5, Dhanmondi" 
+                    [(ngModel)]="branch.address.addressLine1">
+                </div>
+                
+                <div class="col-12">
+                  <label for="addressLine2" class="form-label">Address Line 2</label>
+                  <input 
+                    type="text" 
+                    id="addressLine2" 
+                    name="addressLine2" 
+                    class="form-control" 
+                    placeholder="e.g. Near Star Kabab" 
+                    [(ngModel)]="branch.address.addressLine2">
+                </div>
+                
+                <div class="col-md-6 col-12">
+                  <label for="city" class="form-label">City</label>
+                  <input 
+                    type="text" 
+                    id="city" 
+                    name="city" 
+                    class="form-control" 
+                    placeholder="e.g. Dhaka" 
+                    [(ngModel)]="branch.address.city">
+                </div>
+                
+                <div class="col-md-6 col-12">
+                  <label for="state" class="form-label">State / Province</label>
+                  <input 
+                    type="text" 
+                    id="state" 
+                    name="state" 
+                    class="form-control" 
+                    placeholder="e.g. Dhaka Division" 
+                    [(ngModel)]="branch.address.state">
+                </div>
+                
+                <div class="col-md-6 col-12">
+                  <label for="postalCode" class="form-label">Postal / Zip Code</label>
+                  <input 
+                    type="text" 
+                    id="postalCode" 
+                    name="postalCode" 
+                    class="form-control" 
+                    placeholder="e.g. 1209" 
+                    [(ngModel)]="branch.address.postalCode">
+                </div>
+                
+                <div class="col-md-6 col-12">
+                  <label for="country" class="form-label">Country</label>
+                  <input 
+                    type="text" 
+                    id="country" 
+                    name="country" 
+                    class="form-control" 
+                    placeholder="e.g. Bangladesh" 
+                    [(ngModel)]="branch.address.country">
+                </div>
+              </div>
+
+              <!-- Section 4: Status -->
+              <div class="form-section-title">
+                <i class="bi bi-toggle-on"></i>
+                <span>Status</span>
+              </div>
+              
+              <div class="mb-4">
+                <label class="custom-switch">
+                  <input 
+                    type="checkbox" 
+                    id="isActive" 
+                    name="isActive" 
+                    class="switch-input" 
+                    [(ngModel)]="branch.isActive">
+                  <span class="switch-label"></span>
+                  <span class="fw-semibold text-dark">{{ branch.isActive ? 'Active Branch' : 'Inactive Branch' }}</span>
+                </label>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-custom btn-teal-secondary" (click)="reset()">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                  <span>Reset Form</span>
+                </button>
+                <button type="submit" class="btn btn-custom btn-teal-primary">
+                  <i class="bi bi-check2-circle"></i>
+                  <span>{{ isEdit ? 'Update Branch' : 'Save Branch' }}</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Branch Directory Column -->
+      <div class="col-xl-7 col-lg-6 col-12">
+        <div class="custom-card">
+          <div class="card-header-custom">
+            <h2 class="card-title-custom">
+              <i class="bi bi-database-fill text-teal"></i>
+              <span>Branch Directory</span>
+            </h2>
+            <span class="badge bg-light text-dark-teal border fw-bold px-2 py-1">{{ branches.length }} Found</span>
+          </div>
+
+          <div class="card-body-custom">
+            <!-- Empty State -->
+            <div *ngIf="!branches || branches.length === 0" class="empty-state">
+              <i class="bi bi-shop-window empty-state-icon"></i>
+              <h4 class="fw-bold text-dark-teal">No Branches Registered</h4>
+              <p class="text-muted mx-auto" style="max-width: 320px;">We couldn't find any pharmacy branches in the database. Use the registration form to add one.</p>
+            </div>
+
+            <!-- Table View -->
+            <div *ngIf="branches && branches.length > 0" class="table-responsive">
+              <table class="table table-custom table-hover">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Branch Info</th>
+                    <th>Manager & Contact</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let b of branches">
+                    <td>
+                      <span class="fw-bold text-dark-teal">{{ b.branchCode }}</span>
+                    </td>
+                    <td>
+                      <div class="fw-bold text-dark">{{ b.name }}</div>
+                      <div class="text-muted small" *ngIf="b.address?.city || b.address?.country">
+                        <i class="bi bi-geo-alt small me-1"></i>{{ b.address?.city }}{{ b.address?.city && b.address?.country ? ', ' : '' }}{{ b.address?.country }}
+                      </div>
+                    </td>
+                    <td>
+                      <div class="small fw-semibold text-dark" *ngIf="b.managerName">
+                        <i class="bi bi-person small me-1 text-muted"></i>{{ b.managerName }}
+                      </div>
+                      <div class="small text-muted" *ngIf="b.phone">
+                        <i class="bi bi-telephone small me-1 text-muted"></i>{{ b.phone }}
+                      </div>
+                      <div class="small text-muted" *ngIf="b.email">
+                        <i class="bi bi-envelope small me-1 text-muted"></i>{{ b.email }}
+                      </div>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="b.branchType === 'MAIN' ? 'bg-primary' : 'bg-secondary'">{{ b.branchType }}</span>
+                    </td>
+                    <td>
+                      <span class="badge-custom" [ngClass]="b.isActive ? 'badge-active' : 'badge-inactive'">
+                        <span class="badge-dot"></span>
+                        <span>{{ b.isActive ? 'Active' : 'Inactive' }}</span>
+                      </span>
+                    </td>
+                    <td class="text-end">
+                      <div class="d-inline-flex gap-1">
+                        <button 
+                          type="button" 
+                          class="btn-table-action btn-action-edit" 
+                          title="Edit Branch" 
+                          (click)="edit(b)">
+                          <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button 
+                          type="button" 
+                          class="btn-table-action btn-action-delete" 
+                          title="Delete Branch" 
+                          (click)="delete(b.id!)">
+                          <i class="bi bi-trash3-fill"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

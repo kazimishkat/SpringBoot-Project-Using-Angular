@@ -1,0 +1,344 @@
+/* Home Component Stylesheet */
+
+.home-container {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  overflow-x: hidden;
+  background-color: #fafdfc;
+}
+
+/* Brand Colors */
+.text-teal {
+  color: #0fa895 !important;
+}
+
+.text-dark-teal {
+  color: #0a4f45 !important;
+}
+
+.bg-teal {
+  background-color: #0fa895 !important;
+}
+
+/* Welcome Tag */
+.welcome-tag {
+  color: #0fa895;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  font-weight: 700;
+  display: inline-block;
+  position: relative;
+}
+
+/* Hero Section */
+.hero-section {
+  padding: 5rem 0;
+  position: relative;
+  background-image: radial-gradient(rgba(15, 168, 149, 0.05) 1.5px, transparent 1.5px);
+  background-size: 30px 30px;
+}
+
+.hero-title {
+  font-size: 4rem;
+  line-height: 1.1;
+  font-weight: 700;
+}
+
+.hero-description {
+  line-height: 1.6;
+  max-width: 90%;
+}
+
+/* Pill Buttons */
+.btn-pill {
+  border-radius: 50px;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.btn-teal-solid {
+  background-color: #0fa895;
+  color: #white !important;
+  color: white;
+  border: 2px solid #0fa895;
+}
+
+.btn-teal-solid:hover {
+  background-color: #0d8a77;
+  border-color: #0d8a77;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(15, 168, 149, 0.3);
+}
+
+.btn-teal-outline {
+  background-color: transparent;
+  color: #0fa895;
+  border: 2px solid #0fa895;
+}
+
+.btn-teal-outline:hover {
+  background-color: #e6f6f4;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(15, 168, 149, 0.1);
+}
+
+/* Dot Matrix */
+.dot-matrix {
+  position: absolute;
+  bottom: -30px;
+  left: -30px;
+  width: 180px;
+  height: 180px;
+  background-image: radial-gradient(#0fa895 2px, transparent 2px);
+  background-size: 20px 20px;
+  opacity: 0.2;
+  z-index: 1;
+}
+
+/* Hero Image Wrapper */
+.hero-image-wrapper {
+  z-index: 2;
+  border-bottom-left-radius: 200px 200px;
+  border-top-right-radius: 30px;
+  border-top-left-radius: 30px;
+  border-bottom-right-radius: 30px;
+  overflow: hidden;
+  height: 480px;
+  width: 100%;
+}
+
+.hero-image {
+  transition: transform 0.8s ease;
+}
+
+.hero-image-wrapper:hover .hero-image {
+  transform: scale(1.05);
+}
+
+/* Play Button */
+.video-play-btn {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background-color: white;
+  border: none;
+  z-index: 10;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.video-play-btn::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 50%;
+  border: 2px solid white;
+  opacity: 0.5;
+  animation: pulsePlay 2s infinite;
+}
+
+.video-play-btn:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes pulsePlay {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+/* Highlights Section */
+.highlights-section {
+  background-color: #fafdfc;
+  position: relative;
+  z-index: 5;
+  margin-top: -30px;
+}
+
+.highlight-card {
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border-radius: 12px !important;
+  border: none;
+}
+
+.highlight-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+.card-light {
+  background-color: #eaf7f5;
+  border: 1px solid rgba(15, 168, 149, 0.08);
+}
+
+.card-teal {
+  background-color: #0fa895;
+}
+
+.card-teal .icon-circle i {
+  color: #0fa895 !important;
+}
+
+.icon-circle {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+}
+
+/* Banner Section */
+.banner-section {
+  background-image: url('https://images.unsplash.com/photo-1587854692152-cbe660db0989?q=80&w=1200&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.banner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(10, 79, 69, 0.95), rgba(15, 168, 149, 0.9));
+  z-index: 1;
+}
+
+.banner-tag {
+  color: #a1ffd9;
+  letter-spacing: 2px;
+  font-size: 0.9rem;
+}
+
+.banner-title {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.banner-desc {
+  line-height: 1.6;
+}
+
+.hover-shadow {
+  transition: all 0.3s ease;
+  border: none !important;
+}
+
+.hover-shadow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+  background-color: #a1ffd9 !important;
+  color: #0a4f45 !important;
+}
+
+/* Services / Labs Section */
+.section-tag {
+  font-size: 0.85rem;
+  letter-spacing: 2.5px;
+}
+
+.section-title {
+  font-size: 2.75rem;
+  line-height: 1.2;
+}
+
+.bi-patch-check-fill {
+  font-size: 1.15rem;
+}
+
+/* Pharmacist Portrait */
+.pharmacist-portrait {
+  max-width: 320px;
+  border-radius: 15px !important;
+}
+
+.portrait-img {
+  border-radius: 15px;
+  transition: transform 0.5s ease;
+  height: 400px;
+  object-fit: cover;
+}
+
+.pharmacist-portrait:hover .portrait-img {
+  transform: scale(1.03);
+}
+
+.portrait-badge {
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 5;
+}
+
+/* Progress Card */
+.progress-card {
+  border-radius: 15px !important;
+}
+
+.progress-card-title {
+  font-size: 1.6rem;
+}
+
+.progress {
+  border-radius: 10px;
+  background-color: #eaf7f5;
+  overflow: visible;
+}
+
+.progress-bar {
+  border-radius: 10px;
+  background-color: #0fa895 !important;
+  transition: width 1.5s cubic-bezier(0.1, 0.8, 0.1, 1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+  .hero-title {
+    font-size: 2.75rem;
+  }
+  .hero-image-wrapper {
+    height: 380px;
+  }
+  .video-play-btn {
+    width: 60px;
+    height: 60px;
+  }
+  .section-title {
+    font-size: 2.25rem;
+  }
+  .hero-text-col {
+    text-align: center;
+  }
+  .hero-description {
+    max-width: 100%;
+  }
+  .hero-text-col .d-flex {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .hero-title {
+    font-size: 2.25rem;
+  }
+  .hero-image-wrapper {
+    height: 280px;
+    border-bottom-left-radius: 120px 120px;
+  }
+  .video-play-btn {
+    width: 50px;
+    height: 50px;
+  }
+}

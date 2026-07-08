@@ -1,1 +1,299 @@
-<p>medicine-batch works!</p>
+<div class="batch-container">
+  <div class="container-fluid px-lg-5">
+    
+    <!-- Page Header & Stats Banner -->
+    <div class="page-header-banner">
+      <div class="row align-items-center g-4">
+        <div class="col-lg-6 col-12">
+          <div class="d-flex align-items-center gap-3">
+            <div class="stats-icon bg-white text-teal fs-2 shadow-sm d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+              <i class="bi bi-stack"></i>
+            </div>
+            <div>
+              <h1 class="h2 fw-bold mb-1">Medicine Batch Management</h1>
+              <p class="mb-0 text-light opacity-90">Manage medicine stock batches, supplier sourcing details, manufacture and expiry dates.</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 col-12">
+          <div class="row g-3 justify-content-lg-end">
+            <div class="col-sm-5 col-6">
+              <div class="stats-card">
+                <div class="stats-icon">
+                  <i class="bi bi-clipboard2-data-fill"></i>
+                </div>
+                <div>
+                  <div class="stats-value text-white">{{ batches.length }}</div>
+                  <div class="stats-label text-white">Stock Batches</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="row g-4">
+      
+      <!-- Batch Form Column -->
+      <div class="col-12">
+        <div class="custom-card">
+          <div class="card-header-custom">
+            <h2 class="card-title-custom">
+              <i class="bi" [ngClass]="isEdit ? 'bi-pencil-square text-teal' : 'bi-plus-circle-fill text-teal'"></i>
+              <span>{{ isEdit ? 'Edit Batch Details' : 'Register Stock Batch' }}</span>
+            </h2>
+            <span *ngIf="isEdit" class="badge bg-warning text-dark fw-bold px-2.5 py-1.5 rounded-pill">EDIT MODE</span>
+          </div>
+          
+          <div class="card-body-custom">
+            <form (ngSubmit)="batchForm.form.valid && save()" #batchForm="ngForm" novalidate>
+              
+              <!-- Section 1: Stock Associations -->
+              <div class="form-section-title">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>Batch Details & Sourcing</span>
+              </div>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-4 col-12">
+                  <label for="medicineId" class="form-label">Medicine Item <span class="text-danger">*</span></label>
+                  <select 
+                    id="medicineId" 
+                    name="medicineId" 
+                    class="form-select" 
+                    [(ngModel)]="batch.medicineId"
+                    #medVal="ngModel"
+                    required
+                    [class.is-invalid]="batchForm.submitted && (medVal.invalid || batch.medicineId === 0)">
+                    <option [value]="0" disabled selected>Select Medicine</option>
+                    <option *ngFor="let m of medicines" [value]="m.id">{{ m.brandName }} ({{ m.medicineCode }})</option>
+                  </select>
+                  <div class="invalid-feedback">Medicine is required.</div>
+                </div>
+
+                <div class="col-md-4 col-12">
+                  <label for="batchNumber" class="form-label">Batch Number <span class="text-danger">*</span></label>
+                  <input 
+                    type="text" 
+                    id="batchNumber" 
+                    name="batchNumber" 
+                    class="form-control" 
+                    placeholder="e.g. BATCH-889" 
+                    [(ngModel)]="batch.batchNumber" 
+                    #bNum="ngModel"
+                    required
+                    [class.is-invalid]="batchForm.submitted && bNum.invalid">
+                  <div class="invalid-feedback">Batch number is required.</div>
+                </div>
+
+                <div class="col-md-4 col-12">
+                  <label for="supplierId" class="form-label">Supplier Sourced</label>
+                  <select 
+                    id="supplierId" 
+                    name="supplierId" 
+                    class="form-select" 
+                    [(ngModel)]="batch.supplierId">
+                    <option [value]="undefined" disabled selected>Select Supplier</option>
+                    <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Section 2: Expiry & Pricing Details -->
+              <div class="form-section-title">
+                <i class="bi bi-calendar2-range"></i>
+                <span>Expiry & Valuation</span>
+              </div>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6">
+                  <label for="manufactureDate" class="form-label">Manufacture Date</label>
+                  <input 
+                    type="date" 
+                    id="manufactureDate" 
+                    name="manufactureDate" 
+                    class="form-control" 
+                    [(ngModel)]="batch.manufactureDate">
+                </div>
+
+                <div class="col-md-3 col-6">
+                  <label for="expiryDate" class="form-label">Expiry Date <span class="text-danger">*</span></label>
+                  <input 
+                    type="date" 
+                    id="expiryDate" 
+                    name="expiryDate" 
+                    class="form-control" 
+                    [(ngModel)]="batch.expiryDate"
+                    #expDate="ngModel"
+                    required
+                    [class.is-invalid]="batchForm.submitted && expDate.invalid">
+                  <div class="invalid-feedback">Expiry Date is required.</div>
+                </div>
+
+                <div class="col-md-3 col-6">
+                  <label for="purchasePrice" class="form-label">Purchase Price ($) <span class="text-danger">*</span></label>
+                  <input 
+                    type="number" 
+                    id="purchasePrice" 
+                    name="purchasePrice" 
+                    class="form-control" 
+                    placeholder="e.g. 1.20" 
+                    step="0.01"
+                    [(ngModel)]="batch.purchasePrice"
+                    #pPrice="ngModel"
+                    required
+                    min="0"
+                    [class.is-invalid]="batchForm.submitted && pPrice.invalid">
+                  <div class="invalid-feedback">Purchase price is required (minimum 0).</div>
+                </div>
+
+                <div class="col-md-3 col-6">
+                  <label for="sellingPrice" class="form-label">Selling Price ($) <span class="text-danger">*</span></label>
+                  <input 
+                    type="number" 
+                    id="sellingPrice" 
+                    name="sellingPrice" 
+                    class="form-control" 
+                    placeholder="e.g. 1.55" 
+                    step="0.01"
+                    [(ngModel)]="batch.sellingPrice"
+                    #sPrice="ngModel"
+                    required
+                    min="0"
+                    [class.is-invalid]="batchForm.submitted && sPrice.invalid">
+                  <div class="invalid-feedback">Selling price is required (minimum 0).</div>
+                </div>
+              </div>
+
+              <!-- Section 3: Status -->
+              <div class="form-section-title">
+                <i class="bi bi-toggle-on"></i>
+                <span>Status</span>
+              </div>
+              
+              <div class="mb-4">
+                <label class="custom-switch">
+                  <input 
+                    type="checkbox" 
+                    id="isActive" 
+                    name="isActive" 
+                    class="switch-input" 
+                    [(ngModel)]="batch.isActive">
+                  <span class="switch-label"></span>
+                  <span class="fw-semibold text-dark">{{ batch.isActive ? 'Active Batch' : 'Inactive Batch' }}</span>
+                </label>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-custom btn-teal-secondary" (click)="reset()">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                  <span>Reset Form</span>
+                </button>
+                <button type="submit" class="btn btn-custom btn-teal-primary">
+                  <i class="bi bi-check2-circle"></i>
+                  <span>{{ isEdit ? 'Update Batch' : 'Save Batch' }}</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Batch Directory Column -->
+      <div class="col-12">
+        <div class="custom-card">
+          <div class="card-header-custom">
+            <h2 class="card-title-custom">
+              <i class="bi bi-database-fill text-teal"></i>
+              <span>Batch Directory</span>
+            </h2>
+            <span class="badge bg-light text-dark-teal border fw-bold px-2 py-1">{{ batches.length }} Found</span>
+          </div>
+
+          <div class="card-body-custom">
+            <!-- Empty State -->
+            <div *ngIf="!batches || batches.length === 0" class="empty-state">
+              <i class="bi bi-stack empty-state-icon"></i>
+              <h4 class="fw-bold text-dark-teal">No Stock Batches Found</h4>
+              <p class="text-muted mx-auto" style="max-width: 320px;">We couldn't find any batches in the database. Use the registration form to create one.</p>
+            </div>
+
+            <!-- Table View -->
+            <div *ngIf="batches && batches.length > 0" class="table-responsive">
+              <table class="table table-custom table-hover">
+                <thead>
+                  <tr>
+                    <th>Medicine Name</th>
+                    <th>Batch Number</th>
+                    <th>Supplier Name</th>
+                    <th>Mfg Date</th>
+                    <th>Exp Date</th>
+                    <th>Purchase Price</th>
+                    <th>Selling Price</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let b of batches">
+                    <td>
+                      <span class="fw-bold text-dark">{{ b.medicineName || 'Medicine ID: ' + b.medicineId }}</span>
+                    </td>
+                    <td>
+                      <span class="badge bg-light text-dark border fw-bold">{{ b.batchNumber }}</span>
+                    </td>
+                    <td>
+                      <span>{{ b.supplierName || 'Supplier ID: ' + b.supplierId }}</span>
+                    </td>
+                    <td>
+                      <span>{{ b.manufactureDate || 'N/A' }}</span>
+                    </td>
+                    <td>
+                      <span class="fw-semibold text-danger">{{ b.expiryDate }}</span>
+                    </td>
+                    <td>
+                      <span>{{ b.purchasePrice | currency }}</span>
+                    </td>
+                    <td>
+                      <span class="fw-bold text-teal">{{ b.sellingPrice | currency }}</span>
+                    </td>
+                    <td>
+                      <span class="badge-custom" [ngClass]="b.isActive ? 'badge-active' : 'badge-inactive'">
+                        <span class="badge-dot"></span>
+                        <span>{{ b.isActive ? 'Active' : 'Inactive' }}</span>
+                      </span>
+                    </td>
+                    <td class="text-end">
+                      <div class="d-inline-flex gap-1">
+                        <button 
+                          type="button" 
+                          class="btn-table-action btn-action-edit" 
+                          title="Edit Batch" 
+                          (click)="edit(b)">
+                          <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button 
+                          type="button" 
+                          class="btn-table-action btn-action-delete" 
+                          title="Delete Batch" 
+                          (click)="delete(b.id!)">
+                          <i class="bi bi-trash3-fill"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

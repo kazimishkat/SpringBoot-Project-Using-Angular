@@ -15,37 +15,41 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class SupplierServiceImpl implements SupplierService {
-    private final SupplierRepository supplierRepository;
 
-    // Using an instance copy matching your project pattern rules
-    private final SupplierMapper supplierMapper = new SupplierMapper();
+
+    private final SupplierRepository supplierRepository;
+    private final SupplierMapper supplierMapper;
 
     @Override
-    @Transactional
     public SupplierResponseDto createSupplier(SupplierRequestDto dto) {
-        // Validate unique constraints manually to throw early domain-specific runtime errors
-        if (supplierRepository.findBySupplierCode(dto.getSupplierCode()).isPresent()) {
-            throw new RuntimeException("Supplier registration blocked: Code '" + dto.getSupplierCode() + "' already allocated.");
-        }
-        if (dto.getEmail() != null && supplierRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new RuntimeException("Supplier registration blocked: Email profile '" + dto.getEmail() + "' already in use.");
+
+        if (supplierRepository.existsBySupplierCode(dto.getSupplierCode())) {
+            throw new RuntimeException("Supplier code already exists.");
         }
 
-        // Convert request transfer profile payload to core domain model entity
+        if (dto.getEmail() != null &&
+                !dto.getEmail().isBlank() &&
+                supplierRepository.existsByEmail(dto.getEmail())) {
+
+            throw new RuntimeException("Email already exists.");
+        }
+
         Supplier supplier = supplierMapper.toEntity(dto);
-
-        // Ensure active state status is hardset during primary generation cycle
         supplier.setIsActive(true);
 
-        Supplier saved = supplierRepository.save(supplier);
-        return supplierMapper.toDTO(saved);
+        Supplier savedSupplier = supplierRepository.save(supplier);
+
+        return supplierMapper.toDTO(savedSupplier);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<SupplierResponseDto> getAllSuppliers() {
-        return supplierRepository.findAll().stream()
+
+        return supplierRepository.findAll()
+                .stream()
                 .map(supplierMapper::toDTO)
                 .collect(Collectors.toList());
     }
@@ -53,44 +57,60 @@ public class SupplierServiceImpl implements SupplierService {
     @Override
     @Transactional(readOnly = true)
     public SupplierResponseDto getSupplierById(Long id) {
+
         Supplier supplier = supplierRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Supplier profile map target missing with identity code: " + id));
+                .orElseThrow(() -> new RuntimeException("Supplier not found with ID: " + id));
+
         return supplierMapper.toDTO(supplier);
     }
 
     @Override
     @Transactional(readOnly = true)
     public SupplierResponseDto getSupplierByCode(String supplierCode) {
+
         Supplier supplier = supplierRepository.findBySupplierCode(supplierCode)
-                .orElseThrow(() -> new RuntimeException("Supplier instance tracking key mismatch for business unique code: " + supplierCode));
+                .orElseThrow(() -> new RuntimeException("Supplier not found with code: " + supplierCode));
+
         return supplierMapper.toDTO(supplier);
     }
 
     @Override
-    @Transactional
     public SupplierResponseDto updateSupplier(Long id, SupplierRequestDto dto) {
-        Supplier existingSupplier = supplierRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cannot perform modification: Target supplier profile does not exist with ID: " + id));
 
-        // Check uniqueness if the company code is modified
-        if (!existingSupplier.getSupplierCode().equals(dto.getSupplierCode()) &&
-                supplierRepository.findBySupplierCode(dto.getSupplierCode()).isPresent()) {
-            throw new RuntimeException("Conflict error: Modified corporate code identity '" + dto.getSupplierCode() + "' belongs to another vendor account.");
+        Supplier supplier = supplierRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Supplier not found with ID: " + id));
+
+        // Supplier Code uniqueness
+        if (!supplier.getSupplierCode().equals(dto.getSupplierCode())
+                && supplierRepository.existsBySupplierCode(dto.getSupplierCode())) {
+
+            throw new RuntimeException("Supplier code already exists.");
         }
 
-        // Mutate target structural values dynamically via the custom tracking mapper mechanism
-        supplierMapper.updateEntityFromDto(dto, existingSupplier);
+        // Email uniqueness
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
 
-        Supplier updatedSupplier = supplierRepository.save(existingSupplier);
+            supplierRepository.findByEmail(dto.getEmail()).ifPresent(existing -> {
+                if (!existing.getId().equals(id)) {
+                    throw new RuntimeException("Email already exists.");
+                }
+            });
+        }
+
+        supplierMapper.updateEntityFromDto(dto, supplier);
+
+        Supplier updatedSupplier = supplierRepository.save(supplier);
+
         return supplierMapper.toDTO(updatedSupplier);
     }
 
     @Override
-    @Transactional
     public void deleteSupplier(Long id) {
-        if (!supplierRepository.existsById(id)) {
-            throw new RuntimeException("Destruction operation rejected: Missing row identifier match for value: " + id);
-        }
-        supplierRepository.deleteById(id);
+
+        Supplier supplier = supplierRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Supplier not found with ID: " + id));
+
+        supplierRepository.delete(supplier);
     }
+
 }

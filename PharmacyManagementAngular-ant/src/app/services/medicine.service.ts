@@ -65,7 +65,7 @@ export class MedicineService {
    */
   createMedicine(medicine: MedicineModel, image?: File): Observable<MedicineModel> {
     const formData = new FormData();
-    formData.append('dto', new Blob([JSON.stringify(medicine)], { type: 'application/json' }));
+    formData.append('medicine', new Blob([JSON.stringify(medicine)], { type: 'application/json' }));
     if (image) {
       formData.append('image', image);
     }
@@ -78,7 +78,7 @@ export class MedicineService {
    */
   updateMedicine(id: number, medicine: MedicineModel, image?: File): Observable<MedicineModel> {
     const formData = new FormData();
-    formData.append('dto', new Blob([JSON.stringify(medicine)], { type: 'application/json' }));
+    formData.append('medicine', new Blob([JSON.stringify(medicine)], { type: 'application/json' }));
     if (image) {
       formData.append('image', image);
     }

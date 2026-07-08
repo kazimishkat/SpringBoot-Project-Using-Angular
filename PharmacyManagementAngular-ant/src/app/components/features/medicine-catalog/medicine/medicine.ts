@@ -1,8 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-// import { MedicineModel, DosageForm, DrugSchedule, StorageCondition, UnitOfMeasure } from '../../../models/medicine.model';
 import { MedicineService } from '../../../../services/medicine.service';
 import { DosageForm, DrugSchedule, MedicineModel, StorageCondition, UnitOfMeasure } from '../../../../models/medicine.model';
 
@@ -17,7 +15,6 @@ export class Medicine implements OnInit {
   medicines: MedicineModel[] = [];
   selectedFile: File | undefined = undefined;
 
-  // Expose enums to the HTML template for dropdown (*ngFor) iterations
   dosageForms = Object.values(DosageForm);
   drugSchedules = Object.values(DrugSchedule);
   storageConditions = Object.values(StorageCondition);
@@ -61,7 +58,7 @@ export class Medicine implements OnInit {
         next: (data) => {
           this.medicines = data;
           this.cdr.markForCheck();
-          console.log(data);
+          console.log("Loaded Medicines:", data);
         },
         error: (err) => console.error('Error fetching medicines:', err)
       });
@@ -75,8 +72,17 @@ export class Medicine implements OnInit {
   }
 
   save() {
+    // সাবমিট করার জন্য অবজেক্টের একটি ক্লোন তৈরি করছি
+    const medicineDataToSubmit = { ...this.medicine };
+    
+    if (!this.isEdit) {
+      // নতুন ওষুধ তৈরি করার সময় id এবং ইমেজ পাথ ক্লিন করে পাঠানো ভালো
+      delete medicineDataToSubmit.id;
+      delete medicineDataToSubmit.image;
+    }
+
     if (this.isEdit) {
-      this.service.updateMedicine(this.medicine.id!, this.medicine, this.selectedFile)
+      this.service.updateMedicine(this.medicine.id!, medicineDataToSubmit, this.selectedFile)
         .subscribe({
           next: () => {
             alert("Updated Successfully");
@@ -86,7 +92,7 @@ export class Medicine implements OnInit {
           error: (err) => console.error('Error updating medicine:', err)
         });
     } else {
-      this.service.createMedicine(this.medicine, this.selectedFile)
+      this.service.createMedicine(medicineDataToSubmit, this.selectedFile)
         .subscribe({
           next: () => {
             alert("Saved Successfully");
@@ -100,7 +106,7 @@ export class Medicine implements OnInit {
 
   edit(m: MedicineModel) {
     this.medicine = { ...m };
-    this.selectedFile = undefined; // Reset file input buffer on record switch
+    this.selectedFile = undefined; 
     this.isEdit = true;
   }
 
@@ -108,8 +114,8 @@ export class Medicine implements OnInit {
     if (confirm("Delete this medicine?")) {
       this.service.deleteMedicine(id)
         .subscribe({
-          next: () => {
-            alert("Deleted");
+          next: (res) => {
+            alert(res || "Deleted");
             this.loadMedicines();
           },
           error: (err) => console.error('Error deleting medicine:', err)
@@ -140,5 +146,11 @@ export class Medicine implements OnInit {
     };
     this.selectedFile = undefined;
     this.isEdit = false;
+
+    // HTML-এর ফাইল ইনপুট ফিল্ডটি ক্লিন করার জন্য (নিচের ২ নম্বর স্টেপ দেখুন)
+    const fileInput = document.getElementById('imageFile') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   }
 }

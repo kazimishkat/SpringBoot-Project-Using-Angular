@@ -37,7 +37,7 @@
     <div class="row g-4">
       
       <!-- Inventory Form Column -->
-      <div class="col-xl-5 col-lg-6 col-12">
+      <div class="col-12">
         <div class="custom-card">
           <div class="card-header-custom">
             <h2 class="card-title-custom">
@@ -165,7 +165,7 @@
       </div>
 
       <!-- Inventory Directory Column -->
-      <div class="col-xl-7 col-lg-6 col-12">
+      <div class="col-12">
         <div class="custom-card">
           <div class="card-header-custom">
             <h2 class="card-title-custom">
@@ -188,9 +188,11 @@
               <table class="table table-custom table-hover">
                 <thead>
                   <tr>
-                    <th>Branch</th>
-                    <th>Medicine</th>
-                    <th>Batch</th>
+                    <th>Branch ID</th>
+                    <th>Branch Name</th>
+                    <th>Batch ID</th>
+                    <th>Batch Number</th>
+                    <th>Medicine Brand Name</th>
                     <th class="text-center">On Hand</th>
                     <th class="text-center">Reserved</th>
                     <th>Status</th>
@@ -200,13 +202,19 @@
                 <tbody>
                   <tr *ngFor="let i of inventories">
                     <td>
-                      <span class="fw-bold text-dark">{{ i.branchName || 'Branch ID: ' + i.branchId }}</span>
+                      <span>{{ i.branchId }}</span>
                     </td>
                     <td>
-                      <div class="fw-semibold text-dark-teal">{{ i.medicineBrandName || 'N/A' }}</div>
+                      <span class="fw-bold text-dark">{{ i.branchName || 'N/A' }}</span>
                     </td>
                     <td>
-                      <span class="badge bg-light text-dark border">{{ i.batchNumber || 'Batch ID: ' + i.batchId }}</span>
+                      <span>{{ i.batchId }}</span>
+                    </td>
+                    <td>
+                      <span class="badge bg-light text-dark border">{{ i.batchNumber || 'N/A' }}</span>
+                    </td>
+                    <td>
+                      <span class="fw-semibold text-dark-teal">{{ i.medicineBrandName || 'N/A' }}</span>
                     </td>
                     <td class="text-center fw-bold text-teal">
                       {{ i.quantityOnHand }}

@@ -7,6 +7,17 @@ import java.util.Optional;
 
 @Repository
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
+
+
+
     Optional<Supplier> findBySupplierCode(String supplierCode);
+
     Optional<Supplier> findByEmail(String email);
+
+    boolean existsBySupplierCode(String supplierCode);
+
+    boolean existsByEmail(String email);
+
+
+
 }

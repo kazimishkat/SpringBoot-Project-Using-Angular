@@ -37,7 +37,7 @@
     <div class="row g-4">
       
       <!-- Branch Form Column -->
-      <div class="col-xl-5 col-lg-6 col-12">
+      <div class="col-12">
         <div class="custom-card">
           <div class="card-header-custom">
             <h2 class="card-title-custom">
@@ -86,7 +86,7 @@
                     [class.is-invalid]="branchForm.submitted && name.invalid">
                   <div class="invalid-feedback">Branch Name is required.</div>
                 </div>
-
+ 
                 <div class="col-md-6 col-12">
                   <label for="branchType" class="form-label">Branch Type <span class="text-danger">*</span></label>
                   <select 
@@ -102,7 +102,7 @@
                   </select>
                   <div class="invalid-feedback">Branch Type is required.</div>
                 </div>
-
+ 
                 <div class="col-md-6 col-12">
                   <label for="managerName" class="form-label">Manager Name</label>
                   <input 
@@ -114,7 +114,7 @@
                     [(ngModel)]="branch.managerName">
                 </div>
               </div>
-
+ 
               <!-- Section 2: Contact Details -->
               <div class="form-section-title">
                 <i class="bi bi-telephone-fill"></i>
@@ -147,7 +147,7 @@
                     [class.is-invalid]="branchForm.submitted && email.invalid">
                   <div class="invalid-feedback">Please enter a valid email address.</div>
                 </div>
-
+ 
                 <div class="col-12">
                   <label for="licenseNumber" class="form-label">Drug License Number</label>
                   <input 
@@ -159,7 +159,7 @@
                     [(ngModel)]="branch.licenseNumber">
                 </div>
               </div>
-
+ 
               <!-- Section 3: Address Details -->
               <div class="form-section-title">
                 <i class="bi bi-geo-alt-fill"></i>
@@ -233,7 +233,7 @@
                     [(ngModel)]="branch.address.country">
                 </div>
               </div>
-
+ 
               <!-- Section 4: Status -->
               <div class="form-section-title">
                 <i class="bi bi-toggle-on"></i>
@@ -252,7 +252,7 @@
                   <span class="fw-semibold text-dark">{{ branch.isActive ? 'Active Branch' : 'Inactive Branch' }}</span>
                 </label>
               </div>
-
+ 
               <!-- Action Buttons -->
               <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
                 <button type="button" class="btn btn-custom btn-teal-secondary" (click)="reset()">
@@ -264,14 +264,14 @@
                   <span>{{ isEdit ? 'Update Branch' : 'Save Branch' }}</span>
                 </button>
               </div>
-
+ 
             </form>
           </div>
         </div>
       </div>
-
+ 
       <!-- Branch Directory Column -->
-      <div class="col-xl-7 col-lg-6 col-12">
+      <div class="col-12">
         <div class="custom-card">
           <div class="card-header-custom">
             <h2 class="card-title-custom">
@@ -280,7 +280,7 @@
             </h2>
             <span class="badge bg-light text-dark-teal border fw-bold px-2 py-1">{{ branches.length }} Found</span>
           </div>
-
+ 
           <div class="card-body-custom">
             <!-- Empty State -->
             <div *ngIf="!branches || branches.length === 0" class="empty-state">
@@ -288,16 +288,20 @@
               <h4 class="fw-bold text-dark-teal">No Branches Registered</h4>
               <p class="text-muted mx-auto" style="max-width: 320px;">We couldn't find any pharmacy branches in the database. Use the registration form to add one.</p>
             </div>
-
+ 
             <!-- Table View -->
             <div *ngIf="branches && branches.length > 0" class="table-responsive">
               <table class="table table-custom table-hover">
                 <thead>
                   <tr>
                     <th>Code</th>
-                    <th>Branch Info</th>
-                    <th>Manager & Contact</th>
+                    <th>Branch Name</th>
                     <th>Type</th>
+                    <th>Manager Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Drug License No</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
                   </tr>
@@ -308,24 +312,31 @@
                       <span class="fw-bold text-dark-teal">{{ b.branchCode }}</span>
                     </td>
                     <td>
-                      <div class="fw-bold text-dark">{{ b.name }}</div>
-                      <div class="text-muted small" *ngIf="b.address?.city || b.address?.country">
-                        <i class="bi bi-geo-alt small me-1"></i>{{ b.address?.city }}{{ b.address?.city && b.address?.country ? ', ' : '' }}{{ b.address?.country }}
-                      </div>
-                    </td>
-                    <td>
-                      <div class="small fw-semibold text-dark" *ngIf="b.managerName">
-                        <i class="bi bi-person small me-1 text-muted"></i>{{ b.managerName }}
-                      </div>
-                      <div class="small text-muted" *ngIf="b.phone">
-                        <i class="bi bi-telephone small me-1 text-muted"></i>{{ b.phone }}
-                      </div>
-                      <div class="small text-muted" *ngIf="b.email">
-                        <i class="bi bi-envelope small me-1 text-muted"></i>{{ b.email }}
-                      </div>
+                      <span class="fw-bold text-dark">{{ b.name }}</span>
                     </td>
                     <td>
                       <span class="badge" [ngClass]="b.branchType === 'MAIN' ? 'bg-primary' : 'bg-secondary'">{{ b.branchType }}</span>
+                    </td>
+                    <td>
+                      <span>{{ b.managerName || 'N/A' }}</span>
+                    </td>
+                    <td>
+                      <span>{{ b.phone || 'N/A' }}</span>
+                    </td>
+                    <td>
+                      <span>{{ b.email || 'N/A' }}</span>
+                    </td>
+                    <td>
+                      <div class="small text-muted" *ngIf="b.address">
+                        <div>{{ b.address.addressLine1 }}</div>
+                        <div *ngIf="b.address.addressLine2">{{ b.address.addressLine2 }}</div>
+                        <div>{{ b.address.city }}{{ b.address.state ? ', ' + b.address.state : '' }} {{ b.address.postalCode }}</div>
+                        <div>{{ b.address.country }}</div>
+                      </div>
+                      <span *ngIf="!b.address">N/A</span>
+                    </td>
+                    <td>
+                      <span>{{ b.licenseNumber || 'N/A' }}</span>
                     </td>
                     <td>
                       <span class="badge-custom" [ngClass]="b.isActive ? 'badge-active' : 'badge-inactive'">
@@ -355,11 +366,11 @@
                 </tbody>
               </table>
             </div>
-
+ 
           </div>
         </div>
       </div>
-
+ 
     </div>
   </div>
 </div>

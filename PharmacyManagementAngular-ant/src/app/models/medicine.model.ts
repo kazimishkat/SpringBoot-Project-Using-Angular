@@ -1,7 +1,5 @@
-
-
 // ==========================================
-// Domain Enums matching Spring Boot Enums
+// Enums
 
 import { BaseEntity } from "./baseEntity.model";
 
@@ -54,25 +52,47 @@ export enum StorageCondition {
 }
 
 // ==========================================
-// Main Medicine Model
+// Medicine Request Model (Maps to RequestDto)
 // ==========================================
-export interface MedicineModel extends BaseEntity {
+export interface MedicineModelRequest extends BaseEntity {
   medicineCode: string;
   brandName: string;
-  genericMedicineId: number;   // Maps to Long in DTO
-  genericName?: string;         // Present in your MedicineResponseDto
+  genericMedicineId: number;
   manufacturer?: string;
-  dosageForm?: DosageForm | string;
+  dosageForm?: DosageForm;
   strength?: string;
-  unitOfMeasure?: UnitOfMeasure | string;
+  unitOfMeasure?: UnitOfMeasure;
   unitsPerPack?: number;
-  drugSchedule?: DrugSchedule | string;
-  storageCondition?: StorageCondition | string;
+  drugSchedule?: DrugSchedule;
+  storageCondition?: StorageCondition;
   reorderLevel?: number;
   reorderQuantity?: number;
-  defaultPurchasePrice?: number; // Java BigDecimal maps to number in TypeScript
-  defaultSellingPrice?: number;  // Java BigDecimal maps to number in TypeScript
-  vatPercentage?: number;        // From your core Entity definitions
+  defaultPurchasePrice?: number;
+  defaultSellingPrice?: number;
   description?: string;
   image?: string;
+}
+
+// ==========================================
+// Medicine Response Model (Maps to ResponseDto)
+// ==========================================
+export interface MedicineModelResponse extends BaseEntity {
+  id: number; 
+  medicineCode: string;
+  brandName: string;
+  genericMedicineId: number;
+  genericName: string;
+  manufacturer: string;
+  dosageForm: DosageForm;
+  strength: string;
+  unitOfMeasure: UnitOfMeasure;
+  unitsPerPack: number;
+  drugSchedule: DrugSchedule;
+  storageCondition: StorageCondition;
+  reorderLevel: number;
+  reorderQuantity: number;
+  defaultPurchasePrice: number;
+  defaultSellingPrice: number;
+  isActive: boolean;
+  image: string;
 }

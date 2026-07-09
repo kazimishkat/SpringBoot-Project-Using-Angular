@@ -1,11 +1,23 @@
 import { BaseEntity } from "./baseEntity.model";
 
-export interface BranchInventoryModel extends BaseEntity {
+// Branch Inventory Request Model (Maps to RequestDto)
+// ==========================================
+export interface BranchInventoryRequest extends BaseEntity {
   branchId: number;
-  branchName?: string;         // Populated by your Response DTO mapping
   batchId: number;
-  batchNumber?: string;       // Populated by your Response DTO mapping
-  medicineBrandName?: string; // Populated by your Response DTO mapping
   quantityOnHand: number;
-  quantityReserved: number;   // Tracked dynamically on the server side
+}
+
+// ==========================================
+// Branch Inventory Response Model (Maps to ResponseDto)
+// ==========================================
+export interface BranchInventoryResponse extends BaseEntity {
+  id: number;
+  branchId: number;
+  branchName: string;
+  batchId: number;
+  batchNumber: string;
+  medicineBrandName: string;
+  quantityOnHand: number;
+  quantityReserved: number;
 }

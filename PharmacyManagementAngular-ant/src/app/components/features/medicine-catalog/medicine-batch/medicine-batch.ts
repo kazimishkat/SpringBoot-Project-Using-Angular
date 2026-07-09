@@ -1,126 +1,154 @@
-import { CommonModule } from "@angular/common";
-import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { MedicineBatchModel } from "../../../../models/medicine-batch.model";
-import { MedicineBatchService } from "../../../../services/medicine-batch.service";
-import { MedicineModel } from "../../../../models/medicine.model";
-import { SupplierModel } from "../../../../models/supplier.model";
-import { MedicineService } from "../../../../services/medicine.service";
-import { SupplierService } from "../../../../services/supplier.service";
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { NgForm, FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { MedicineBatchRequest, MedicineBatchResponse } from '../../../../models/medicine-batch.model';
+import { MedicineBatchService } from '../../../../services/medicine-batch.service';
+import { MedicineService } from '../../../../services/medicine.service';
+import { SupplierService } from '../../../../services/supplier.service';
+
 
 @Component({
   selector: 'app-medicine-batch',
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './medicine-batch.html',
-  styleUrl: './medicine-batch.css',
+  styleUrl: './medicine-batch.css'
 })
-export class MedicineBatch implements OnInit {
+export class MedicineBatchComponent implements OnInit {
 
-  batches: MedicineBatchModel[] = [];
-  medicines: MedicineModel[] = [];
-  suppliers: SupplierModel[] = [];
+  @ViewChild('batchForm') batchForm!: NgForm;
 
-  batch: MedicineBatchModel = {
-    medicineId: 0,
-    batchNumber: '',
-    supplierId: undefined,
-    manufactureDate: '',
-    expiryDate: '',
-    purchasePrice: 0,
-    sellingPrice: 0,
-    isActive: true
-  };
+  // State data list arrays
+  batches: MedicineBatchResponse[] = [];
+  medicines: any[] = [];   // Populates medicine picker dropdown
+  suppliers: any[] = [];   // Populates supplier picker dropdown
+  
+  // Filtering and template configuration states
+  searchBatchNumber: string = '';
+  expiryFilterDate: string = '';
+  errorMessage: string = '';
+  isEditMode: boolean = false;
+  submitted: boolean = false;
 
-  isEdit = false;
+  // Request binding model instance
+  batchData!: MedicineBatchRequest;
 
   constructor(
-    private service: MedicineBatchService,
+    private batchService: MedicineBatchService,
     private medicineService: MedicineService,
     private supplierService: SupplierService,
     private cdr: ChangeDetectorRef
   ) { }
 
-  ngOnInit() {
-    this.loadBatches();
+  ngOnInit(): void {
+    this.resetForm();
+    this.loadAllBatches();
     this.loadDropdownData();
   }
 
-  loadBatches() {
-    this.service.getAllBatches()
-      .subscribe({
-        next: (data) => {
-          this.batches = data;
-          this.cdr.markForCheck();
+  // Fetch full inventory context batches
+  loadAllBatches(): void {
+    this.batchService.getAllBatches().subscribe({
+      next: (data) => {
+        this.batches = data || [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => this.handleError('Failed to load medicine batches', err)
+    });
+  }
+
+  // Load contextual target information dependencies
+  loadDropdownData(): void {
+    this.medicineService.getAllMedicines().subscribe(data => {
+      this.medicines = data || [];
+      this.cdr.markForCheck();
+    });
+    
+    this.supplierService.getAllSuppliers().subscribe(data => {
+      this.suppliers = data || [];
+      this.cdr.markForCheck();
+    });
+  }
+
+  // Search batches via batch number string values
+  onSearchByNumber(): void {
+    if (!this.searchBatchNumber.trim()) {
+      this.loadAllBatches();
+      return;
+    }
+    this.batchService.getBatchesByNumber(this.searchBatchNumber).subscribe({
+      next: (data) => {
+        this.batches = data || [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => this.handleError('Search routine failed', err)
+    });
+  }
+
+  // Filter out batch entities facing early expiration thresholds
+  onFilterExpiration(): void {
+    if (!this.expiryFilterDate) {
+      this.loadAllBatches();
+      return;
+    }
+    this.batchService.getExpiringBatches(this.expiryFilterDate).subscribe({
+      next: (data) => {
+        this.batches = data || [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => this.handleError('Expiration filtering failed', err)
+    });
+  }
+
+  // Handle standard transaction payload submission sequence
+  onSubmit(): void {
+    this.submitted = true;
+    this.errorMessage = '';
+
+    if (this.batchForm.invalid) {
+      return;
+    }
+
+    if (this.isEditMode && this.batchData.id) {
+      // Direct updates implementation route
+      this.batchService.updateBatch(this.batchData.id, this.batchData).subscribe({
+        next: () => {
+          this.loadAllBatches();
+          this.resetForm();
         },
-        error: (err) => console.error('Error fetching medicine batches:', err)
+        error: (err) => this.handleError('Batch mutation operation rejected', err)
       });
-  }
-
-  /**
-   * Loads lists of medicines and suppliers to populate form selectors
-   */
-  loadDropdownData() {
-    this.medicineService.getAllMedicines().subscribe({
-      next: (data) => {
-        this.medicines = data;
-        this.cdr.markForCheck();
-      },
-      error: (err) => console.error('Error loading medicines for dropdown:', err)
-    });
-
-    this.supplierService.getAllSuppliers().subscribe({
-      next: (data) => {
-        this.suppliers = data;
-        this.cdr.markForCheck();
-      },
-      error: (err) => console.error('Error loading suppliers for dropdown:', err)
-    });
-  }
-
-  save() {
-    if (this.isEdit) {
-      this.service.updateBatch(this.batch.id!, this.batch)
-        .subscribe({
-          next: () => {
-            alert("Updated Successfully");
-            this.reset();
-            this.loadBatches();
-          },
-          error: (err) => console.error('Error updating batch:', err)
-        });
     } else {
-      this.service.createBatch(this.batch)
-        .subscribe({
-          next: () => {
-            alert("Saved Successfully");
-            this.reset();
-            this.loadBatches();
-          },
-          error: (err) => console.error('Error creating batch:', err)
-        });
+      // Direct placement implementation route
+      this.batchService.createBatch(this.batchData).subscribe({
+        next: () => {
+          this.loadAllBatches();
+          this.resetForm();
+        },
+        error: (err) => this.handleError('Batch validation registration rejected', err)
+      });
     }
   }
 
-  edit(b: MedicineBatchModel) {
-    this.batch = { ...b };
-    this.isEdit = true;
+  // Select particular rows structure data targets into the modifier scope
+  editBatch(item: MedicineBatchResponse): void {
+    this.isEditMode = true;
+    this.batchData = { ...item };
+    this.cdr.markForCheck();
   }
 
-  delete(id: number) {
-    if (confirm("Delete this medicine batch?")) {
-      this.service.deleteBatch(id)
-        .subscribe({
-          next: () => {
-            alert("Deleted");
-            this.loadBatches();
-          },
-          error: (err) => console.error('Error deleting batch:', err)
-        });
+  // Process operational execution of delete commands
+  deleteBatch(id: number): void {
+    if (confirm('Are you sure you want to completely drop this batch from system memory?')) {
+      this.batchService.deleteBatch(id).subscribe({
+        next: () => this.loadAllBatches(),
+        error: (err) => this.handleError('Batch dropped request aborted', err)
+      });
     }
   }
 
-  reset() {
-    this.batch = {
+  // Clear component transactional context profiles completely
+  resetForm(): void {
+    this.batchData = {
       medicineId: 0,
       batchNumber: '',
       supplierId: undefined,
@@ -130,6 +158,21 @@ export class MedicineBatch implements OnInit {
       sellingPrice: 0,
       isActive: true
     };
-    this.isEdit = false;
+    
+    this.submitted = false;
+    this.isEditMode = false;
+    this.errorMessage = '';
+
+    if (this.batchForm) {
+      this.batchForm.resetForm();
+    }
+    this.cdr.markForCheck();
+  }
+
+  // Exception logger routing helper
+  private handleError(context: string, error: any): void {
+    console.error(error);
+    this.errorMessage = `${context}: ${error.error || error.message || 'Server Exception'}`;
+    this.cdr.markForCheck();
   }
 }

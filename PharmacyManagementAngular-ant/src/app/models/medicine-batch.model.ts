@@ -1,15 +1,30 @@
 import { BaseEntity } from "./baseEntity.model";
 
-export interface MedicineBatchModel extends BaseEntity {
-  medicineId: number;       // Maps to Long from Request DTO
+// Medicine Batch Request Model (Maps to RequestDto)
+// ==========================================
+export interface MedicineBatchRequest extends BaseEntity {
+  medicineId: number;
   batchNumber: string;
-  supplierId?: number;      // Optional Long from Request DTO
-  manufactureDate?: string | Date; 
-  expiryDate: string | Date;
-  purchasePrice: number;    // Java BigDecimal maps to number
-  sellingPrice: number;     // Java BigDecimal maps to number
-  
-  // Optional flattened display properties if your response DTO expands them later
-  medicineName?: string;
-  supplierName?: string;
+  supplierId?: number;
+  manufactureDate?: Date | string; // Maps to LocalDate
+  expiryDate: Date | string;       // Maps to LocalDate
+  purchasePrice: number;           // Maps to BigDecimal
+  sellingPrice: number;            // Maps to BigDecimal
+}
+
+// ==========================================
+// Medicine Batch Response Model (Maps to ResponseDto)
+// ==========================================
+export interface MedicineBatchResponse extends BaseEntity {
+  id: number;
+  medicineId: number;
+  brandName: string;
+  batchNumber: string;
+  supplierId: number;
+  supplierName: string;
+  manufactureDate: Date | string;
+  expiryDate: Date | string;
+  purchasePrice: number;
+  sellingPrice: number;
+  isActive: boolean;
 }

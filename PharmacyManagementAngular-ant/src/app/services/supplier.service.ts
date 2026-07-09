@@ -2,38 +2,44 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { SupplierModel } from '../models/supplier.model';
+import { SupplierRequest, SupplierResponse } from '../models/supplier.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SupplierService {
-
+  
+  // API endpoint matching backend mapping
   private apiUrl = environment.apiUrl + 'suppliers';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  getAllSuppliers(): Observable<SupplierModel[]> {
-    return this.http.get<SupplierModel[]>(this.apiUrl);
+  // Fetch all suppliers from database registry
+  getAllSuppliers(): Observable<SupplierResponse[]> {
+    return this.http.get<SupplierResponse[]>(this.apiUrl);
   }
 
- 
-  getSupplierById(id: number): Observable<SupplierModel> {
-    return this.http.get<SupplierModel>(`${this.apiUrl}/${id}`);
+  // Find a specific supplier by database ID
+  getSupplierById(id: number): Observable<SupplierResponse> {
+    return this.http.get<SupplierResponse>(`${this.apiUrl}/${id}`);
   }
 
-  getSupplierByCode(supplierCode: string): Observable<SupplierModel> {
-    return this.http.get<SupplierModel>(`${this.apiUrl}/code/${supplierCode}`);
+  // Find supplier matching corporate supplier code string
+  getSupplierByCode(supplierCode: string): Observable<SupplierResponse> {
+    return this.http.get<SupplierResponse>(`${this.apiUrl}/code/${supplierCode}`);
   }
 
-  createSupplier(supplier: SupplierModel): Observable<SupplierModel> {
-    return this.http.post<SupplierModel>(this.apiUrl, supplier);
+  // Create a new supplier corporate registry profile
+  createSupplier(dto: SupplierRequest): Observable<SupplierResponse> {
+    return this.http.post<SupplierResponse>(this.apiUrl, dto);
   }
 
-  updateSupplier(id: number, supplier: SupplierModel): Observable<SupplierModel> {
-    return this.http.put<SupplierModel>(`${this.apiUrl}/${id}`, supplier);
+  // Update existing supplier records validation parameters
+  updateSupplier(id: number, dto: SupplierRequest): Observable<SupplierResponse> {
+    return this.http.put<SupplierResponse>(`${this.apiUrl}/${id}`, dto);
   }
 
+  // Completely drop supplier corporate profile from tracking
   deleteSupplier(id: number): Observable<string> {
     return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }

@@ -2,42 +2,45 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { GenericMedicineModel } from '../models/generic-medicine.model';
+import { GenericMedicineRequest, GenericMedicineResponse } from '../models/generic-medicine.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GenericMedicineService {
-
+  
+  // API endpoint for generic medicines
   private apiUrl = environment.apiUrl + 'generic-medicines';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  // ==========================================
-  // Generic Medicine CRUD Operations
-  // ==========================================
-
-  getAllGenericMedicines(): Observable<GenericMedicineModel[]> {
-    return this.http.get<GenericMedicineModel[]>(this.apiUrl);
+  // Fetch all generic medicines
+  getAll(): Observable<GenericMedicineResponse[]> {
+    return this.http.get<GenericMedicineResponse[]>(this.apiUrl);
   }
 
-  getGenericMedicineById(id: number): Observable<GenericMedicineModel> {
-    return this.http.get<GenericMedicineModel>(`${this.apiUrl}/${id}`);
+  // Get generic medicine by technical database ID
+  getById(id: number): Observable<GenericMedicineResponse> {
+    return this.http.get<GenericMedicineResponse>(`${this.apiUrl}/${id}`);
   }
 
-  getByGenericName(genericName: string): Observable<GenericMedicineModel> {
-    return this.http.get<GenericMedicineModel>(`${this.apiUrl}/name/${genericName}`);
+  // Fetch generic medicine data by name lookup
+  getByName(genericName: string): Observable<GenericMedicineResponse> {
+    return this.http.get<GenericMedicineResponse>(`${this.apiUrl}/name/${genericName}`);
   }
 
-  createGenericMedicine(genericMedicine: GenericMedicineModel): Observable<GenericMedicineModel> {
-    return this.http.post<GenericMedicineModel>(this.apiUrl, genericMedicine);
+  // Create a new generic medicine registry
+  create(dto: GenericMedicineRequest): Observable<GenericMedicineResponse> {
+    return this.http.post<GenericMedicineResponse>(this.apiUrl, dto);
   }
 
-  updateGenericMedicine(id: number, genericMedicine: GenericMedicineModel): Observable<GenericMedicineModel> {
-    return this.http.put<GenericMedicineModel>(`${this.apiUrl}/${id}`, genericMedicine);
+  // Update existing generic records
+  update(id: number, dto: GenericMedicineRequest): Observable<GenericMedicineResponse> {
+    return this.http.put<GenericMedicineResponse>(`${this.apiUrl}/${id}`, dto);
   }
 
-  deleteGenericMedicine(id: number): Observable<string> {
+  // Remove generic record entirely by ID
+  delete(id: number): Observable<string> {
     return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }
 }

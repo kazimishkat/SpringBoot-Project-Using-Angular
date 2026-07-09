@@ -1,95 +1,69 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { MedicineModel } from '../models/medicine.model';
+import { MedicineModelRequest, MedicineModelResponse } from '../models/medicine.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MedicineService {
-
+  
+  // API endpoint for medicines
   private apiUrl = environment.apiUrl + 'medicines';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  // ==========================================
-  // Medicine CRUD & Dynamic Search Operations
-  // ==========================================
-
-  /**
-   * Fetch all medicine items across inventories.
-   * GET /api/v1/medicines
-   */
-  getAllMedicines(): Observable<MedicineModel[]> {
-    return this.http.get<MedicineModel[]>(this.apiUrl);
+  // Fetch all medicines
+  getAllMedicines(): Observable<MedicineModelResponse[]> {
+    return this.http.get<MedicineModelResponse[]>(this.apiUrl);
   }
 
-  /**
-   * Retrieve a core medicine dataset row matching its unique primary database identifier.
-   * GET /api/v1/medicines/{id}
-   */
-  getMedicineById(id: number): Observable<MedicineModel> {
-    return this.http.get<MedicineModel>(`${this.apiUrl}/${id}`);
+  // Get medicine by database ID
+  getMedicineById(id: number): Observable<MedicineModelResponse> {
+    return this.http.get<MedicineModelResponse>(`${this.apiUrl}/${id}`);
   }
 
-  /**
-   * Fetch a medicine structure profile using its tracking SKU string code.
-   * GET /api/v1/medicines/code/{medicineCode}
-   */
-  getMedicineByCode(medicineCode: string): Observable<MedicineModel> {
-    return this.http.get<MedicineModel>(`${this.apiUrl}/code/${medicineCode}`);
+  // Get medicine by its unique medicine code
+  getMedicineByCode(medicineCode: string): Observable<MedicineModelResponse> {
+    return this.http.get<MedicineModelResponse>(`${this.apiUrl}/code/${medicineCode}`);
   }
 
-  /**
-   * Search and filter medicines by custom brand name keywords.
-   * GET /api/v1/medicines/search?brandName={brandName}
-   */
-  searchMedicinesByBrandName(brandName: string): Observable<MedicineModel[]> {
-    return this.http.get<MedicineModel[]>(`${this.apiUrl}/search`, {
-      params: { brandName }
-    });
+  // Search medicines by brand name using query parameter
+  searchMedicinesByBrandName(brandName: string): Observable<MedicineModelResponse[]> {
+    const params = new HttpParams().set('brandName', brandName);
+    return this.http.get<MedicineModelResponse[]>(`${this.apiUrl}/search`, { params });
   }
 
-  /**
-   * Fetch active database medicines falling beneath specified safe reorder margins.
-   * GET /api/v1/medicines/low-stock
-   */
-  getLowStockMedicines(): Observable<MedicineModel[]> {
-    return this.http.get<MedicineModel[]>(`${this.apiUrl}/low-stock`);
+  // Get a list of low stock medicines
+  getLowStockMedicines(): Observable<MedicineModelResponse[]> {
+    return this.http.get<MedicineModelResponse[]>(`${this.apiUrl}/low-stock`);
   }
 
-  /**
-   * Pack request fields and binary multi-part graphics payloads into a multipart tracking request form context.
-   * POST /api/v1/medicines
-   */
-  createMedicine(medicine: MedicineModel, image?: File): Observable<MedicineModel> {
+  // Create new medicine using FormData for multipart request (JSON + File)
+  createMedicine(medicine: MedicineModelRequest, image?: File): Observable<MedicineModelResponse> {
     const formData = new FormData();
     formData.append('medicine', new Blob([JSON.stringify(medicine)], { type: 'application/json' }));
     if (image) {
       formData.append('image', image);
     }
-    return this.http.post<MedicineModel>(this.apiUrl, formData);
+    return this.http.post<MedicineModelResponse>(this.apiUrl, formData);
   }
 
-  /**
-   * Mutate properties dynamically for an existing record mapping including multipart files updates.
-   * PUT /api/v1/medicines/{id}
-   */
-  updateMedicine(id: number, medicine: MedicineModel, image?: File): Observable<MedicineModel> {
+  // Update existing medicine using FormData for multipart request
+  updateMedicine(id: number, medicine: MedicineModelRequest, image?: File): Observable<MedicineModelResponse> {
     const formData = new FormData();
     formData.append('medicine', new Blob([JSON.stringify(medicine)], { type: 'application/json' }));
     if (image) {
       formData.append('image', image);
     }
-    return this.http.put<MedicineModel>(`${this.apiUrl}/${id}`, formData);
+    return this.http.put<MedicineModelResponse>(
+      `${this.apiUrl}/${id}`, formData);
   }
 
-  /**
-   * Remove structural core profile information matching its primary row id.
-   * DELETE /api/v1/medicines/{id}
-   */
+  // Delete medicine by database ID
   deleteMedicine(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+    return this.http.delete(`${this.apiUrl}/${id}`, 
+      { responseType: 'text' });
   }
 }

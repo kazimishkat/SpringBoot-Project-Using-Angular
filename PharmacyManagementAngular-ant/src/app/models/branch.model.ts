@@ -8,13 +8,31 @@ export enum BranchType {
   SUB = 'SUB'
 }
 
-export interface BranchModel extends BaseEntity {
+export interface BranchRequest extends BaseEntity {
   branchCode: string;
   name: string;
-  branchType: BranchType | string; // Handled as string enum
+  branchType: BranchType;
+  address: Address;
   phone?: string;
   email?: string;
-  address?: Address;               // Embedded object mapping
   licenseNumber?: string;
   managerName?: string;
+}
+
+// ==========================================
+// Branch Response Model (Maps to ResponseDto)
+// ==========================================
+export interface BranchResponse extends BaseEntity {
+  id: number;
+  branchCode: string;
+  name: string;
+  branchType: BranchType;
+  address: Address;
+  phone: string;
+  email: string;
+  licenseNumber: string;
+  managerName: string;
+  isActive: boolean;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }

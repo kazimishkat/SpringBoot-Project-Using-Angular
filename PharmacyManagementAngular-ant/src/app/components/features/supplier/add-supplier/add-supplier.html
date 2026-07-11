@@ -1,1 +1,262 @@
-<p>add-supplier works!</p>
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Add Supplier</h3>
+      <p class="text-muted small mb-0">Register a new corporate vendor profile into the system directory.</p>
+    </div>
+    <div>
+      <a routerLink="/dashboard/suppliers" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm text-decoration-none">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to List</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Form Card -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-gradient-teal py-3 px-4 text-white">
+      <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+        <i class="bi bi-truck-flatbed"></i>
+        <span>Supplier Registry Form</span>
+      </h5>
+    </div>
+    <div class="card-body p-4">
+      <form #supplierForm="ngForm" (ngSubmit)="saveSupplier()" novalidate>
+        
+        <!-- SECTION 1: Primary Parameters -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Primary Information</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label for="supplierCode" class="form-label fw-semibold">Supplier Code <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-qr-code"></i></span>
+              <input type="text" 
+                     id="supplierCode" 
+                     name="supplierCode" 
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. SPL-001" 
+                     [(ngModel)]="supplier.supplierCode" 
+                     #supplierCodeInput="ngModel" 
+                     required 
+                     [class.is-invalid]="supplierCodeInput.invalid && (supplierCodeInput.dirty || supplierCodeInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Supplier code is required.
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <label for="name" class="form-label fw-semibold">Supplier Name <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-building"></i></span>
+              <input type="text" 
+                     id="name" 
+                     name="name" 
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. Acme Pharmaceuticals" 
+                     [(ngModel)]="supplier.name" 
+                     #nameInput="ngModel" 
+                     required 
+                     [class.is-invalid]="nameInput.invalid && (nameInput.dirty || nameInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Supplier name is required.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 2: Contact Details -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Contact Details</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label for="contactPerson" class="form-label fw-semibold">Contact Person</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-person"></i></span>
+              <input type="text" 
+                     id="contactPerson" 
+                     name="contactPerson" 
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. John Doe" 
+                     [(ngModel)]="supplier.contactPerson" />
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <label for="phone" class="form-label fw-semibold">Phone Number</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-telephone"></i></span>
+              <input type="text" 
+                     id="phone" 
+                     name="phone" 
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. +1 555-0199" 
+                     [(ngModel)]="supplier.phone" />
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label for="email" class="form-label fw-semibold">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+              <input type="email" 
+                     id="email" 
+                     name="email" 
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. contact@acme.com" 
+                     [(ngModel)]="supplier.email" 
+                     #emailInput="ngModel" 
+                     pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"
+                     [class.is-invalid]="emailInput.invalid && (emailInput.dirty || emailInput.touched)" />
+              <div class="invalid-feedback">
+                Please enter a valid email address.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 3: Compliance & Legal -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Compliance & Registration</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label for="tradeLicenseNo" class="form-label fw-semibold">Trade License Number</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-file-earmark-text"></i></span>
+              <input type="text" 
+                     id="tradeLicenseNo" 
+                     name="tradeLicenseNo" 
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. TL-98231-X" 
+                     [(ngModel)]="supplier.tradeLicenseNo" />
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <label for="taxId" class="form-label fw-semibold">Tax ID / TIN</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-hash"></i></span>
+              <input type="text" 
+                     id="taxId" 
+                     name="taxId" 
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. TAX-7728192" 
+                     [(ngModel)]="supplier.taxId" />
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 4: Address Details -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Address Profile</h6>
+        <div class="row g-3 mb-4" *ngIf="supplier.address">
+          <div class="col-md-6">
+            <label for="addressLine1" class="form-label fw-semibold">Address Line 1</label>
+            <input type="text" 
+                   id="addressLine1" 
+                   name="addressLine1" 
+                   class="form-control bg-light-focus" 
+                   placeholder="Street address, P.O. box, company name" 
+                   [(ngModel)]="supplier.address.addressLine1" />
+          </div>
+
+          <div class="col-md-6">
+            <label for="addressLine2" class="form-label fw-semibold">Address Line 2</label>
+            <input type="text" 
+                   id="addressLine2" 
+                   name="addressLine2" 
+                   class="form-control bg-light-focus" 
+                   placeholder="Apartment, suite, unit, building, floor, etc." 
+                   [(ngModel)]="supplier.address.addressLine2" />
+          </div>
+
+          <div class="col-md-3">
+            <label for="city" class="form-label fw-semibold">City</label>
+            <input type="text" 
+                   id="city" 
+                   name="city" 
+                   class="form-control bg-light-focus" 
+                   placeholder="City" 
+                   [(ngModel)]="supplier.address.city" />
+          </div>
+
+          <div class="col-md-3">
+            <label for="state" class="form-label fw-semibold">State / Province</label>
+            <input type="text" 
+                   id="state" 
+                   name="state" 
+                   class="form-control bg-light-focus" 
+                   placeholder="State / Province" 
+                   [(ngModel)]="supplier.address.state" />
+          </div>
+
+          <div class="col-md-3">
+            <label for="postalCode" class="form-label fw-semibold">Postal / ZIP Code</label>
+            <input type="text" 
+                   id="postalCode" 
+                   name="postalCode" 
+                   class="form-control bg-light-focus" 
+                   placeholder="ZIP Code" 
+                   [(ngModel)]="supplier.address.postalCode" />
+          </div>
+
+          <div class="col-md-3">
+            <label for="country" class="form-label fw-semibold">Country</label>
+            <input type="text" 
+                   id="country" 
+                   name="country" 
+                   class="form-control bg-light-focus" 
+                   placeholder="Country" 
+                   [(ngModel)]="supplier.address.country" />
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 5: Status Option -->
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="form-check form-switch custom-switch">
+            <input class="form-check-input" 
+                   type="checkbox" 
+                   role="switch" 
+                   id="isActive" 
+                   name="isActive" 
+                   [(ngModel)]="supplier.isActive" />
+            <label class="form-check-label fw-semibold cursor-pointer" for="isActive">Set Supplier Profile as Active</label>
+          </div>
+          <span class="badge" [ngClass]="supplier.isActive ? 'bg-mint text-dark-teal' : 'bg-secondary text-light'">
+            {{ supplier.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex align-items-center justify-content-end gap-3 mt-4 pt-3 border-top border-light">
+          <button type="button" 
+                  class="btn btn-outline-mint px-4 py-2.5 fw-bold" 
+                  (click)="resetForm()">
+            <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Form
+          </button>
+          
+          <button type="submit" 
+                  class="btn btn-mint-primary px-5 py-2.5 fw-bold shadow-sm d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill"></i>Save Supplier
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

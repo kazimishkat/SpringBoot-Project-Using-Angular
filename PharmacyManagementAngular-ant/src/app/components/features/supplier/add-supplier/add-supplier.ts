@@ -1,12 +1,13 @@
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { SupplierService } from '../../../../services/supplier.service';
 import { SupplierRequest } from '../../../../models/supplier.model';
 
 @Component({
   selector: 'app-add-supplier',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './add-supplier.html',
   styleUrl: './add-supplier.css',
 })

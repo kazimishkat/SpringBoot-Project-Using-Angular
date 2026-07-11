@@ -60,12 +60,37 @@
         </a>
       </li>
 
-      <!-- Suppliers Link -->
+      <!-- Supplier Link with Dropdown -->
       <li class="nav-item">
-        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/suppliers" routerLinkActive="active">
-          <i class="bi bi-truck-flatbed"></i>
-          <span>Suppliers</span>
-        </a>
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleSupplierDropdown()" style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-truck-flatbed"></i>
+            <span>Supplier</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isSupplierDropdownOpen" [class.bi-chevron-up]="isSupplierDropdownOpen" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isSupplierDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/suppliers/add" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add Supplier</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/suppliers/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>Supplier Details</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/suppliers" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>Supplier List</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
 
       <!-- Branches Link -->

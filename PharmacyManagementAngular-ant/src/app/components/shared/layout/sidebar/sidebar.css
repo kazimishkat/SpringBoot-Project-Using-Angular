@@ -97,9 +97,9 @@
 }
 
 .nav-link {
-  color: #475569; /* Slate-600 */
+  color: #0f172a; /* Deep Slate 900 for high visibility */
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600; /* Made slightly bolder */
   border-radius: 8px !important;
   padding: 0.75rem 1rem;
   transition: all 0.25s ease;
@@ -159,5 +159,43 @@
   background-color: #0fa895;
   border-color: #0fa895;
   box-shadow: 0 4px 10px rgba(15, 168, 149, 0.15);
+}
+
+/* Submenu Collapsible Styles */
+.submenu-collapse {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.submenu-collapse.show {
+  max-height: 300px;
+}
+
+.submenu-link {
+  font-size: 0.82rem !important;
+  color: #0f172a !important; /* Deep Slate 900 for high visibility */
+  padding: 0.5rem 0.75rem !important;
+  margin: 0 0.5rem 0 1rem !important;
+}
+
+.submenu-link i {
+  font-size: 0.95rem !important;
+  opacity: 0.7;
+}
+
+.submenu-link:hover {
+  color: #0fa895 !important;
+  background-color: #f0fdf4 !important;
+  transform: translateX(2px) !important;
+}
+
+.submenu-link.active {
+  color: #0a4f45 !important;
+  background-color: #ecfdf5 !important;
+  font-weight: 600 !important;
+  border-left: 3px solid #0fa895;
+  border-radius: 0 8px 8px 0 !important;
+  box-shadow: none !important;
 }
 

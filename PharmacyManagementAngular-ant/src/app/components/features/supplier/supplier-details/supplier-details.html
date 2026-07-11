@@ -1,0 +1,145 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Supplier Profiles</h3>
+      <p class="text-muted small mb-0">View all registered corporate vendors displayed as cards for optimal reading.</p>
+    </div>
+    <div>
+      <a routerLink="/dashboard/suppliers" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm text-decoration-none">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to Directory List</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Empty State if no suppliers exist -->
+  <div *ngIf="suppliersList.length === 0" class="card border-0 shadow-sm rounded-4 p-5 text-center mb-5">
+    <div class="empty-icon-wrapper mx-auto mb-3 bg-light-mint">
+      <i class="bi bi-truck-flatbed text-mint fs-1"></i>
+    </div>
+    <h5 class="fw-bold text-dark-teal">No Supplier Directory Loaded</h5>
+    <p class="text-muted mx-auto mb-4" style="max-width: 420px;">
+      Register a new corporate vendor profile in the directory to list and manage profiles as cards.
+    </p>
+    <a routerLink="/dashboard/suppliers/add" class="btn btn-mint-primary px-4 py-2.5 fw-bold text-decoration-none">
+      <i class="bi bi-plus-circle me-2"></i>Add First Supplier
+    </a>
+  </div>
+
+  <!-- All Suppliers Loaded & Displayed as Cards Grid -->
+  <div *ngIf="suppliersList.length > 0" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5">
+    <div class="col" *ngFor="let supplier of suppliersList">
+      
+      <!-- Individual Supplier Details Card -->
+      <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden supplier-details-card position-relative"
+           [class.highlighted-card]="supplier.id === supplierId">
+        
+        <!-- Selection Highlight Pill Badge -->
+        <span class="position-absolute top-0 end-0 m-3 badge bg-mint text-dark-teal px-2.5 py-1.5 rounded-pill shadow-sm" *ngIf="supplier.id === supplierId">
+          <i class="bi bi-star-fill me-1"></i>Selected
+        </span>
+
+        <!-- Card Header (Brand / Code) -->
+        <div class="card-header bg-gradient-teal py-3.5 px-4 text-white">
+          <div class="d-flex align-items-center gap-3">
+            <div class="vendor-avatar shadow-sm small-avatar">
+              <i class="bi bi-building-fill fs-4"></i>
+            </div>
+            <div class="overflow-hidden">
+              <h5 class="fw-bold mb-0 text-white text-truncate" [title]="supplier.name">{{ supplier.name }}</h5>
+              <div class="d-flex align-items-center gap-2 mt-1">
+                <span class="badge bg-white-opacity text-white px-2 py-0.5 rounded text-uppercase small-code">
+                  {{ supplier.supplierCode }}
+                </span>
+                <span class="badge px-2 py-0.5" [ngClass]="supplier.isActive ? 'bg-mint text-dark-teal' : 'bg-secondary text-light'">
+                  {{ supplier.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body p-4 d-flex flex-column justify-content-between">
+          <div class="d-flex flex-column gap-3 mb-4">
+            
+            <!-- Contact representative section -->
+            <div class="detail-block">
+              <span class="block-section-label text-teal fw-bold text-uppercase d-block mb-1.5">
+                <i class="bi bi-person-rolodex me-1"></i>Representative
+              </span>
+              <div class="info-row">
+                <span class="text-muted small">Name:</span> <strong class="text-dark ms-1">{{ supplier.contactPerson || '—' }}</strong>
+              </div>
+              <div class="info-row" *ngIf="supplier.phone">
+                <span class="text-muted small">Phone:</span> <a [href]="'tel:' + supplier.phone" class="text-decoration-none text-dark hover-teal fw-semibold ms-1">{{ supplier.phone }}</a>
+              </div>
+              <div class="info-row" *ngIf="supplier.email">
+                <span class="text-muted small">Email:</span> <a [href]="'mailto:' + supplier.email" class="text-decoration-none text-teal fw-semibold ms-1">{{ supplier.email }}</a>
+              </div>
+            </div>
+
+            <!-- Compliance Section -->
+            <div class="detail-block" *ngIf="supplier.tradeLicenseNo || supplier.taxId">
+              <span class="block-section-label text-teal fw-bold text-uppercase d-block mb-1.5">
+                <i class="bi bi-shield-check me-1"></i>Compliance
+              </span>
+              <div class="info-row" *ngIf="supplier.tradeLicenseNo">
+                <span class="text-muted small">License:</span> <strong class="text-dark ms-1">{{ supplier.tradeLicenseNo }}</strong>
+              </div>
+              <div class="info-row" *ngIf="supplier.taxId">
+                <span class="text-muted small">Tax ID / TIN:</span> <strong class="text-dark ms-1">{{ supplier.taxId }}</strong>
+              </div>
+            </div>
+
+            <!-- Office Address Section -->
+            <div class="detail-block" *ngIf="supplier.address">
+              <span class="block-section-label text-teal fw-bold text-uppercase d-block mb-1.5">
+                <i class="bi bi-geo-alt me-1"></i>Office Address
+              </span>
+              <div class="address-paragraph text-dark small-value lh-sm">
+                {{ supplier.address.addressLine1 }}<span *ngIf="supplier.address.addressLine2">, {{ supplier.address.addressLine2 }}</span><br>
+                {{ supplier.address.city }}<span *ngIf="supplier.address.state">, {{ supplier.address.state }}</span> <span *ngIf="supplier.address.postalCode">{{ supplier.address.postalCode }}</span><br>
+                <strong class="text-dark-teal small" *ngIf="supplier.address.country">{{ supplier.address.country }}</strong>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Card Actions Footer -->
+        <div class="card-footer bg-light px-4 py-3 d-flex align-items-center justify-content-between border-top">
+          <!-- Selection clicker -->
+          <button (click)="fetchTargetProfileDetails(supplier.id)" 
+                  class="btn btn-sm btn-link text-teal text-decoration-none fw-semibold p-0 d-flex align-items-center gap-1"
+                  *ngIf="supplier.id !== supplierId">
+            <i class="bi bi-check-circle"></i>Select Profile
+          </button>
+          <span class="text-mint fw-bold small d-flex align-items-center gap-1" *ngIf="supplier.id === supplierId">
+            <i class="bi bi-check-circle-fill"></i>Selected
+          </span>
+
+          <div class="d-flex align-items-center gap-2">
+            <a [routerLink]="['/dashboard/suppliers/edit', supplier.id]" 
+               class="btn btn-sm btn-action-edit border" 
+               title="Edit Profile">
+              <i class="bi bi-pencil-square"></i> Edit
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>

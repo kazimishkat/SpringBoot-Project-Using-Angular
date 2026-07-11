@@ -1,0 +1,167 @@
+/* Supplier Details Redesigned Card Grid UI CSS Styles */
+.bg-gradient-teal {
+  background: linear-gradient(135deg, #0fa895 0%, #0a4f45 100%);
+}
+
+.text-dark-teal {
+  color: #0a4f45;
+}
+
+.text-teal {
+  color: #0fa895;
+}
+
+.text-mint {
+  color: #10b981;
+}
+
+.bg-mint {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+}
+
+.bg-white-opacity {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(4px);
+}
+
+.border-light-teal {
+  border-color: rgba(15, 168, 149, 0.1) !important;
+}
+
+.letter-spacing-1 {
+  letter-spacing: 1px;
+  font-size: 0.7rem;
+}
+
+.vendor-avatar.small-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.btn-mint-primary {
+  background-color: #0fa895;
+  color: #ffffff;
+  border: 1px solid #0fa895;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-mint-primary:hover {
+  background-color: #0a4f45;
+  border-color: #0a4f45;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 168, 149, 0.25);
+}
+
+/* Individual Supplier Card Layouts */
+.supplier-details-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e2e8f0;
+}
+
+.supplier-details-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06) !important;
+  border-color: rgba(15, 168, 149, 0.2);
+}
+
+/* Highlight Selected Card */
+.supplier-details-card.highlighted-card {
+  border: 2px solid #0fa895;
+  box-shadow: 0 8px 24px rgba(15, 168, 149, 0.1) !important;
+  background-color: #fafdfd;
+}
+
+/* Sub-block components */
+.detail-block {
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.detail-block:last-child {
+  border-bottom: none;
+}
+
+.block-section-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+}
+
+.info-row {
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+}
+
+.address-paragraph {
+  font-size: 0.82rem;
+  color: #334155;
+}
+
+.small-code {
+  font-size: 0.65rem;
+}
+
+.hover-teal:hover {
+  color: #0fa895 !important;
+}
+
+/* Action button edit styling */
+.btn-action-edit {
+  background-color: #ffffff;
+  color: #f59e0b; /* Amber */
+  border-color: rgba(245, 158, 11, 0.25) !important;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.25s ease;
+}
+
+.btn-action-edit:hover {
+  background-color: #fffbeb;
+  color: #d97706;
+  border-color: #f59e0b !important;
+  transform: translateY(-1px);
+}
+
+/* Warning / Empty Area Styling */
+.bg-light-mint {
+  background-color: #f0fdf4 !important;
+}
+
+.empty-icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #f0fdf4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -8,5 +8,11 @@ import { CommonModule } from '@angular/common';
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
-export class Sidebar {}
+export class Sidebar {
+  isSupplierDropdownOpen = false;
+
+  toggleSupplierDropdown(): void {
+    this.isSupplierDropdownOpen = !this.isSupplierDropdownOpen;
+  }
+}
 

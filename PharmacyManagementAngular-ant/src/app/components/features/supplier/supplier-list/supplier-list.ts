@@ -1,12 +1,13 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { SupplierService } from '../../../../services/supplier.service';
 import { SupplierResponse } from '../../../../models/supplier.model';
 
 @Component({
   selector: 'app-supplier-list',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './supplier-list.html',
   styleUrl: './supplier-list.css'
 })
@@ -16,7 +17,7 @@ export class SupplierListComponent implements OnInit {
   // VIEW GRID & FILTER STATE
   // =========================
   suppliers: SupplierResponse[] = [];
-  searchCodeQuery: string = '';
+  searchQuery: string = ''; // ভ্যারিয়েবলের নাম আরও জেনারেক (Query) করা হলো
   errorMessage: string = '';
 
   constructor(
@@ -48,20 +49,46 @@ export class SupplierListComponent implements OnInit {
   }
 
   // =====================================================
-  // FILTER STRATEGY
+  // FILTER STRATEGY (DYNAMIC SEARCH BY CODE OR NAME)
   // =====================================================
   /**
-   * Trigger unique profile routing match using code lookup strings.
+   * Trigger profile lookup matching either specific string codes or corporate name keywords.
    */
-  onSearchByCode(): void {
-    if (!this.searchCodeQuery.trim()) {
+  onSearch(): void {
+    const query = this.searchQuery.trim();
+
+    // ১. সার্চ বক্স খালি থাকলে সব সাপ্লায়ার রি-লোড হবে
+    if (!query) {
       this.loadAllSuppliers();
       return;
     }
 
-    this.supplierService.getSupplierByCode(this.searchCodeQuery.trim()).subscribe({
+    this.errorMessage = '';
+
+    // ২. যদি সার্চ কিউরি নির্দিষ্ট কোড ফরম্যাট ম্যাচ করে (যেমন সাধারণত MED- বা SUP- দিয়ে শুরু হয়)
+    // অথবা আপনার ব্যাকএন্ডের রুলস অনুযায়ী চেক করতে চান, তাহলে কোড দিয়ে সার্চ করবে:
+    if (query.toUpperCase().startsWith('SUP') || query.length <= 6) { 
+      this.supplierService.getSupplierByCode(query).subscribe({
+        next: (data) => {
+          this.suppliers = data ? [data] : [];
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          // যদি কোড দিয়ে না মিলে, তবে ব্যাকআপ হিসেবে নাম দিয়ে সার্চ ট্রাই করবে
+          this.searchByNameFallback(query);
+        }
+      });
+    } else {
+      // ৩. অন্যথায় সরাসরি নাম দিয়ে সার্চ করার এপিআই কল করবে
+      this.searchByNameFallback(query);
+    }
+  }
+
+  /** Helper method to execute name based registry querying */
+  private searchByNameFallback(query: string): void {
+    this.supplierService.searchSuppliersByName(query).subscribe({
       next: (data) => {
-        this.suppliers = data ? [data] : [];
+        this.suppliers = data || [];
         this.cdr.markForCheck();
       },
       error: (err) => {

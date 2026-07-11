@@ -1,13 +1,10 @@
 import { Routes } from '@angular/router';
 import { Home } from './components/shared/layout/home/home';
-import { Supplier } from './components/features/supplier/supplier';
 import { Dashboard } from './components/shared/layout/dashboard/dashboard';
-import { Branch } from './components/features/branch-management/branch/branch';
-import { BranchInventory } from './components/features/branch-management/branch-inventory/branch-inventory';
-import { Medicine } from './components/features/medicine-catalog/medicine/medicine';
-import { MedicineCategory } from './components/features/medicine-catalog/medicine-category/medicine-category';
-import { GenericMedicine } from './components/features/medicine-catalog/generic-medicine/generic-medicine';
-import { MedicineBatch } from './components/features/medicine-catalog/medicine-batch/medicine-batch';
+import { SupplierListComponent } from './components/features/supplier/supplier-list/supplier-list';
+import { AddSupplier } from './components/features/supplier/add-supplier/add-supplier';
+import { SupplierDetails } from './components/features/supplier/supplier-details/supplier-details';
+
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -15,14 +12,11 @@ export const routes: Routes = [
     path: 'dashboard',
     component: Dashboard,
     children: [
-      { path: '', redirectTo: 'suppliers', pathMatch: 'full' },
-      { path: 'suppliers', component: Supplier },
-      { path: 'branches', component: Branch },
-      { path: 'branch-inventories', component: BranchInventory },
-      { path: 'medicines', component: Medicine },
-      { path: 'medicine-categories', component: MedicineCategory },
-      { path: 'generic-medicines', component: GenericMedicine },
-      { path: 'medicine-batches', component: MedicineBatch }
+      { path: 'suppliers', component: SupplierListComponent },
+      { path: 'suppliers/add', component: AddSupplier },
+      { path: 'suppliers/details', component: SupplierDetails },
+      { path: 'suppliers/details/:id', component: SupplierDetails },
+   
     ]
   }
 ];

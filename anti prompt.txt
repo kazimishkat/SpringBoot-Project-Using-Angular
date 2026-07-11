@@ -10,3 +10,13 @@ all in my page,its not adjust in my screen,you
 added scroll bar,i dont want scroll bar for seeing 
 all data,so adjust all generic medicine database data in my screen,if need then small font or decrease margin or padding for thats why all data adjust in screen,so do it for generic medicine and for other menues also,work 
 only under components and if need then dashborad section,keep my code clean
+
+3.generate add-supplier,supplier-details,supplier-edit,
+supplier-list UI inside dashborad,in sidebar section 
+menu named supplier,by click this showing drop down menu 
+insider supplier these names add-supplier,supplier-details,
+supplier-edit,supplier-list,add-supplier,supplier-details,supplier-edit,
+supplier-list code write only their html and css under component folder,
+also work only sidebar for add menues,dont go and change any other folder 
+or any others code in this project,dont add any dummy data for showing 
+data base section,i want to input these data,keep my code clean

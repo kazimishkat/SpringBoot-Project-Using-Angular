@@ -1,4 +1,4 @@
-/* Branch List CSS Stylesheet */
+/* Medicine Category List Stylesheet */
 
 .text-dark-teal {
   color: #0a4f45;
@@ -65,34 +65,40 @@
 }
 
 /* Custom Table Styles */
-.custom-branch-table {
+.custom-category-table {
   border-collapse: separate;
   border-spacing: 0;
   width: 100%;
 }
 
-.custom-branch-table thead th {
+.custom-category-table thead th {
   font-size: 0.75rem;
   letter-spacing: 0.8px;
   padding: 1rem 0.75rem;
   border-bottom: 2px solid rgba(15, 168, 149, 0.08);
 }
 
-.custom-branch-table tbody tr {
+.custom-category-table tbody tr {
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.custom-branch-table tbody tr:hover {
+.custom-category-table tbody tr:hover {
   background-color: rgba(15, 168, 149, 0.02) !important;
 }
 
-.custom-branch-table td {
+.custom-category-table td {
   padding: 1.1rem 0.75rem;
   border-bottom: 1px solid rgba(15, 168, 149, 0.05);
 }
 
-.branch-row:last-child td {
+.category-row:last-child td {
   border-bottom: none;
+}
+
+/* Switch styling */
+.bg-teal-switch:checked {
+  background-color: #0fa895 !important;
+  border-color: #0fa895 !important;
 }
 
 /* Animations */

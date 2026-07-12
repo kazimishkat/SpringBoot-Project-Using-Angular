@@ -36,6 +36,15 @@ public class SupplierController {
                 : ResponseEntity.ok(list);
     }
 
+    // Added: GET /api/suppliers/search?name=Square
+    @GetMapping("/search")
+    public ResponseEntity<List<SupplierResponseDto>> searchByName(@RequestParam String name) {
+        List<SupplierResponseDto> list = supplierService.searchSuppliersByName(name);
+        return list.isEmpty()
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(list);
+    }
+
     // GET /api/suppliers/1
     @GetMapping("/{id}")
     public ResponseEntity<SupplierResponseDto> getSupplierById(@PathVariable Long id) {

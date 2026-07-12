@@ -8,13 +8,13 @@
     <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
   </div>
 
-  <!-- STATE 1: Browse Suppliers as Cards (Default Grid View) -->
-  <div *ngIf="!supplierDetails">
+  <!-- STATE 1: Browse Branches as Cards (Default Grid View) -->
+  <div *ngIf="!branchDetails">
     <!-- Header Controls -->
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
       <div>
-        <h3 class="fw-bold text-dark-teal mb-1">Supplier Profiles</h3>
-        <p class="text-muted small mb-0">Browse details and compliance files for all registered corporate vendors.</p>
+        <h3 class="fw-bold text-dark-teal mb-1">Branch Profiles</h3>
+        <p class="text-muted small mb-0">Browse contact registry, staffing layouts, and compliance license data for all locations.</p>
       </div>
       <div class="d-flex gap-2">
         <!-- Search Input in Header -->
@@ -26,37 +26,40 @@
                  class="form-control bg-light-focus border-start-0" 
                  placeholder="Search by code or name..." />
         </div>
-        <a href="/dashboard/suppliers/add" class="btn btn-mint-primary fw-semibold text-decoration-none d-flex align-items-center gap-2 shadow-sm">
+        <a href="/dashboard/branches/add" class="btn btn-mint-primary fw-semibold text-decoration-none d-flex align-items-center gap-2 shadow-sm">
           <i class="bi bi-plus-circle-fill"></i>
-          <span>Add Supplier</span>
+          <span>Add Branch</span>
         </a>
       </div>
     </div>
 
-    <!-- Suppliers Card Grid -->
-    <div class="row g-3" *ngIf="suppliersList.length > 0; else emptyRegistry">
-      <ng-container *ngFor="let item of suppliersList">
-        <!-- Template Filter matching name or supplierCode -->
+    <!-- Branches Card Grid -->
+    <div class="row g-3" *ngIf="branchList.length > 0; else emptyRegistry">
+      <ng-container *ngFor="let item of branchList">
+        <!-- Template Filter matching name or branchCode -->
         <div class="col-lg-4 col-md-6 col-sm-12 animate-fade-in" 
-             *ngIf="!filterInput.value || item.name.toLowerCase().includes(filterInput.value.toLowerCase()) || item.supplierCode.toLowerCase().includes(filterInput.value.toLowerCase())">
-          <div class="card border-0 shadow-sm rounded-4 h-100 supplier-overview-card d-flex flex-column">
+             *ngIf="!filterInput.value || item.name.toLowerCase().includes(filterInput.value.toLowerCase()) || item.branchCode.toLowerCase().includes(filterInput.value.toLowerCase())">
+          <div class="card border-0 shadow-sm rounded-4 h-100 branch-overview-card d-flex flex-column">
             <!-- Card Body: Basic Info -->
             <div class="card-body p-4 flex-grow-1">
               <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="supplier-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-4 rounded-circle flex-shrink-0">
+                <div class="branch-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-4 rounded-circle flex-shrink-0">
                   {{ item.name.charAt(0).toUpperCase() }}
                 </div>
                 <div class="overflow-hidden">
                   <h5 class="mb-0 fw-bold text-dark-teal text-truncate" title="{{ item.name }}">{{ item.name }}</h5>
-                  <span class="badge bg-teal-light text-teal fw-bold font-monospace mt-1">{{ item.supplierCode }}</span>
+                  <div class="d-flex align-items-center gap-1.5 mt-1 flex-wrap">
+                    <span class="badge bg-teal-light text-teal fw-bold font-monospace text-xs">{{ item.branchCode }}</span>
+                    <span class="badge text-xs" [ngClass]="item.branchType === 'MAIN' ? 'bg-mint text-dark-teal' : 'bg-light text-dark'">{{ item.branchType }}</span>
+                  </div>
                 </div>
               </div>
 
               <!-- Quick Info Details -->
-              <div class="supplier-quick-details small mt-3 text-muted">
+              <div class="branch-quick-details small mt-3 text-muted">
                 <div class="d-flex align-items-center gap-2 mb-2">
                   <i class="bi bi-person text-teal"></i>
-                  <span class="text-dark fw-medium text-truncate">{{ item.contactPerson || 'N/A' }}</span>
+                  <span class="text-dark fw-medium text-truncate">Mgr: {{ item.managerName || 'N/A' }}</span>
                 </div>
                 <div class="d-flex align-items-center gap-2 mb-2">
                   <i class="bi bi-telephone text-teal"></i>
@@ -82,15 +85,15 @@
                 {{ item.isActive ? 'Active' : 'Inactive' }}
               </span>
               <div class="d-flex gap-2">
-                <button (click)="fetchTargetProfileDetails(item.id)" 
+                <button (click)="fetchGranularDetailsPanel(item.id)" 
                         class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1.5 px-2.5 py-1.5 font-size-xs fw-semibold" 
                         title="View Full Profile">
                   <i class="bi bi-eye-fill"></i>
                   <span>Details</span>
                 </button>
-                <button (click)="deleteSupplier(item.id)" 
+                <button (click)="deleteBranch(item.id)" 
                         class="btn btn-sm btn-outline-danger d-inline-flex align-items-center p-2"
-                        title="Delete Supplier">
+                        title="Delete Branch">
                   <i class="bi bi-trash-fill"></i>
                 </button>
               </div>
@@ -104,47 +107,48 @@
     <ng-template #emptyRegistry>
       <div class="card border-0 shadow-sm rounded-4 text-center py-5 px-4">
         <div class="empty-state-icon mb-3">
-          <i class="bi bi-truck text-muted-teal display-4"></i>
+          <i class="bi bi-shop-window text-muted-teal display-4"></i>
         </div>
-        <h5 class="fw-bold text-dark-teal mb-2">No Suppliers Registered</h5>
+        <h5 class="fw-bold text-dark-teal mb-2">No Branches Registered</h5>
         <p class="text-muted small mx-auto mb-4" style="max-width: 400px;">
-          There are no corporate vendors saved in the database. Please add a new supplier profile to begin.
+          There are no store branches registered in the system. Add a new branch profile to get started.
         </p>
-        <a href="/dashboard/suppliers/add" class="btn btn-mint-primary px-4 fw-bold text-decoration-none">
-          <i class="bi bi-plus-circle-fill me-2"></i>Register New Supplier
+        <a href="/dashboard/branches/add" class="btn btn-mint-primary px-4 fw-bold text-decoration-none">
+          <i class="bi bi-plus-circle-fill me-2"></i>Register New Branch
         </a>
       </div>
     </ng-template>
   </div>
 
-  <!-- STATE 2: Read-Only Detail Card View (Single Selected Supplier) -->
-  <div class="animate-fade-in" *ngIf="supplierDetails && !isEditMode">
+  <!-- STATE 2: Read-Only Detail Card View (Single Selected Branch) -->
+  <div class="animate-fade-in" *ngIf="branchDetails && !isEditMode">
     <!-- Header Controls -->
     <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
       <div>
-        <h3 class="fw-bold text-dark-teal mb-1">Supplier Profile Card</h3>
-        <p class="text-muted small mb-0">Granular compliance records, address details, and contact directory.</p>
+        <h3 class="fw-bold text-dark-teal mb-1">Branch Profile Card</h3>
+        <p class="text-muted small mb-0">Granular compliance records, manager information, and branch address details.</p>
       </div>
-      <button (click)="supplierDetails = null" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+      <button (click)="branchDetails = null" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
         <i class="bi bi-arrow-left"></i>
         <span>Back to Cards</span>
       </button>
     </div>
 
     <!-- Hero Card header details -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 supplier-hero-card">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 branch-hero-card">
       <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div class="d-flex align-items-center gap-3">
-          <div class="supplier-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-3 rounded-circle">
-            {{ supplierDetails.name.charAt(0).toUpperCase() }}
+          <div class="branch-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-3 rounded-circle">
+            {{ branchDetails.name.charAt(0).toUpperCase() }}
           </div>
           <div>
-            <h4 class="mb-1 fw-bold text-dark-teal">{{ supplierDetails.name }}</h4>
+            <h4 class="mb-1 fw-bold text-dark-teal">{{ branchDetails.name }}</h4>
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              <span class="badge bg-teal-light text-teal fw-bold font-monospace px-2.5 py-1 text-xs">{{ supplierDetails.supplierCode }}</span>
+              <span class="badge bg-teal-light text-teal fw-bold font-monospace px-2.5 py-1 text-xs">{{ branchDetails.branchCode }}</span>
+              <span class="badge text-xs" [ngClass]="branchDetails.branchType === 'MAIN' ? 'bg-mint text-dark-teal' : 'bg-light text-dark'">{{ branchDetails.branchType }}</span>
               <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs animate-pulse" 
-                    [ngClass]="supplierDetails.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
-                {{ supplierDetails.isActive ? 'Active' : 'Inactive' }}
+                    [ngClass]="branchDetails.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                {{ branchDetails.isActive ? 'Active' : 'Inactive' }}
               </span>
             </div>
           </div>
@@ -154,7 +158,7 @@
             <i class="bi bi-pencil-square"></i>
             <span>Edit Profile</span>
           </button>
-          <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm" (click)="deleteSupplier(supplierDetails.id)">
+          <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm" (click)="deleteBranch(branchDetails.id)">
             <i class="bi bi-trash-fill"></i>
             <span>Delete</span>
           </button>
@@ -170,22 +174,22 @@
           <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
             <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
               <i class="bi bi-person-lines-fill"></i>
-              <span>Primary Contact</span>
+              <span>Management & Contact</span>
             </h6>
           </div>
           <div class="card-body px-4 py-3">
             <div class="mb-3">
-              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Contact Name</span>
-              <span class="text-dark fw-bold">{{ supplierDetails.contactPerson || 'N/A' }}</span>
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Branch Manager</span>
+              <span class="text-dark fw-bold">{{ branchDetails.managerName || 'N/A' }}</span>
             </div>
             <div class="mb-3">
               <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Phone Number</span>
-              <span class="text-dark fw-bold font-monospace">{{ supplierDetails.phone || 'N/A' }}</span>
+              <span class="text-dark fw-bold font-monospace">{{ branchDetails.phone || 'N/A' }}</span>
             </div>
             <div>
               <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Email Address</span>
-              <a href="mailto:{{ supplierDetails.email }}" class="text-teal fw-bold text-decoration-none text-truncate d-block" *ngIf="supplierDetails.email; else noMail">
-                {{ supplierDetails.email }}
+              <a href="mailto:{{ branchDetails.email }}" class="text-teal fw-bold text-decoration-none text-truncate d-block" *ngIf="branchDetails.email; else noMail">
+                {{ branchDetails.email }}
               </a>
               <ng-template #noMail><span class="text-muted fw-semibold">N/A</span></ng-template>
             </div>
@@ -193,7 +197,7 @@
         </div>
       </div>
 
-      <!-- Compliance details Card -->
+      <!-- Compliance Details Card -->
       <div class="col-md-6">
         <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
           <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
@@ -203,13 +207,9 @@
             </h6>
           </div>
           <div class="card-body px-4 py-3">
-            <div class="mb-3">
-              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Trade License No</span>
-              <span class="text-dark fw-bold font-monospace">{{ supplierDetails.tradeLicenseNo || 'N/A' }}</span>
-            </div>
             <div>
-              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Tax ID / TIN No</span>
-              <span class="text-dark fw-bold font-monospace">{{ supplierDetails.taxId || 'N/A' }}</span>
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Pharmacy License No</span>
+              <span class="text-dark fw-bold font-monospace">{{ branchDetails.licenseNumber || 'N/A' }}</span>
             </div>
           </div>
         </div>
@@ -224,51 +224,51 @@
               <span>Address Details</span>
             </h6>
           </div>
-          <div class="card-body px-4 py-3" *ngIf="supplierDetails.address; else noAddress">
+          <div class="card-body px-4 py-3" *ngIf="branchDetails.address; else noAddress">
             <div class="row g-3">
               <div class="col-md-6">
                 <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Address Line 1</span>
-                <span class="text-dark fw-semibold">{{ supplierDetails.address.addressLine1 || 'N/A' }}</span>
+                <span class="text-dark fw-semibold">{{ branchDetails.address.addressLine1 || 'N/A' }}</span>
               </div>
               <div class="col-md-6">
                 <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Address Line 2</span>
-                <span class="text-dark fw-semibold">{{ supplierDetails.address.addressLine2 || 'N/A' }}</span>
+                <span class="text-dark fw-semibold">{{ branchDetails.address.addressLine2 || 'N/A' }}</span>
               </div>
               <div class="col-sm-3 col-6">
                 <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">City</span>
-                <span class="text-dark fw-semibold">{{ supplierDetails.address.city || 'N/A' }}</span>
+                <span class="text-dark fw-semibold">{{ branchDetails.address.city || 'N/A' }}</span>
               </div>
               <div class="col-sm-3 col-6">
                 <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">State / Province</span>
-                <span class="text-dark fw-semibold">{{ supplierDetails.address.state || 'N/A' }}</span>
+                <span class="text-dark fw-semibold">{{ branchDetails.address.state || 'N/A' }}</span>
               </div>
               <div class="col-sm-3 col-6">
                 <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Postal Code</span>
-                <span class="text-dark fw-semibold font-monospace">{{ supplierDetails.address.postalCode || 'N/A' }}</span>
+                <span class="text-dark fw-semibold font-monospace">{{ branchDetails.address.postalCode || 'N/A' }}</span>
               </div>
               <div class="col-sm-3 col-6">
                 <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Country</span>
-                <span class="text-dark fw-semibold">{{ supplierDetails.address.country || 'N/A' }}</span>
+                <span class="text-dark fw-semibold">{{ branchDetails.address.country || 'N/A' }}</span>
               </div>
             </div>
           </div>
           <ng-template #noAddress>
-            <div class="card-body px-4 py-3 text-muted">No address details mapped to this vendor.</div>
+            <div class="card-body px-4 py-3 text-muted">No address details mapped to this branch.</div>
           </ng-template>
         </div>
       </div>
 
       <!-- Registry Metadata logs Card -->
-      <div class="col-12" *ngIf="supplierDetails.createdAt">
+      <div class="col-12" *ngIf="branchDetails.createdAt">
         <div class="card border-0 shadow-sm rounded-4 detail-info-card py-2">
           <div class="card-body px-4 py-2 d-flex align-items-center justify-content-between flex-wrap gap-2 text-muted small">
             <div>
               <i class="bi bi-clock-history me-1.5"></i>
-              <span>Registered On: <strong>{{ supplierDetails.createdAt | date:'medium' }}</strong></span>
+              <span>Registered On: <strong>{{ branchDetails.createdAt | date:'medium' }}</strong></span>
             </div>
-            <div *ngIf="supplierDetails.updatedAt">
+            <div *ngIf="branchDetails.updatedAt">
               <i class="bi bi-pencil-square me-1.5"></i>
-              <span>Last Modified: <strong>{{ supplierDetails.updatedAt | date:'medium' }}</strong></span>
+              <span>Last Modified: <strong>{{ branchDetails.updatedAt | date:'medium' }}</strong></span>
             </div>
           </div>
         </div>
@@ -277,40 +277,40 @@
   </div>
 
   <!-- STATE 3: Interactive Edit Form Mode -->
-  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 animate-fade-in" *ngIf="supplierDetails && isEditMode">
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 animate-fade-in" *ngIf="branchDetails && isEditMode">
     <div class="card-header bg-gradient-teal py-3 px-4 text-white d-flex align-items-center justify-content-between">
       <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
         <i class="bi bi-pencil-square"></i>
-        <span>Modify Supplier Registry</span>
+        <span>Modify Branch Registry</span>
       </h5>
-      <span class="badge bg-white text-teal font-monospace px-3 py-1.5 fs-6">{{ editData.supplierCode }}</span>
+      <span class="badge bg-white text-teal font-monospace px-3 py-1.5 fs-6">{{ editData.branchCode }}</span>
     </div>
 
     <div class="card-body p-4">
-      <form #supplierForm="ngForm" (ngSubmit)="updateSupplier()" novalidate>
-        <!-- SECTION 1: Primary Parameters -->
+      <form #branchForm="ngForm" (ngSubmit)="updateBranch()" novalidate>
+        <!-- SECTION 1: Primary Information -->
         <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Primary Information</h6>
         <div class="row g-3 mb-4">
-          <div class="col-md-6">
-            <label for="supplierCode" class="form-label fw-semibold">Supplier Code <span class="text-danger">*</span></label>
+          <div class="col-md-4">
+            <label for="branchCode" class="form-label fw-semibold">Branch Code <span class="text-danger">*</span></label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-qr-code"></i></span>
               <input type="text" 
-                     id="supplierCode" 
-                     name="supplierCode" 
+                     id="branchCode" 
+                     name="branchCode" 
                      class="form-control bg-light-focus border-start-0" 
-                     [(ngModel)]="editData.supplierCode" 
-                     #supplierCodeInput="ngModel" 
+                     [(ngModel)]="editData.branchCode" 
+                     #branchCodeInput="ngModel" 
                      required 
-                     [class.is-invalid]="supplierCodeInput.invalid && (supplierCodeInput.dirty || supplierCodeInput.touched || submitted)" />
+                     [class.is-invalid]="branchCodeInput.invalid && (branchCodeInput.dirty || branchCodeInput.touched || submitted)" />
               <div class="invalid-feedback">
-                Supplier code is required.
+                Branch code is required.
               </div>
             </div>
           </div>
           
-          <div class="col-md-6">
-            <label for="name" class="form-label fw-semibold">Supplier Name <span class="text-danger">*</span></label>
+          <div class="col-md-4">
+            <label for="name" class="form-label fw-semibold">Branch Name <span class="text-danger">*</span></label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-building"></i></span>
               <input type="text" 
@@ -322,7 +322,26 @@
                      required 
                      [class.is-invalid]="nameInput.invalid && (nameInput.dirty || nameInput.touched || submitted)" />
               <div class="invalid-feedback">
-                Supplier name is required.
+                Branch name is required.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label for="branchType" class="form-label fw-semibold">Branch Type <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-building"></i></span>
+              <select id="branchType" 
+                      name="branchType" 
+                      class="form-select bg-light-focus border-start-0" 
+                      [(ngModel)]="editData.branchType" 
+                      #branchTypeInput="ngModel" 
+                      required 
+                      [class.is-invalid]="branchTypeInput.invalid && (branchTypeInput.dirty || branchTypeInput.touched || submitted)">
+                <option *ngFor="let type of branchTypes" [value]="type">{{ type }}</option>
+              </select>
+              <div class="invalid-feedback">
+                Branch type is required.
               </div>
             </div>
           </div>
@@ -330,22 +349,40 @@
 
         <hr class="border-light-teal my-4">
 
-        <!-- SECTION 2: Contact Details -->
-        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Contact Details</h6>
+        <!-- SECTION 2: Management & Compliance -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Management & Compliance</h6>
         <div class="row g-3 mb-4">
-          <div class="col-md-4">
-            <label for="contactPerson" class="form-label fw-semibold">Contact Person</label>
+          <div class="col-md-6">
+            <label for="managerName" class="form-label fw-semibold">Branch Manager</label>
             <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-person"></i></span>
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-person-fill-gear"></i></span>
               <input type="text" 
-                     id="contactPerson" 
-                     name="contactPerson" 
+                     id="managerName" 
+                     name="managerName" 
                      class="form-control bg-light-focus border-start-0" 
-                     [(ngModel)]="editData.contactPerson" />
+                     [(ngModel)]="editData.managerName" />
             </div>
           </div>
           
-          <div class="col-md-4">
+          <div class="col-md-6">
+            <label for="licenseNumber" class="form-label fw-semibold">Pharmacy License Number</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-file-earmark-medical"></i></span>
+              <input type="text" 
+                     id="licenseNumber" 
+                     name="licenseNumber" 
+                     class="form-control bg-light-focus border-start-0" 
+                     [(ngModel)]="editData.licenseNumber" />
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 3: Contact Details -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Contact Details</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
             <label for="phone" class="form-label fw-semibold">Phone Number</label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-telephone"></i></span>
@@ -357,7 +394,7 @@
             </div>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-md-6">
             <label for="email" class="form-label fw-semibold">Email Address</label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
@@ -372,36 +409,6 @@
               <div class="invalid-feedback">
                 Please enter a valid email address.
               </div>
-            </div>
-          </div>
-        </div>
-
-        <hr class="border-light-teal my-4">
-
-        <!-- SECTION 3: Compliance & Legal -->
-        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Compliance & Registration</h6>
-        <div class="row g-3 mb-4">
-          <div class="col-md-6">
-            <label for="tradeLicenseNo" class="form-label fw-semibold">Trade License Number</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-file-earmark-text"></i></span>
-              <input type="text" 
-                     id="tradeLicenseNo" 
-                     name="tradeLicenseNo" 
-                     class="form-control bg-light-focus border-start-0" 
-                     [(ngModel)]="editData.tradeLicenseNo" />
-            </div>
-          </div>
-          
-          <div class="col-md-6">
-            <label for="taxId" class="form-label fw-semibold">Tax ID / TIN</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-hash"></i></span>
-              <input type="text" 
-                     id="taxId" 
-                     name="taxId" 
-                     class="form-control bg-light-focus border-start-0" 
-                     [(ngModel)]="editData.taxId" />
             </div>
           </div>
         </div>
@@ -477,7 +484,7 @@
                    id="isActive" 
                    name="isActive" 
                    [(ngModel)]="editData.isActive" />
-            <label class="form-check-label fw-semibold cursor-pointer" for="isActive">Set Supplier Profile as Active</label>
+            <label class="form-check-label fw-semibold cursor-pointer" for="isActive">Set Branch Profile as Active</label>
           </div>
           <span class="badge" [ngClass]="editData.isActive ? 'bg-mint text-dark-teal' : 'bg-secondary text-light'">
             {{ editData.isActive ? 'Active' : 'Inactive' }}
@@ -494,7 +501,7 @@
           
           <button type="submit" 
                   class="btn btn-mint-primary px-5 py-2.5 fw-bold shadow-sm d-flex align-items-center gap-2">
-            <i class="bi bi-check-circle-fill"></i>Update Supplier
+            <i class="bi bi-check-circle-fill"></i>Update Branch
           </button>
         </div>
       </form>

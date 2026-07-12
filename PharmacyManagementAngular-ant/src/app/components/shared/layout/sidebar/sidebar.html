@@ -44,12 +44,31 @@
         </a>
       </li>
 
-      <!-- Medicine Categories Link -->
+      <!-- Medicine Categories Link with Dropdown -->
       <li class="nav-item">
-        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/medicine-categories" routerLinkActive="active">
-          <i class="bi bi-tags-fill"></i>
-          <span>Medicine Categories</span>
-        </a>
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleCategoryDropdown()" style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-tags-fill"></i>
+            <span>Medicine Categories</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isCategoryDropdownOpen" [class.bi-chevron-up]="isCategoryDropdownOpen" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isCategoryDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/medicine-categories/add" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add Category</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/medicine-categories" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>Category List</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
 
       <!-- Medicine Batches Link -->
@@ -93,20 +112,64 @@
         </div>
       </li>
 
-      <!-- Branches Link -->
+      <!-- Branch Link with Dropdown -->
       <li class="nav-item">
-        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/branches" routerLinkActive="active">
-          <i class="bi bi-shop-window"></i>
-          <span>Branches</span>
-        </a>
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleBranchDropdown()" style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-shop-window"></i>
+            <span>Branch</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isBranchDropdownOpen" [class.bi-chevron-up]="isBranchDropdownOpen" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isBranchDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branches/add" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add Branch</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branches/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>Branch Details</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branches" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>Branch List</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
 
-      <!-- Branch Inventory Link -->
+      <!-- Branch Inventory Link with Dropdown -->
       <li class="nav-item">
-        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/branch-inventories" routerLinkActive="active">
-          <i class="bi bi-boxes"></i>
-          <span>Branch Inventory</span>
-        </a>
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleBranchInventoryDropdown()" style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-boxes"></i>
+            <span>Branch Inventory</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isBranchInventoryDropdownOpen" [class.bi-chevron-up]="isBranchInventoryDropdownOpen" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isBranchInventoryDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branch-inventories/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>Branch Inventory Details</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branch-inventories" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>Branch Inventory List</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
 
       <!-- Generic Medicines Link -->

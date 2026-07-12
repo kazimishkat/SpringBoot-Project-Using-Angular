@@ -10,4 +10,7 @@ import java.util.List;
 public interface BranchRepository extends JpaRepository<Branch, Long>{
     Optional<Branch> findByBranchCode(String branchCode);
     List<Branch> findByIsActiveTrue();
+
+    // Added for case-insensitive partial branch name searches
+    List<Branch> findByNameContainingIgnoreCase(String name);
 }

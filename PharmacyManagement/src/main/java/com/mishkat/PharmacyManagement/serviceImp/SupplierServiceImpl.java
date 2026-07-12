@@ -113,4 +113,14 @@ public class SupplierServiceImpl implements SupplierService {
         supplierRepository.delete(supplier);
     }
 
+    // Added implementation layer logic
+    @Override
+    @Transactional(readOnly = true)
+    public List<SupplierResponseDto> searchSuppliersByName(String name) {
+        return supplierRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(supplierMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
 }

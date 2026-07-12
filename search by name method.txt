@@ -1,0 +1,12 @@
+searchSuppliersByName
+
+List<Supplier> findByNameContainingIgnoreCase(String name);
+
+// GET /api/suppliers/search?name=Square
+@GetMapping("/search")
+public ResponseEntity<List<SupplierResponseDto>> searchByName(@RequestParam String name) {
+    List<SupplierResponseDto> list = supplierService.searchSuppliersByName(name);
+    return list.isEmpty()
+            ? ResponseEntity.noContent().build()
+            : ResponseEntity.ok(list);
+}

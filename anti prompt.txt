@@ -1,22 +1,36 @@
-1.generate generic medicine UI inside dashborad like 
-others menues,generic medicine code write only generic 
-medicine html and css under component folder,add generic 
-medicine menu in sidebar,only work sidebar,
-dont add any dummy data for showing data base section,keep my code clean
+angular command
+1.now give me complete model ,service and ts under component by following my previous instruction
+2.now give me complete branch-list,branch-add
 
+branch-details ts complete code under component,like supplier finalize ts you gave me take those as sample for branch
 
+anti gravity
 2.i want generic database inputed data showing 
 all in my page,its not adjust in my screen,you 
 added scroll bar,i dont want scroll bar for seeing 
 all data,so adjust all generic medicine database data in my screen,if need then small font or decrease margin or padding for thats why all data adjust in screen,so do it for generic medicine and for other menues also,work 
 only under components and if need then dashborad section,keep my code clean
 
-3.generate add-supplier,supplier-details,supplier-edit,
-supplier-list UI inside dashborad,in sidebar section 
-menu named supplier,by click this showing drop down menu 
-insider supplier these names add-supplier,supplier-details,
-supplier-edit,supplier-list,add-supplier,supplier-details,supplier-edit,
-supplier-list code write only their html and css under component folder,
+create supplier
+3.generate branch-inventory-list,branch-inventory-details UI inside dashborad,in sidebar section 
+menu named branch inventory,by click this showing drop down menu 
+insider branch these names branch-inventory-list,branch-inventory-details.branch-inventory-list,branch-inventory-details code write only their html and css under component folder,
+also work only sidebar for add menues,dont go and change any other folder ,route page in app.route.ts.
+or any others code in this project,dont add any dummy data for showing 
+data base section,i want to input these data,keep my code clean
+
+create branch like supplier
+4.generate add branch,branch-details,
+branch-list UI inside dashborad like supplier,in sidebar section 
+menu named branch,by click this showing drop down menu 
+insider branch like supplier,branch-details,branch-list,branch-add code write only their html and css under component folder,
 also work only sidebar for add menues,dont go and change any other folder 
 or any others code in this project,dont add any dummy data for showing 
 data base section,i want to input these data,keep my code clean
+
+5.i want to see supplier as card in supplier details,and add 
+search section in supplier details page where i can search,work 
+only supplier details html css file under component,dont go and 
+change any other folder 
+or any others code in this project,dont add any dummy data for showing 
+data base sectionkeep my code clean

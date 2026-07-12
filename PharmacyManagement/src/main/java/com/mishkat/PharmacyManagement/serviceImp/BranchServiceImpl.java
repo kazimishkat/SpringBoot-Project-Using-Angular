@@ -73,7 +73,7 @@ public class BranchServiceImpl implements BranchService {
         Branch branch = branchRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Branch not found with id: " + id));
 
-        // ব্রাঞ্চ কোড আপডেট করার সময় সেটি অন্য কোনো ব্রাঞ্চের সাথে মিলে যায় কি না তা চেক করা
+        // ব্রাঞ্চ কোড আপডেট করার সময় সেটি অন্য কোনো ব্রাঞ্চের সাথে মিলে যায় কি না তা চেক করা
         if (dto.getBranchCode() != null && !dto.getBranchCode().equals(branch.getBranchCode())) {
             if (branchRepository.findByBranchCode(dto.getBranchCode()).isPresent()) {
                 throw new RuntimeException("Branch code already exists: " + dto.getBranchCode());
@@ -91,5 +91,14 @@ public class BranchServiceImpl implements BranchService {
         Branch branch = branchRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Branch not found with id: " + id));
         branchRepository.delete(branch);
+    }
+
+    // Added implementation layer logic for searching branches
+    @Override
+    @Transactional(readOnly = true)
+    public List<BranchResponseDto> searchBranchesByName(String name) {
+        return branchRepository.findByNameContainingIgnoreCase(name).stream()
+                .map(BranchMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }

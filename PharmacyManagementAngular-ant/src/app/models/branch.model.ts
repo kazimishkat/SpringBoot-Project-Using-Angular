@@ -1,13 +1,20 @@
 
-import { Address } from './address.model';
-import { BaseEntity } from './baseEntity.model';
 
-// Enum matching your Java BranchType enum
+// ==========================================
+// Enums
+
+import { Address } from "./address.model";
+import { BaseEntity } from "./baseEntity.model";
+
+// ==========================================
 export enum BranchType {
   MAIN = 'MAIN',
   SUB = 'SUB'
 }
 
+// ==========================================
+// Branch Request Model (Maps to RequestDto)
+// ==========================================
 export interface BranchRequest extends BaseEntity {
   branchCode: string;
   name: string;

@@ -1,4 +1,5 @@
-/* Supplier List UI Styles */
+/* Supplier List CSS Stylesheet */
+
 .text-dark-teal {
   color: #0a4f45;
 }
@@ -7,76 +8,31 @@
   color: #0fa895;
 }
 
+.text-muted-teal {
+  color: rgba(15, 168, 149, 0.4);
+}
+
 .bg-teal-light {
   background-color: rgba(15, 168, 149, 0.08) !important;
 }
 
 .bg-mint {
-  background-color: #d1fae5 !important;
-  color: #065f46 !important;
+  background-color: #d1f4f0 !important;
 }
 
-.table-light-teal-header {
-  background-color: #f8fafc;
-  border-bottom: 2px solid rgba(15, 168, 149, 0.08);
+.bg-light-danger {
+  background-color: #fee2e2 !important;
 }
 
-.table-light-teal-header th {
-  font-size: 0.75rem;
-  letter-spacing: 0.8px;
-  font-weight: 700;
-  padding: 1rem 0.75rem;
-}
-
-.supplier-row {
-  transition: background-color 0.2s ease;
-}
-
-.supplier-row:hover {
-  background-color: #fafdfc;
-}
-
-/* Actions buttons styling */
-.btn-action-view {
-  background-color: #ffffff;
-  color: #0fa895;
-  border-color: rgba(15, 168, 149, 0.25) !important;
+.bg-light-focus {
   transition: all 0.25s ease;
+  border-color: #e2e8f0;
 }
 
-.btn-action-view:hover {
-  background-color: #f0fdf4;
-  color: #0a4f45;
-  border-color: #0fa895 !important;
-  transform: translateY(-1px);
-}
-
-.btn-action-edit {
+.bg-light-focus:focus {
   background-color: #ffffff;
-  color: #f59e0b; /* Amber */
-  border-color: rgba(245, 158, 11, 0.25) !important;
-  transition: all 0.25s ease;
-}
-
-.btn-action-edit:hover {
-  background-color: #fffbeb;
-  color: #d97706;
-  border-color: #f59e0b !important;
-  transform: translateY(-1px);
-}
-
-.btn-action-delete {
-  background-color: #ffffff;
-  color: #ef4444; /* Red */
-  border-color: rgba(239, 68, 68, 0.25) !important;
-  transition: all 0.25s ease;
-}
-
-.btn-action-delete:hover {
-  background-color: #fef2f2;
-  color: #dc2626;
-  border-color: #ef4444 !important;
-  transform: translateY(-1px);
+  border-color: #0fa895;
+  box-shadow: 0 0 0 0.25rem rgba(15, 168, 149, 0.15);
 }
 
 .btn-mint-primary {
@@ -108,16 +64,35 @@
   border-color: #0fa895;
 }
 
-/* Empty State Styling */
-.empty-icon-wrapper {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: #f0fdf4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.5rem;
+/* Custom Table Styles */
+.custom-supplier-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.custom-supplier-table thead th {
+  font-size: 0.75rem;
+  letter-spacing: 0.8px;
+  padding: 1rem 0.75rem;
+  border-bottom: 2px solid rgba(15, 168, 149, 0.08);
+}
+
+.custom-supplier-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.custom-supplier-table tbody tr:hover {
+  background-color: rgba(15, 168, 149, 0.02) !important;
+}
+
+.custom-supplier-table td {
+  padding: 1.1rem 0.75rem;
+  border-bottom: 1px solid rgba(15, 168, 149, 0.05);
+}
+
+.supplier-row:last-child td {
+  border-bottom: none;
 }
 
 /* Animations */
@@ -134,4 +109,12 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.font-size-xs {
+  font-size: 0.75rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
 }

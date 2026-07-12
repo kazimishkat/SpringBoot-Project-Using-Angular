@@ -18,4 +18,7 @@ public interface SupplierService {
     SupplierResponseDto updateSupplier(Long id, SupplierRequestDto dto);
 
     void deleteSupplier(Long id);
+
+    // Added for search workflows
+    List<SupplierResponseDto> searchSuppliersByName(String name);
 }

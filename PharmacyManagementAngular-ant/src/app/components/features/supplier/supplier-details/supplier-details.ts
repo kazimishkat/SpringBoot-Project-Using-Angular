@@ -1,13 +1,13 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, NgForm } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SupplierService } from '../../../../services/supplier.service';
 import { SupplierResponse, SupplierRequest } from '../../../../models/supplier.model';
 
 @Component({
   selector: 'app-supplier-details',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './supplier-details.html',
   styleUrl: './supplier-details.css'
 })
@@ -109,7 +109,7 @@ export class SupplierDetails implements OnInit {
       contactPerson: this.supplierDetails.contactPerson,
       phone: this.supplierDetails.phone,
       email: this.supplierDetails.email,
-      address: this.supplierDetails.address ? { ...this.supplierDetails.address } : { addressLine1: '', addressLine2: '',city: '', state: '', postalCode: '', country: '' },
+      address: this.supplierDetails.address ? { ...this.supplierDetails.address } : { addressLine1: '',addressLine2:'', city: '', state: '', postalCode: '', country: '' },
       tradeLicenseNo: this.supplierDetails.tradeLicenseNo,
       taxId: this.supplierDetails.taxId,
       isActive: this.supplierDetails.isActive

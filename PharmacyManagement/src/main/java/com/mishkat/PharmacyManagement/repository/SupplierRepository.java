@@ -3,12 +3,11 @@ package com.mishkat.PharmacyManagement.repository;
 import com.mishkat.PharmacyManagement.entity.Supplier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
-
-
 
     Optional<Supplier> findBySupplierCode(String supplierCode);
 
@@ -18,6 +17,6 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
 
     boolean existsByEmail(String email);
 
-
-
+    // Added for case-insensitive partial name searches
+    List<Supplier> findByNameContainingIgnoreCase(String name);
 }

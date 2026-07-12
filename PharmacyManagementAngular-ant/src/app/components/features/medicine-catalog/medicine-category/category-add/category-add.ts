@@ -1,57 +1,39 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { BranchRequest, BranchType } from '../../../../../models/branch.model';
-import { BranchService } from '../../../../../services/branch.service';
+import { MedicineCategoryRequest } from '../../../../../models/medicine-category.model';
+import { MedicineCategoryService } from '../../../../../services/medicine-category.service';
 
 
 @Component({
-  selector: 'app-add-branch',
+  selector: 'app-category-add',
   imports: [FormsModule, CommonModule],
-  templateUrl: './add-branch.html',
-  styleUrl: './add-branch.css',
+  templateUrl: './category-add.html',
+  styleUrl: './category-add.css',
 })
-export class AddBranch implements OnInit {
+export class CategoryAdd implements OnInit {
 
-  @ViewChild('branchForm') branchForm!: NgForm;
-
-  // =====================================================
-  // ENUM DROPDOWNS & CONFIGURATION STATES
-  // =====================================================
-  branchTypes = Object.values(BranchType);
+  @ViewChild('categoryForm') categoryForm!: NgForm;
 
   // =====================================================
   // FORM MUTATION & VALIDATION STATE
   // =====================================================
-  branch: BranchRequest = this.initFormStructure();
+  category: MedicineCategoryRequest = this.initFormStructure();
   submitted = false;
   errorMessage = '';
 
   constructor(
-    private branchService: BranchService,
+    private categoryService: MedicineCategoryService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void { }
 
   // Helper method to setup pristine model fields structural schema
-  private initFormStructure(): BranchRequest {
+  private initFormStructure(): MedicineCategoryRequest {
     return {
-      branchCode: '',
       name: '',
-      branchType: undefined as any,
-      address: {
-        addressLine1: '',
-      addressLine2: '',
-        city: '',
-        state: '',
-        postalCode: '',
-        country: ''
-      },
-      phone: '',
-      email: '',
-      licenseNumber: '',
-      managerName: '',
+      description: '',
       isActive: true
     };
   }
@@ -62,19 +44,19 @@ export class AddBranch implements OnInit {
   /**
    * Validate bindings and dispatch new JSON payload to central service streams.
    */
-  saveBranch(): void {
+  saveCategory(): void {
     this.submitted = true;
     this.errorMessage = '';
 
-    if (this.branchForm.invalid) {
+    if (this.categoryForm.invalid) {
       return;
     }
 
-    this.branchService
-      .createBranch(this.branch)
+    this.categoryService
+      .createCategory(this.category)
       .subscribe({
         next: (res) => {
-          alert('Branch Profile Saved Successfully');
+          alert('Medicine Category Saved Successfully');
           this.resetForm();
         },
         error: (err) => {
@@ -92,12 +74,12 @@ export class AddBranch implements OnInit {
    * Wipe tracking variables back to base blueprints and clear structural DOM classes.
    */
   resetForm(): void {
-    this.branch = this.initFormStructure();
+    this.category = this.initFormStructure();
     this.submitted = false;
     this.errorMessage = '';
 
-    if (this.branchForm) {
-      this.branchForm.resetForm();
+    if (this.categoryForm) {
+      this.categoryForm.resetForm();
     }
     this.cdr.markForCheck();
   }

@@ -19,4 +19,7 @@ public interface BranchService {
     BranchResponseDto updateBranch(Long id, BranchRequestDto dto);
 
     void deleteBranch(Long id);
+
+    // Added for searching branches by name
+    List<BranchResponseDto> searchBranchesByName(String name);
 }

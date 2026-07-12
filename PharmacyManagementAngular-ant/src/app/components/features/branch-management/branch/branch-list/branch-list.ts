@@ -1,23 +1,24 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterLink, RouterModule } from '@angular/router';
 import { BranchResponse } from '../../../../../models/branch.model';
 import { BranchService } from '../../../../../services/branch.service';
 
 
 @Component({
   selector: 'app-branch-list',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterModule],
   templateUrl: './branch-list.html',
   styleUrl: './branch-list.css'
 })
 export class BranchListComponent implements OnInit {
 
-  // =========================
-  // VIEW GRID & FILTER STATE
-  // =========================
+  // =====================================================
+  // MASTER ARRAY VIEW & FILTER CONFIGURATIONS
+  // =====================================================
   branches: BranchResponse[] = [];
-  searchCodeQuery: string = '';
+  searchQuery: string = '';
   errorMessage: string = '';
 
   constructor(
@@ -30,62 +31,91 @@ export class BranchListComponent implements OnInit {
   }
 
   // =====================================================
-  // LOAD BRANCH DIRECTORY
+  // LOAD SYSTEM INVENTORY
   // =====================================================
   /**
-   * Retrieve all recorded branches from back-end server memory.
+   * Retrieve all branches documented in system parameters.
    */
   loadAllBranches(): void {
     this.errorMessage = '';
     this.branchService.getAllBranches().subscribe({
       next: (data) => {
         this.branches = data || [];
-        this.cdr.markForCheck(); // Explicit target hierarchy rendering push
+        this.cdr.markForCheck(); // Trigger precise change detection cycle check
       },
-      error: (err) => this.handleError('Failed to load branches data indices', err)
+      error: (err) => {
+        this.handleError('Failed to fetch structural branches indexes', err);
+      }
     });
   }
 
   // =====================================================
-  // FILTER STRATEGY
+  // ADAPTIVE FILTER SELECTION STRATEGIES
   // =====================================================
   /**
-   * Trigger unique branch code lookup matching endpoint queries.
+   * Evaluates inputs dynamically to determine exact route codes vs text name searches.
    */
-  onSearchByCode(): void {
-    if (!this.searchCodeQuery.trim()) {
+  onSearch(): void {
+    const query = this.searchQuery.trim();
+
+    if (!query) {
       this.loadAllBranches();
       return;
     }
 
-    this.branchService.getBranchByCode(this.searchCodeQuery.trim()).subscribe({
+    this.errorMessage = '';
+
+    // If query starts with common identifier codes or represents short key length ranges
+    if (query.toUpperCase().startsWith('BR') || query.length <= 6) {
+      this.branchService.getBranchByCode(query).subscribe({
+        next: (data) => {
+          this.branches = data ? [data] : [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          // Gracefully default back to text name lookup chains if exact code matching crashes
+          this.searchByNameFallback(query);
+        }
+      });
+    } else {
+      this.searchByNameFallback(query);
+    }
+  }
+
+  /** Helper method executing text keyword query intercepts */
+  private searchByNameFallback(query: string): void {
+    this.branchService.searchBranchesByName(query).subscribe({
       next: (data) => {
-        this.branches = data ? [data] : [];
+        this.branches = data || [];
         this.cdr.markForCheck();
       },
-      error: (err) => this.handleError('Branch search operation failed', err)
+      error: (err) => {
+        this.handleError('Branch database keyword validation failed', err);
+      }
     });
   }
 
   // =====================================================
-  // PURGE TRANSACTION
+  // WIPE RECORD TRANSACTIONS
   // =====================================================
   /**
-   * Disposes specific branch entity allocations permanently by database ID.
+   * Drops specific branch configurations permanently using database primary identifiers.
    */
   deleteBranch(id: number): void {
-    if (confirm('Are you sure you want to delete this branch tracking reference permanently?')) {
+    if (confirm('Are you completely sure you want to drop this branch profile?')) {
       this.branchService.deleteBranch(id).subscribe({
         next: () => {
-          this.loadAllBranches(); // Reload grid indexes seamlessly
+          this.loadAllBranches(); // Reload grid matrix arrays smoothly
         },
-        error: (err) => this.handleError('File removal operation rejected', err)
+        error: (err) => {
+          this.handleError('File destruction command rejected by database security', err);
+        }
       });
     }
   }
 
   // =====================================================
-  // COMMON ERROR HANDLER
+  // UNIVERSAL CONTEXT INTERCEPTOR EXCEPTION LOGGER
   // =====================================================
   private handleError(context: string, error: any): void {
     console.error(error);

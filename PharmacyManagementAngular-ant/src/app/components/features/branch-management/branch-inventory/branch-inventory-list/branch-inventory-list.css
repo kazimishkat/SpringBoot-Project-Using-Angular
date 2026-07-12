@@ -1,4 +1,4 @@
-/* Branch List CSS Stylesheet */
+/* Branch Inventory List Stylesheet */
 
 .text-dark-teal {
   color: #0a4f45;
@@ -35,21 +35,6 @@
   box-shadow: 0 0 0 0.25rem rgba(15, 168, 149, 0.15);
 }
 
-.btn-mint-primary {
-  background-color: #0fa895;
-  color: #ffffff;
-  border: 1px solid #0fa895;
-  border-radius: 8px;
-  transition: all 0.25s ease;
-}
-
-.btn-mint-primary:hover {
-  background-color: #0a4f45;
-  border-color: #0a4f45;
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(15, 168, 149, 0.25);
-}
-
 .btn-outline-mint {
   color: #0fa895;
   border: 1px solid rgba(15, 168, 149, 0.3);
@@ -65,33 +50,33 @@
 }
 
 /* Custom Table Styles */
-.custom-branch-table {
+.custom-inventory-table {
   border-collapse: separate;
   border-spacing: 0;
   width: 100%;
 }
 
-.custom-branch-table thead th {
+.custom-inventory-table thead th {
   font-size: 0.75rem;
   letter-spacing: 0.8px;
   padding: 1rem 0.75rem;
   border-bottom: 2px solid rgba(15, 168, 149, 0.08);
 }
 
-.custom-branch-table tbody tr {
+.custom-inventory-table tbody tr {
   transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.custom-branch-table tbody tr:hover {
+.custom-inventory-table tbody tr:hover {
   background-color: rgba(15, 168, 149, 0.02) !important;
 }
 
-.custom-branch-table td {
+.custom-inventory-table td {
   padding: 1.1rem 0.75rem;
   border-bottom: 1px solid rgba(15, 168, 149, 0.05);
 }
 
-.branch-row:last-child td {
+.inventory-row:last-child td {
   border-bottom: none;
 }
 

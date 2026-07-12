@@ -97,9 +97,9 @@
 }
 
 .nav-link {
-  color: #0f172a; /* Deep Slate 900 for high visibility */
+  color: #475569; /* Slate 600 for modern soft look */
   font-size: 0.9rem;
-  font-weight: 600; /* Made slightly bolder */
+  font-weight: 500; /* Softer font weight */
   border-radius: 8px !important;
   padding: 0.75rem 1rem;
   transition: all 0.25s ease;
@@ -174,7 +174,7 @@
 
 .submenu-link {
   font-size: 0.82rem !important;
-  color: #0f172a !important; /* Deep Slate 900 for high visibility */
+  color: #475569 !important; /* Slate 600 for soft look */
   padding: 0.5rem 0.75rem !important;
   margin: 0 0.5rem 0 1rem !important;
 }

@@ -1,4 +1,4 @@
-/* Branch List CSS Stylesheet */
+/* Branch Inventory Details & Edit UI Styling */
 
 .text-dark-teal {
   color: #0a4f45;
@@ -22,6 +22,15 @@
 
 .bg-light-danger {
   background-color: #fee2e2 !important;
+}
+
+.border-light-teal {
+  border-color: rgba(15, 168, 149, 0.1) !important;
+}
+
+.letter-spacing-1 {
+  letter-spacing: 1px;
+  font-size: 0.8rem;
 }
 
 .bg-light-focus {
@@ -64,35 +73,43 @@
   border-color: #0fa895;
 }
 
-/* Custom Table Styles */
-.custom-branch-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  width: 100%;
+/* Custom form switcher styles */
+.bg-teal-switch:checked {
+  background-color: #0fa895 !important;
+  border-color: #0fa895 !important;
 }
 
-.custom-branch-table thead th {
-  font-size: 0.75rem;
-  letter-spacing: 0.8px;
-  padding: 1rem 0.75rem;
-  border-bottom: 2px solid rgba(15, 168, 149, 0.08);
+.cursor-pointer {
+  cursor: pointer;
 }
 
-.custom-branch-table tbody tr {
-  transition: background-color 0.2s ease, transform 0.2s ease;
+/* Inventory Overview Card Grid Layout Styling */
+.inventory-overview-card {
+  border: 1px solid rgba(15, 168, 149, 0.07);
+  background-color: #ffffff;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.custom-branch-table tbody tr:hover {
-  background-color: rgba(15, 168, 149, 0.02) !important;
+.inventory-overview-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(10, 79, 69, 0.08) !important;
 }
 
-.custom-branch-table td {
-  padding: 1.1rem 0.75rem;
-  border-bottom: 1px solid rgba(15, 168, 149, 0.05);
+/* Inventory Avatar Badge */
+.inventory-avatar {
+  width: 48px;
+  height: 48px;
+  border: 2px solid #e2e8f0;
 }
 
-.branch-row:last-child td {
-  border-bottom: none;
+/* Detail view specific styles */
+.inventory-hero-card {
+  background-color: #ffffff;
+  border: 1px solid rgba(15, 168, 149, 0.08);
+}
+
+.detail-info-card {
+  border: 1px solid rgba(15, 168, 149, 0.05);
 }
 
 /* Animations */

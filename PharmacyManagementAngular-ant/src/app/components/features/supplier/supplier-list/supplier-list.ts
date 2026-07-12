@@ -13,11 +13,11 @@ import { SupplierResponse } from '../../../../models/supplier.model';
 })
 export class SupplierListComponent implements OnInit {
 
-  // =========================
+  // =====================================================
   // VIEW GRID & FILTER STATE
-  // =========================
+  // =====================================================
   suppliers: SupplierResponse[] = [];
-  searchQuery: string = ''; // ভ্যারিয়েবলের নাম আরও জেনারেক (Query) করা হলো
+  searchQuery: string = ''; 
   errorMessage: string = '';
 
   constructor(
@@ -57,7 +57,7 @@ export class SupplierListComponent implements OnInit {
   onSearch(): void {
     const query = this.searchQuery.trim();
 
-    // ১. সার্চ বক্স খালি থাকলে সব সাপ্লায়ার রি-লোড হবে
+    // 1. Reload all data if the search query field is cleared
     if (!query) {
       this.loadAllSuppliers();
       return;
@@ -65,26 +65,27 @@ export class SupplierListComponent implements OnInit {
 
     this.errorMessage = '';
 
-    // ২. যদি সার্চ কিউরি নির্দিষ্ট কোড ফরম্যাট ম্যাচ করে (যেমন সাধারণত MED- বা SUP- দিয়ে শুরু হয়)
-    // অথবা আপনার ব্যাকএন্ডের রুলস অনুযায়ী চেক করতে চান, তাহলে কোড দিয়ে সার্চ করবে:
+    // 2. Check if query looks like a code format (e.g., starts with SUP or represents short technical keys)
     if (query.toUpperCase().startsWith('SUP') || query.length <= 6) { 
       this.supplierService.getSupplierByCode(query).subscribe({
         next: (data) => {
           this.suppliers = data ? [data] : [];
           this.cdr.markForCheck();
         },
-        error: (err) => {
-          // যদি কোড দিয়ে না মিলে, তবে ব্যাকআপ হিসেবে নাম দিয়ে সার্চ ট্রাই করবে
+        error: () => {
+          // Fallback seamlessly to text-matching name searches if exact code route fails
           this.searchByNameFallback(query);
         }
       });
     } else {
-      // ৩. অন্যথায় সরাসরি নাম দিয়ে সার্চ করার এপিআই কল করবে
+      // 3. Otherwise, directly execute default text query pipeline routing
       this.searchByNameFallback(query);
     }
   }
 
-  /** Helper method to execute name based registry querying */
+  /** 
+   * Helper method to execute name based registry querying 
+   */
   private searchByNameFallback(query: string): void {
     this.supplierService.searchSuppliersByName(query).subscribe({
       next: (data) => {

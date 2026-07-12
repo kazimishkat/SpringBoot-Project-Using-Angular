@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { SupplierRequest, SupplierResponse } from '../models/supplier.model';
@@ -27,6 +27,12 @@ export class SupplierService {
   // Find supplier matching corporate supplier code string
   getSupplierByCode(supplierCode: string): Observable<SupplierResponse> {
     return this.http.get<SupplierResponse>(`${this.apiUrl}/code/${supplierCode}`);
+  }
+
+  // Search suppliers by name using query parameter
+  searchSuppliersByName(name: string): Observable<SupplierResponse[]> {
+    const params = new HttpParams().set('name', name);
+    return this.http.get<SupplierResponse[]>(`${this.apiUrl}/search`, { params });
   }
 
   // Create a new supplier corporate registry profile

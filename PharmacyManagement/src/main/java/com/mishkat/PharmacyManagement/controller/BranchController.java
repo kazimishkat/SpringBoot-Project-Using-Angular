@@ -35,6 +35,15 @@ public class BranchController {
                 : ResponseEntity.ok(list);
     }
 
+    // Added: GET /api/branches/search?name=Dhanmondi
+    @GetMapping("/search")
+    public ResponseEntity<List<BranchResponseDto>> searchByName(@RequestParam String name) {
+        List<BranchResponseDto> list = branchService.searchBranchesByName(name);
+        return list.isEmpty()
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(list);
+    }
+
     // GET /api/branches/active
     @GetMapping("/active")
     public ResponseEntity<List<BranchResponseDto>> getActiveBranches() {

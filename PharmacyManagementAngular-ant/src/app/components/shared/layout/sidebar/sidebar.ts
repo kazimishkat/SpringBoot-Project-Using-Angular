@@ -10,9 +10,24 @@ import { CommonModule } from '@angular/common';
 })
 export class Sidebar {
   isSupplierDropdownOpen = false;
+  isBranchDropdownOpen = false;
+  isBranchInventoryDropdownOpen = false;
+  isCategoryDropdownOpen = false;
 
   toggleSupplierDropdown(): void {
     this.isSupplierDropdownOpen = !this.isSupplierDropdownOpen;
+  }
+
+  toggleBranchDropdown(): void {
+    this.isBranchDropdownOpen = !this.isBranchDropdownOpen;
+  }
+
+  toggleBranchInventoryDropdown(): void {
+    this.isBranchInventoryDropdownOpen = !this.isBranchInventoryDropdownOpen;
+  }
+
+  toggleCategoryDropdown(): void {
+    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
   }
 }
 

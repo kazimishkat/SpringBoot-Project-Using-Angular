@@ -1,0 +1,344 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Alert Banner -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- STATE 1: BROWSE CATALOG (No item selected) -->
+  <!-- ===================================================== -->
+  <div *ngIf="!inventoryDetails" class="animate-fade-in">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Branch Inventory Catalog</h3>
+        <p class="text-muted small mb-0">Browse and inspect granular batch allocations across all pharmacy locations.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <div class="input-group" style="max-width: 300px;">
+          <span class="input-group-text bg-white border-end-0 text-muted">
+            <i class="bi bi-search"></i>
+          </span>
+          <input #filterInput 
+                 (input)="0" 
+                 type="text" 
+                 class="form-control bg-light-focus border-start-0" 
+                 placeholder="Search by brand or batch..." />
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory Cards Grid -->
+    <div class="row g-3" *ngIf="masterInventoryList.length > 0; else emptyCatalog">
+      <ng-container *ngFor="let item of masterInventoryList">
+        <div class="col-lg-4 col-md-6 col-sm-12 animate-fade-in" 
+             *ngIf="!filterInput.value || item.medicineBrandName.toLowerCase().includes(filterInput.value.toLowerCase()) || item.batchNumber.toLowerCase().includes(filterInput.value.toLowerCase()) || item.branchName.toLowerCase().includes(filterInput.value.toLowerCase())">
+          <div class="card border-0 shadow-sm rounded-4 h-100 inventory-overview-card d-flex flex-column">
+            <!-- Card Body -->
+            <div class="card-body p-4 flex-grow-1">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="inventory-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-4 rounded-circle flex-shrink-0">
+                  <i class="bi bi-boxes"></i>
+                </div>
+                <div class="overflow-hidden">
+                  <h5 class="mb-0 fw-bold text-dark-teal text-truncate" title="{{ item.medicineBrandName }}">
+                    {{ item.medicineBrandName }}
+                  </h5>
+                  <div class="d-flex align-items-center gap-1.5 mt-1 flex-wrap">
+                    <span class="badge bg-teal-light text-teal fw-bold font-monospace text-xs">
+                      Batch: {{ item.batchNumber }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Details -->
+              <div class="inventory-quick-details small mt-3 text-muted">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-shop-window text-teal"></i>
+                  <span class="text-dark fw-medium text-truncate">Branch: {{ item.branchName }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-calculator text-teal"></i>
+                  <span class="text-dark">On Hand: <strong>{{ item.quantityOnHand | number }}</strong></span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-bookmark-fill text-teal"></i>
+                  <span class="text-dark">Reserved: <strong>{{ item.quantityReserved | number }}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="card-footer bg-light border-0 py-3 px-4 d-flex align-items-center justify-content-between rounded-bottom-4 mt-auto">
+              <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
+                    [ngClass]="item.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                {{ item.isActive ? 'Active' : 'Inactive' }}
+              </span>
+              <div class="d-flex gap-2">
+                <button (click)="fetchTargetGranularDetails(item.id)" 
+                   class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1.5 px-2.5 py-1.5 font-size-xs fw-semibold shadow-sm" 
+                   title="View Details">
+                  <i class="bi bi-eye-fill"></i>
+                  <span>Details</span>
+                </button>
+                <button (click)="deleteInventory(item.id)" 
+                        class="btn btn-sm btn-outline-danger d-inline-flex align-items-center p-2"
+                        title="Delete Record">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Empty Registry Layout -->
+    <ng-template #emptyCatalog>
+      <div class="card border-0 shadow-sm rounded-4 text-center py-5 px-4">
+        <div class="empty-state-icon mb-3">
+          <i class="bi bi-box-seam text-muted-teal display-4"></i>
+        </div>
+        <h5 class="fw-bold text-dark-teal mb-2">No Stock Records Registered</h5>
+        <p class="text-muted small mx-auto mb-4" style="max-width: 400px;">
+          There are no stock allocations registered in the system. Check database connectivity or insert new allocations to populate.
+        </p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- STATE 2: READ-ONLY DETAILS VIEW -->
+  <!-- ===================================================== -->
+  <div class="animate-fade-in" *ngIf="inventoryDetails && !isEditMode">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Inventory Allocation Details</h3>
+        <p class="text-muted small mb-0">Inspect current batch details, quantities, and branch association.</p>
+      </div>
+      <button (click)="inventoryDetails = null" 
+              class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to Catalog</span>
+      </button>
+    </div>
+
+    <!-- Hero Header Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 inventory-hero-card">
+      <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="inventory-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-3 rounded-circle">
+            <i class="bi bi-boxes"></i>
+          </div>
+          <div>
+            <h4 class="mb-1 fw-bold text-dark-teal">{{ inventoryDetails.medicineBrandName }}</h4>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge bg-teal-light text-teal fw-bold font-monospace px-2.5 py-1 text-xs">
+                Batch: {{ inventoryDetails.batchNumber }}
+              </span>
+              <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
+                    [ngClass]="inventoryDetails.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                {{ inventoryDetails.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-mint btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm" 
+                  (click)="enableEditMode()">
+            <i class="bi bi-pencil-square"></i>
+            <span>Edit Allocation</span>
+          </button>
+          <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm" 
+                  (click)="deleteInventory(inventoryDetails.id)">
+            <i class="bi bi-trash-fill"></i>
+            <span>Delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards detail sections -->
+    <div class="row g-3">
+      <!-- Medicine & Batch Info -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
+          <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
+              <i class="bi bi-capsule-pill"></i>
+              <span>Medicine & Batch Profile</span>
+            </h6>
+          </div>
+          <div class="card-body px-4 py-3">
+            <div class="mb-3">
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Brand Name</span>
+              <span class="text-dark fw-bold fs-5">{{ inventoryDetails.medicineBrandName }}</span>
+            </div>
+            <div class="mb-3">
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Batch number</span>
+              <span class="text-dark fw-bold font-monospace fs-6">{{ inventoryDetails.batchNumber }}</span>
+            </div>
+            <div>
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Batch Code Identifier</span>
+              <span class="badge bg-teal-light text-teal fw-bold font-monospace">ID: #{{ inventoryDetails.batchId }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quantity & Branch Info -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
+          <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
+              <i class="bi bi-shop-window"></i>
+              <span>Location & Quantities</span>
+            </h6>
+          </div>
+          <div class="card-body px-4 py-3">
+            <div class="mb-3">
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Allocated Branch</span>
+              <span class="text-dark fw-bold fs-5">{{ inventoryDetails.branchName }}</span>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Quantity On Hand</span>
+                <span class="text-dark fw-bold fs-5">{{ inventoryDetails.quantityOnHand | number }}</span>
+              </div>
+              <div class="col-6">
+                <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Quantity Reserved</span>
+                <span class="text-dark fw-bold fs-5">{{ inventoryDetails.quantityReserved | number }}</span>
+              </div>
+            </div>
+            <div>
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Status</span>
+              <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
+                    [ngClass]="inventoryDetails.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                {{ inventoryDetails.isActive ? 'Active Status' : 'Inactive Status' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================== -->
+  <!-- STATE 3: EDIT FORM STATE -->
+  <!-- ===================================================== -->
+  <div class="animate-fade-in" *ngIf="inventoryDetails && isEditMode">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Edit Stock Allocation</h3>
+        <p class="text-muted small mb-0">Modify active inventory volumes or toggle store presence status fields.</p>
+      </div>
+      <button (click)="cancelEdit()" 
+              class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+        <i class="bi bi-x-circle"></i>
+        <span>Cancel</span>
+      </button>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+      <div class="card-header bg-white border-bottom py-3 px-4">
+        <h5 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
+          <i class="bi bi-pencil-square"></i>
+          <span>Edit Inventory Form</span>
+        </h5>
+      </div>
+
+      <div class="card-body p-4">
+        <form #inventoryForm="ngForm" (ngSubmit)="updateInventory()" novalidate>
+          
+          <!-- Read-Only Context Fields -->
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Allocation Context (Read-Only)</h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted">Medicine Brand</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-capsule-pill"></i></span>
+                <input type="text" class="form-control bg-light border-start-0" [value]="inventoryDetails.medicineBrandName" disabled />
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted">Store Branch</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-shop-window"></i></span>
+                <input type="text" class="form-control bg-light border-start-0" [value]="inventoryDetails.branchName" disabled />
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <label class="form-label fw-semibold text-muted">Batch Number</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-hash"></i></span>
+                <input type="text" class="form-control bg-light border-start-0 font-monospace" [value]="inventoryDetails.batchNumber" disabled />
+              </div>
+            </div>
+          </div>
+
+          <hr class="border-light-teal my-4">
+
+          <!-- Editable Fields -->
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Stock Values</h6>
+          <div class="row g-3 mb-4">
+            <!-- Quantity On Hand -->
+            <div class="col-md-6 col-sm-12">
+              <label for="quantityOnHand" class="form-label fw-semibold">Quantity On Hand <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted">
+                  <i class="bi bi-calculator"></i>
+                </span>
+                <input type="number" 
+                       id="quantityOnHand" 
+                       name="quantityOnHand" 
+                       class="form-control bg-light-focus border-start-0" 
+                       [(ngModel)]="editData.quantityOnHand" 
+                       #qtyInput="ngModel" 
+                       required 
+                       min="0"
+                       [class.is-invalid]="qtyInput.invalid && (qtyInput.dirty || qtyInput.touched || submitted)" />
+                <div class="invalid-feedback">
+                  A valid positive stock quantity is required.
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Status Toggle -->
+            <div class="col-md-6 col-sm-12 d-flex align-items-center">
+              <div class="form-check form-switch pt-4">
+                <input class="form-check-input bg-teal-switch" 
+                       type="checkbox" 
+                       id="isActive" 
+                       name="isActive" 
+                       [(ngModel)]="editData.isActive" />
+                <label class="form-check-label fw-semibold ms-2 text-dark" for="isActive">
+                  Inventory Record Active & Searchable
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions Footer -->
+          <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
+            <button type="button" class="btn btn-outline-secondary px-4 py-2.5 fw-bold" (click)="cancelEdit()">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-mint-primary px-5 py-2.5 fw-bold shadow-sm d-flex align-items-center gap-2">
+              <i class="bi bi-check-circle-fill"></i>
+              <span>Save Changes</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

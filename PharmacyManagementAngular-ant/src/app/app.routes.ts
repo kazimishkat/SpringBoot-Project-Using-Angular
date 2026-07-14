@@ -11,6 +11,15 @@ import { BranchInventoryList } from './components/features/branch-management/bra
 import { BranchInventoryDetails } from './components/features/branch-management/branch-inventory/branch-inventory-details/branch-inventory-details';
 import { CategoryListComponent } from './components/features/medicine-catalog/medicine-category/category-list/category-list';
 import { CategoryAdd } from './components/features/medicine-catalog/medicine-category/category-add/category-add';
+import { GenericListComponent } from './components/features/medicine-catalog/generic-medicine/generic-list/generic-list';
+import { GenericAdd } from './components/features/medicine-catalog/generic-medicine/generic-add/generic-add';
+import { GenericDetailsComponent } from './components/features/medicine-catalog/generic-medicine/generic-details/generic-details';
+import { MedicineListComponent } from './components/features/medicine-catalog/medicine/medicine-list/medicine-list';
+import { MedicineAdd } from './components/features/medicine-catalog/medicine/medicine-add/medicine-add';
+import { MedicineDetailsComponent } from './components/features/medicine-catalog/medicine/medicine-details/medicine-details';
+import { MedicineBatchList } from './components/features/medicine-catalog/medicine-batch/medicine-batch-list/medicine-batch-list';
+import { MedicineBatchDetails } from './components/features/medicine-catalog/medicine-batch/medicine-batch-details/medicine-batch-details';
+import { MedicineBatchAdd } from './components/features/medicine-catalog/medicine-batch/medicine-batch-add/medicine-batch-add';
 
 
 export const routes: Routes = [
@@ -32,6 +41,18 @@ export const routes: Routes = [
       { path: 'branch-inventories/details/:id', component: BranchInventoryDetails },
       { path: 'medicine-categories', component: CategoryListComponent },
       { path: 'medicine-categories/add', component: CategoryAdd },
+      { path: 'generic-medicines', component: GenericListComponent },
+      { path: 'generic-medicines/add', component: GenericAdd },
+      { path: 'generic-medicines/details', component: GenericDetailsComponent },
+      { path: 'generic-medicines/details/:id', component: GenericDetailsComponent },
+      { path: 'medicines', component: MedicineListComponent },
+      { path: 'medicines/add', component: MedicineAdd },
+      { path: 'medicines/details', component: MedicineDetailsComponent },
+      { path: 'medicines/details/:id', component: MedicineDetailsComponent },
+      { path: 'medicine-batches', component: MedicineBatchList },
+      { path: 'medicine-batches/add', component: MedicineBatchAdd },
+      { path: 'medicine-batches/details', component: MedicineBatchDetails },
+      { path: 'medicine-batches/details/:id', component: MedicineBatchDetails },
     ]
   }
 ];

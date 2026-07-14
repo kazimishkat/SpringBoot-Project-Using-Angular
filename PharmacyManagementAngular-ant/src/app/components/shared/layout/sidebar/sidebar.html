@@ -12,9 +12,8 @@
   <!-- Admin Profile Card -->
   <div class="admin-profile d-flex align-items-center gap-3">
     <div class="position-relative">
-      <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop" 
-           alt="Admin Avatar" 
-           class="admin-avatar object-fit-cover rounded-circle shadow-sm" />
+      <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop"
+        alt="Admin Avatar" class="admin-avatar object-fit-cover rounded-circle shadow-sm" />
       <span class="status-indicator-dot"></span>
     </div>
     <div class="admin-meta overflow-hidden">
@@ -27,42 +26,118 @@
   <div class="sidebar-menu flex-grow-1 py-3 px-2">
     <div class="menu-section-label px-3 mb-2">SYSTEM PORTAL</div>
     <ul class="nav nav-pills flex-column gap-1">
-      
+
       <!-- Dashboard Overview Link (Placeholder) -->
       <li class="nav-item">
-        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard"
+          [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
           <i class="bi bi-grid-1x2-fill"></i>
           <span>Overview</span>
         </a>
       </li>
 
-      <!-- Medicines Link -->
+      <!-- Medicines Link with Dropdown -->
       <li class="nav-item">
-        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/medicines" routerLinkActive="active">
-          <i class="bi bi-capsule-pill"></i>
-          <span>Medicines</span>
-        </a>
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleMedicineDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-capsule-pill"></i>
+            <span>Medicines</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isMedicineDropdownOpen" [class.bi-chevron-up]="isMedicineDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isMedicineDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/medicines/add" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>Medicine Add</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/medicines/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>Medicine Details</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/medicines" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>Medicine List</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Medicine Batches Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3"
+          (click)="toggleMedicineBatchDropdown()" style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-stack"></i>
+            <span>Medicine Batches</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isMedicineBatchDropdownOpen"
+            [class.bi-chevron-up]="isMedicineBatchDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isMedicineBatchDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/medicine-batches/add" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>Batch Add</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/medicine-batches/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>Batch Details</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/medicine-batches" [routerLinkActiveOptions]="{exact: true}"
+                routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>Batch List</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
 
       <!-- Medicine Categories Link with Dropdown -->
       <li class="nav-item">
-        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleCategoryDropdown()" style="cursor: pointer;">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleCategoryDropdown()"
+          style="cursor: pointer;">
           <div class="d-flex align-items-center gap-3">
             <i class="bi bi-tags-fill"></i>
             <span>Medicine Categories</span>
           </div>
-          <i class="bi" [class.bi-chevron-down]="!isCategoryDropdownOpen" [class.bi-chevron-up]="isCategoryDropdownOpen" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+          <i class="bi" [class.bi-chevron-down]="!isCategoryDropdownOpen" [class.bi-chevron-up]="isCategoryDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
         </div>
         <div class="submenu-collapse" [class.show]="isCategoryDropdownOpen">
           <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
             <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/medicine-categories/add" routerLinkActive="active">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/medicine-categories/add" routerLinkActive="active">
                 <i class="bi bi-plus-circle"></i>
                 <span>Add Category</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/medicine-categories" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/medicine-categories" [routerLinkActiveOptions]="{exact: true}"
+                routerLinkActive="active">
                 <i class="bi bi-list-ul"></i>
                 <span>Category List</span>
               </a>
@@ -71,39 +146,37 @@
         </div>
       </li>
 
-      <!-- Medicine Batches Link -->
-      <li class="nav-item">
-        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/medicine-batches" routerLinkActive="active">
-          <i class="bi bi-stack"></i>
-          <span>Medicine Batches</span>
-        </a>
-      </li>
 
       <!-- Supplier Link with Dropdown -->
       <li class="nav-item">
-        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleSupplierDropdown()" style="cursor: pointer;">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleSupplierDropdown()"
+          style="cursor: pointer;">
           <div class="d-flex align-items-center gap-3">
             <i class="bi bi-truck-flatbed"></i>
             <span>Supplier</span>
           </div>
-          <i class="bi" [class.bi-chevron-down]="!isSupplierDropdownOpen" [class.bi-chevron-up]="isSupplierDropdownOpen" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+          <i class="bi" [class.bi-chevron-down]="!isSupplierDropdownOpen" [class.bi-chevron-up]="isSupplierDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
         </div>
         <div class="submenu-collapse" [class.show]="isSupplierDropdownOpen">
           <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
             <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/suppliers/add" routerLinkActive="active">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/suppliers/add" routerLinkActive="active">
                 <i class="bi bi-plus-circle"></i>
                 <span>Add Supplier</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/suppliers/details" routerLinkActive="active">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/suppliers/details" routerLinkActive="active">
                 <i class="bi bi-info-circle"></i>
                 <span>Supplier Details</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/suppliers" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/suppliers" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
                 <i class="bi bi-list-ul"></i>
                 <span>Supplier List</span>
               </a>
@@ -114,29 +187,34 @@
 
       <!-- Branch Link with Dropdown -->
       <li class="nav-item">
-        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleBranchDropdown()" style="cursor: pointer;">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleBranchDropdown()"
+          style="cursor: pointer;">
           <div class="d-flex align-items-center gap-3">
             <i class="bi bi-shop-window"></i>
             <span>Branch</span>
           </div>
-          <i class="bi" [class.bi-chevron-down]="!isBranchDropdownOpen" [class.bi-chevron-up]="isBranchDropdownOpen" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+          <i class="bi" [class.bi-chevron-down]="!isBranchDropdownOpen" [class.bi-chevron-up]="isBranchDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
         </div>
         <div class="submenu-collapse" [class.show]="isBranchDropdownOpen">
           <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
             <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branches/add" routerLinkActive="active">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/branches/add" routerLinkActive="active">
                 <i class="bi bi-plus-circle"></i>
                 <span>Add Branch</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branches/details" routerLinkActive="active">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/branches/details" routerLinkActive="active">
                 <i class="bi bi-info-circle"></i>
                 <span>Branch Details</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branches" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branches"
+                [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
                 <i class="bi bi-list-ul"></i>
                 <span>Branch List</span>
               </a>
@@ -147,23 +225,29 @@
 
       <!-- Branch Inventory Link with Dropdown -->
       <li class="nav-item">
-        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleBranchInventoryDropdown()" style="cursor: pointer;">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3"
+          (click)="toggleBranchInventoryDropdown()" style="cursor: pointer;">
           <div class="d-flex align-items-center gap-3">
             <i class="bi bi-boxes"></i>
             <span>Branch Inventory</span>
           </div>
-          <i class="bi" [class.bi-chevron-down]="!isBranchInventoryDropdownOpen" [class.bi-chevron-up]="isBranchInventoryDropdownOpen" style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+          <i class="bi" [class.bi-chevron-down]="!isBranchInventoryDropdownOpen"
+            [class.bi-chevron-up]="isBranchInventoryDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
         </div>
         <div class="submenu-collapse" [class.show]="isBranchInventoryDropdownOpen">
           <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
             <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branch-inventories/details" routerLinkActive="active">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/branch-inventories/details" routerLinkActive="active">
                 <i class="bi bi-info-circle"></i>
                 <span>Branch Inventory Details</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5" routerLink="/dashboard/branch-inventories" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/branch-inventories" [routerLinkActiveOptions]="{exact: true}"
+                routerLinkActive="active">
                 <i class="bi bi-list-ul"></i>
                 <span>Branch Inventory List</span>
               </a>
@@ -172,12 +256,43 @@
         </div>
       </li>
 
-      <!-- Generic Medicines Link -->
+      <!-- Generic Medicines Link with Dropdown -->
       <li class="nav-item">
-        <a class="nav-link d-flex align-items-center gap-3" routerLink="/dashboard/generic-medicines" routerLinkActive="active">
-          <i class="bi bi-bookmark-plus-fill"></i>
-          <span>Generic Medicines</span>
-        </a>
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleGenericDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-bookmark-plus-fill"></i>
+            <span>Generic Medicines</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isGenericDropdownOpen" [class.bi-chevron-up]="isGenericDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isGenericDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/generic-medicines/add" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>Generic Add</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/generic-medicines/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>Generic Details</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/generic-medicines" [routerLinkActiveOptions]="{exact: true}"
+                routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>Generic List</span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </li>
 
       <!-- Settings Link (Placeholder) -->
@@ -193,7 +308,8 @@
 
   <!-- Sidebar Footer -->
   <div class="sidebar-footer border-top p-3">
-    <a routerLink="/" class="btn btn-outline-logout w-100 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold">
+    <a routerLink="/"
+      class="btn btn-outline-logout w-100 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold">
       <i class="bi bi-box-arrow-left"></i>
       <span>Back to Site</span>
     </a>

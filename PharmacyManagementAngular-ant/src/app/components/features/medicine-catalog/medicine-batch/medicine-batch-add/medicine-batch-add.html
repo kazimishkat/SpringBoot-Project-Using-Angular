@@ -1,0 +1,198 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Register Medicine Batch</h3>
+      <p class="text-muted small mb-0">Establish a new manufacturing tracking run, expiration limits, and specific batch pricing logs.</p>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Add Form Card -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-white border-bottom py-3 px-4">
+      <h5 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
+        <i class="bi bi-plus-circle-fill text-teal"></i>
+        <span>New Batch Configuration Details</span>
+      </h5>
+    </div>
+    <div class="card-body p-4">
+      <form #batchForm="ngForm" (ngSubmit)="saveBatch()" novalidate>
+        
+        <!-- SECTION 1: Batch & Medicine Mapping -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Associated Product & Code</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4 col-sm-12">
+            <label for="medicineId" class="form-label fw-semibold">Target Medicine <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-capsule"></i></span>
+              <select id="medicineId" 
+                      name="medicineId" 
+                      class="form-select bg-light-focus border-start-0" 
+                      [(ngModel)]="batch.medicineId" 
+                      #medicineIdInput="ngModel" 
+                      required 
+                      [class.is-invalid]="medicineIdInput.invalid && (medicineIdInput.dirty || medicineIdInput.touched || submitted)">
+                <option [ngValue]="undefined" disabled>-- Select Associated Medicine --</option>
+                <option *ngFor="let m of medicines" [value]="m.id">{{ m.brandName }} ({{ m.medicineCode }})</option>
+              </select>
+              <div class="invalid-feedback">
+                Associated Medicine is required.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 col-sm-12">
+            <label for="batchNumber" class="form-label fw-semibold">Batch Number <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-hash"></i></span>
+              <input type="text" 
+                     id="batchNumber" 
+                     name="batchNumber" 
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. BATCH-202607" 
+                     [(ngModel)]="batch.batchNumber" 
+                     #batchNumberInput="ngModel" 
+                     required 
+                     [class.is-invalid]="batchNumberInput.invalid && (batchNumberInput.dirty || batchNumberInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Batch number is required.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 col-sm-12">
+            <label for="supplierId" class="form-label fw-semibold">Supplier Source</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-shop"></i></span>
+              <select id="supplierId" 
+                      name="supplierId" 
+                      class="form-select bg-light-focus border-start-0" 
+                      [(ngModel)]="batch.supplierId">
+                <option [ngValue]="undefined">-- Select Supplier (Optional) --</option>
+                <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 2: Pricing & Validity Matrix -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Pricing & Dates Matrix</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-3 col-sm-6">
+            <label for="purchasePrice" class="form-label fw-semibold">Purchase Price ($) <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-cash-coin"></i></span>
+              <input type="number" 
+                     id="purchasePrice" 
+                     name="purchasePrice" 
+                     step="0.01"
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. 15.00" 
+                     [(ngModel)]="batch.purchasePrice" 
+                     #purchasePriceInput="ngModel" 
+                     required 
+                     [class.is-invalid]="purchasePriceInput.invalid && (purchasePriceInput.dirty || purchasePriceInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Purchase price is required.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <label for="sellingPrice" class="form-label fw-semibold">Selling Price ($) <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-graph-up-arrow"></i></span>
+              <input type="number" 
+                     id="sellingPrice" 
+                     name="sellingPrice" 
+                     step="0.01"
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. 22.50" 
+                     [(ngModel)]="batch.sellingPrice" 
+                     #sellingPriceInput="ngModel" 
+                     required 
+                     [class.is-invalid]="sellingPriceInput.invalid && (sellingPriceInput.dirty || sellingPriceInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Selling price is required.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <label for="manufactureDate" class="form-label fw-semibold">Manufacture Date</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+              <input type="date" 
+                     id="manufactureDate" 
+                     name="manufactureDate" 
+                     class="form-control bg-light-focus border-start-0" 
+                     [(ngModel)]="batch.manufactureDate" />
+            </div>
+          </div>
+
+          <div class="col-md-3 col-sm-6">
+            <label for="expiryDate" class="form-label fw-semibold">Expiry Date <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-x"></i></span>
+              <input type="date" 
+                     id="expiryDate" 
+                     name="expiryDate" 
+                     class="form-control bg-light-focus border-start-0" 
+                     [(ngModel)]="batch.expiryDate" 
+                     #expiryDateInput="ngModel" 
+                     required 
+                     [class.is-invalid]="expiryDateInput.invalid && (expiryDateInput.dirty || expiryDateInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Expiry date is required.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Checkbox Active Setting switch -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-12">
+            <div class="form-check form-switch card p-3 border-0 shadow-xs bg-light">
+              <div class="d-flex align-items-center">
+                <input class="form-check-input me-3 ms-0 edit-switch-input" 
+                       type="checkbox" 
+                       id="isActive" 
+                       name="isActive" 
+                       [(ngModel)]="batch.isActive">
+                <div>
+                  <label class="form-check-label fw-bold text-dark-teal mb-0.5" for="isActive">Batch Profile Status (Active)</label>
+                  <span class="text-muted d-block small">Toggle to active or de-activate this batch layout manually.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- Form Actions Footer -->
+        <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
+          <button type="button" class="btn btn-outline-secondary px-4 py-2.5 fw-bold" (click)="resetForm()">
+            Reset Form
+          </button>
+          <button type="submit" class="btn btn-mint-primary px-5 py-2.5 fw-bold shadow-sm d-flex align-items-center gap-2">
+            <i class="bi bi-cloud-arrow-up-fill"></i>
+            <span>Save Batch</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

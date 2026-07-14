@@ -13,6 +13,9 @@ export class Sidebar {
   isBranchDropdownOpen = false;
   isBranchInventoryDropdownOpen = false;
   isCategoryDropdownOpen = false;
+  isGenericDropdownOpen = false;
+  isMedicineDropdownOpen = false;
+  isMedicineBatchDropdownOpen = false;
 
   toggleSupplierDropdown(): void {
     this.isSupplierDropdownOpen = !this.isSupplierDropdownOpen;
@@ -29,5 +32,18 @@ export class Sidebar {
   toggleCategoryDropdown(): void {
     this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
   }
+
+  toggleGenericDropdown(): void {
+    this.isGenericDropdownOpen = !this.isGenericDropdownOpen;
+  }
+
+  toggleMedicineDropdown(): void {
+    this.isMedicineDropdownOpen = !this.isMedicineDropdownOpen;
+  }
+
+  toggleMedicineBatchDropdown(): void {
+    this.isMedicineBatchDropdownOpen = !this.isMedicineBatchDropdownOpen;
+  }
 }
+
 

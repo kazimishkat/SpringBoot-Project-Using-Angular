@@ -1,0 +1,371 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Alert Banner inside right side -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- STATE 1: Browse Generic Medicines as Cards (Default Grid View) -->
+  <div *ngIf="!genericDetails">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Generic Medicine Catalog</h3>
+        <p class="text-muted small mb-0">Browse therapeutic indications, classifications, and side effects for all generic formulas.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <!-- Search Input in Header -->
+        <div class="input-group" style="max-width: 300px;">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input #filterInput 
+                 (input)="0" 
+                 type="text" 
+                 class="form-control bg-light-focus border-start-0" 
+                 placeholder="Search by generic name..." />
+        </div>
+        <a routerLink="/dashboard/generic-medicines/add" class="btn btn-mint-primary fw-semibold text-decoration-none d-flex align-items-center gap-2 shadow-sm">
+          <i class="bi bi-plus-circle-fill"></i>
+          <span>Add Generic</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Generic Medicine Card Grid -->
+    <div class="row g-3" *ngIf="masterGenericList.length > 0; else emptyRegistry">
+      <ng-container *ngFor="let item of masterGenericList">
+        <!-- Template Filter matching genericName -->
+        <div class="col-lg-4 col-md-6 col-sm-12 animate-fade-in" 
+             *ngIf="!filterInput.value || item.genericName.toLowerCase().includes(filterInput.value.toLowerCase())">
+          <div class="card border-0 shadow-sm rounded-4 h-100 generic-overview-card d-flex flex-column">
+            <!-- Card Body: Basic Info -->
+            <div class="card-body p-4 flex-grow-1">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="generic-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-4 rounded-circle flex-shrink-0">
+                  {{ item.genericName.charAt(0).toUpperCase() }}
+                </div>
+                <div class="overflow-hidden">
+                  <h5 class="mb-0 fw-bold text-dark-teal text-truncate" [title]="item.genericName">{{ item.genericName }}</h5>
+                  <div class="d-flex align-items-center gap-1.5 mt-1 flex-wrap">
+                    <span class="badge bg-teal-light text-teal fw-bold font-monospace text-xs">#{{ item.id }}</span>
+                    <span class="badge bg-light text-dark text-xs">{{ item.categoryName || 'N/A' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Info Details -->
+              <div class="generic-quick-details small mt-3 text-muted">
+                <div class="d-flex align-items-start gap-2 mb-2">
+                  <i class="bi bi-clipboard-pulse text-teal mt-0.5"></i>
+                  <div class="overflow-hidden">
+                    <span class="text-xs d-block text-uppercase fw-semibold mb-0.5">Indication</span>
+                    <span class="text-dark fw-medium text-truncate-2" [title]="item.indication">{{ item.indication || 'N/A' }}</span>
+                  </div>
+                </div>
+                <div class="d-flex align-items-start gap-2">
+                  <i class="bi bi-exclamation-triangle text-teal mt-0.5"></i>
+                  <div class="overflow-hidden">
+                    <span class="text-xs d-block text-uppercase fw-semibold mb-0.5">Side Effects</span>
+                    <span class="text-dark fw-medium text-truncate-2" [title]="item.sideEffects">{{ item.sideEffects || 'N/A' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Footer: Status & Actions -->
+            <div class="card-footer bg-light border-0 py-3 px-4 d-flex align-items-center justify-content-between rounded-bottom-4 mt-auto">
+              <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
+                    [ngClass]="item.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                {{ item.isActive ? 'Active' : 'Inactive' }}
+              </span>
+              <div class="d-flex gap-2">
+                <button (click)="fetchGranularDetailsPanel(item.id)" 
+                        class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1.5 px-2.5 py-1.5 font-size-xs fw-semibold" 
+                        title="View Full Profile">
+                  <i class="bi bi-eye-fill"></i>
+                  <span>Details</span>
+                </button>
+                <button (click)="deleteGeneric(item.id)" 
+                        class="btn btn-sm btn-outline-danger d-inline-flex align-items-center p-2"
+                        title="Delete Generic Medicine">
+                  <i class="bi bi-trash-fill"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Empty Registry Layout -->
+    <ng-template #emptyRegistry>
+      <div class="card border-0 shadow-sm rounded-4 text-center py-5 px-4">
+        <div class="empty-state-icon mb-3">
+          <i class="bi bi-bookmark-plus text-muted-teal display-4"></i>
+        </div>
+        <h5 class="fw-bold text-dark-teal mb-2">No Generic Medicines Registered</h5>
+        <p class="text-muted small mx-auto mb-4" style="max-width: 400px;">
+          There are no generic medicine configurations registered in the system. Add a new generic medicine profile to get started.
+        </p>
+        <a routerLink="/dashboard/generic-medicines/add" class="btn btn-mint-primary px-4 fw-bold text-decoration-none">
+          <i class="bi bi-plus-circle-fill me-2"></i>Register New Generic
+        </a>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- STATE 2: Read-Only Detail Card View (Single Selected Generic Medicine) -->
+  <div class="animate-fade-in" *ngIf="genericDetails && !isEditMode">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Generic Medicine Profile Card</h3>
+        <p class="text-muted small mb-0">Granular therapeutic data, side effects, and class boundaries.</p>
+      </div>
+      <button (click)="genericDetails = null" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to Catalog</span>
+      </button>
+    </div>
+
+    <!-- Hero Card header details -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 generic-hero-card">
+      <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="generic-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-3 rounded-circle">
+            {{ genericDetails.genericName.charAt(0).toUpperCase() }}
+          </div>
+          <div>
+            <h4 class="mb-1 fw-bold text-dark-teal">{{ genericDetails.genericName }}</h4>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge bg-teal-light text-teal fw-bold font-monospace px-2.5 py-1 text-xs">#{{ genericDetails.id }}</span>
+              <span class="badge bg-light text-dark text-xs">{{ genericDetails.categoryName || 'N/A' }}</span>
+              <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs animate-pulse" 
+                    [ngClass]="genericDetails.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                {{ genericDetails.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-mint btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm" (click)="enableEditMode()">
+            <i class="bi bi-pencil-square"></i>
+            <span>Edit Profile</span>
+          </button>
+          <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm" (click)="deleteGeneric(genericDetails.id)">
+            <i class="bi bi-trash-fill"></i>
+            <span>Delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards detail sections -->
+    <div class="row g-3">
+      <!-- Indications & Contraindications -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
+          <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
+              <i class="bi bi-clipboard-pulse"></i>
+              <span>Clinical Guidance</span>
+            </h6>
+          </div>
+          <div class="card-body px-4 py-3">
+            <div class="mb-3">
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Approved Indication</span>
+              <span class="text-dark fw-bold" style="white-space: pre-line;">{{ genericDetails.indication || 'N/A' }}</span>
+            </div>
+            <div>
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Contraindications</span>
+              <span class="text-dark fw-bold text-danger" style="white-space: pre-line;">{{ genericDetails.contraindications || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side Effects & Description -->
+      <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
+          <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
+              <i class="bi bi-exclamation-triangle"></i>
+              <span>Adverse Reactions & Notes</span>
+            </h6>
+          </div>
+          <div class="card-body px-4 py-3">
+            <div class="mb-3">
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Potential Side Effects</span>
+              <span class="text-dark fw-bold" style="white-space: pre-line;">{{ genericDetails.sideEffects || 'N/A' }}</span>
+            </div>
+            <div>
+              <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">General Description</span>
+              <span class="text-dark fw-bold" style="white-space: pre-line;">{{ genericDetails.description || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Registry Metadata logs Card -->
+      <div class="col-12" *ngIf="genericDetails.createdAt">
+        <div class="card border-0 shadow-sm rounded-4 detail-info-card py-2">
+          <div class="card-body px-4 py-2 d-flex align-items-center justify-content-between flex-wrap gap-2 text-muted small">
+            <div>
+              <i class="bi bi-clock-history me-1.5"></i>
+              <span>Created On: <strong>{{ genericDetails.createdAt | date:'medium' }}</strong></span>
+            </div>
+            <div *ngIf="genericDetails.updatedAt">
+              <i class="bi bi-pencil-square me-1.5"></i>
+              <span>Last Modified: <strong>{{ genericDetails.updatedAt | date:'medium' }}</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATE 3: Interactive Edit Form Mode -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 animate-fade-in" *ngIf="genericDetails && isEditMode">
+    <div class="card-header bg-gradient-teal py-3 px-4 text-white d-flex align-items-center justify-content-between">
+      <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+        <i class="bi bi-pencil-square"></i>
+        <span>Modify Generic Medicine Registry</span>
+      </h5>
+      <span class="badge bg-white text-teal font-monospace px-3 py-1.5 fs-6">#{{ editData.id }}</span>
+    </div>
+
+    <div class="card-body p-4">
+      <form #genericForm="ngForm" (ngSubmit)="updateGeneric()" novalidate>
+        
+        <!-- SECTION 1: Primary Information -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Primary Information</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6 col-sm-12">
+            <label for="editGenericName" class="form-label fw-semibold">Generic Name <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-tag"></i></span>
+              <input type="text" 
+                     id="editGenericName" 
+                     name="genericName" 
+                     class="form-control bg-light-focus border-start-0" 
+                     [(ngModel)]="editData.genericName" 
+                     #genericNameInput="ngModel" 
+                     required 
+                     [class.is-invalid]="genericNameInput.invalid && (genericNameInput.dirty || genericNameInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Generic name is required.
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6 col-sm-12">
+            <label for="editCategoryId" class="form-label fw-semibold">Medicine Category <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-folder2-open"></i></span>
+              <select id="editCategoryId" 
+                      name="categoryId" 
+                      class="form-select bg-light-focus border-start-0" 
+                      [(ngModel)]="editData.categoryId" 
+                      #categoryIdInput="ngModel" 
+                      required 
+                      [class.is-invalid]="categoryIdInput.invalid && (categoryIdInput.dirty || categoryIdInput.touched || submitted)">
+                <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+              </select>
+              <div class="invalid-feedback">
+                Medicine category is required.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 2: Therapeutic details -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Therapeutic details & Usage Rules</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6 col-sm-12">
+            <label for="editIndication" class="form-label fw-semibold">Indication</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-clipboard-pulse"></i></span>
+              <textarea id="editIndication" 
+                        name="indication" 
+                        class="form-control bg-light-focus border-start-0" 
+                        rows="3" 
+                        [(ngModel)]="editData.indication"></textarea>
+            </div>
+          </div>
+          
+          <div class="col-md-6 col-sm-12">
+            <label for="editContraindications" class="form-label fw-semibold">Contraindications</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-x-circle-fill text-danger"></i></span>
+              <textarea id="editContraindications" 
+                        name="contraindications" 
+                        class="form-control bg-light-focus border-start-0" 
+                        rows="3" 
+                        [(ngModel)]="editData.contraindications"></textarea>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-sm-12">
+            <label for="editSideEffects" class="form-label fw-semibold">Side Effects</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-exclamation-triangle"></i></span>
+              <textarea id="editSideEffects" 
+                        name="sideEffects" 
+                        class="form-control bg-light-focus border-start-0" 
+                        rows="3" 
+                        [(ngModel)]="editData.sideEffects"></textarea>
+            </div>
+          </div>
+
+          <div class="col-md-6 col-sm-12">
+            <label for="editDescription" class="form-label fw-semibold">Description</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-file-text"></i></span>
+              <textarea id="editDescription" 
+                        name="description" 
+                        class="form-control bg-light-focus border-start-0" 
+                        rows="3" 
+                        [(ngModel)]="editData.description"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 3: Status -->
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="form-check form-switch custom-switch">
+            <input class="form-check-input" 
+                   type="checkbox" 
+                   role="switch" 
+                   id="editIsActive" 
+                   name="isActive" 
+                   [(ngModel)]="editData.isActive" />
+            <label class="form-check-label fw-semibold cursor-pointer" for="editIsActive">Set Generic Medicine as Active</label>
+          </div>
+          <span class="badge" [ngClass]="editData.isActive ? 'bg-mint text-dark-teal' : 'bg-secondary text-light'">
+            {{ editData.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex align-items-center justify-content-end gap-3 mt-4 pt-3 border-top border-light">
+          <button type="button" 
+                  class="btn btn-outline-secondary px-4 py-2.5 fw-semibold" 
+                  (click)="cancelEdit()">
+            Cancel
+          </button>
+          
+          <button type="submit" 
+                  class="btn btn-mint-primary px-5 py-2.5 fw-bold shadow-sm d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill"></i>Update Generic Medicine
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

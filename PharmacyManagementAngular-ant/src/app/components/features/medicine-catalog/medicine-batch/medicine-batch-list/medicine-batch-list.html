@@ -1,0 +1,155 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Medicine Batches Register</h3>
+      <p class="text-muted small mb-0">Track specific manufacturing runs, expiration dates, supplier details, and batch pricing metrics.</p>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-body p-3">
+      <div class="row g-3 align-items-center">
+        <!-- Live Client Search -->
+        <div class="col-md-5 col-sm-12">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input #filterInput 
+                   (input)="0" 
+                   type="text" 
+                   class="form-control bg-light-focus border-start-0" 
+                   placeholder="Filter list by batch # or brand..." />
+          </div>
+        </div>
+
+        <!-- Expiration Date Filter -->
+        <div class="col-md-5 col-sm-8">
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+            <input type="date" 
+                   class="form-control bg-light-focus border-start-0 border-end-0" 
+                   [(ngModel)]="expiryFilterDate" 
+                   (change)="onFilterExpiration()" />
+            <span class="input-group-text bg-white text-muted small">Show Expiring Before</span>
+          </div>
+        </div>
+
+        <!-- Reset Controls -->
+        <div class="col-md-2 col-sm-4 d-flex gap-2">
+          <button type="button" 
+                  class="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2"
+                  (click)="expiryFilterDate = ''; filterInput.value = ''; loadAllBatches()" 
+                  title="Reset Filters">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+      <h5 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
+        <i class="bi bi-stack"></i>
+        <span>Batches Inventory Directory</span>
+      </h5>
+      <span class="badge bg-mint text-dark-teal px-3 py-2 rounded-pill fw-bold">
+        Total: {{ batches.length }}
+      </span>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="table-responsive" *ngIf="batches.length > 0; else emptyState">
+        <table class="table table-hover align-middle mb-0 custom-batch-table">
+          <thead class="table-light text-uppercase font-size-xs fw-bold text-muted">
+            <tr>
+              <th scope="col" class="ps-4">Batch Number</th>
+              <th scope="col">Medicine (Brand)</th>
+              <th scope="col">Supplier</th>
+              <th scope="col">Mfg Date</th>
+              <th scope="col">Expiry Date</th>
+              <th scope="col">Purchase Price</th>
+              <th scope="col">Selling Price</th>
+              <th scope="col" class="text-center">Status</th>
+              <th scope="col" class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let b of batches">
+              <tr *ngIf="!filterInput.value || b.batchNumber.toLowerCase().includes(filterInput.value.toLowerCase()) || b.brandName.toLowerCase().includes(filterInput.value.toLowerCase())" class="batch-row">
+                <td class="ps-4">
+                  <span class="badge bg-teal-light text-teal fw-bold font-monospace">{{ b.batchNumber }}</span>
+                </td>
+                <td>
+                  <div class="fw-bold text-dark-teal mb-0.5">{{ b.brandName }}</div>
+                  <div class="text-muted small font-monospace">ID: {{ b.medicineId }}</div>
+                </td>
+                <td>
+                  <span class="text-dark fw-medium">{{ b.supplierName || 'N/A' }}</span>
+                </td>
+                <td>
+                  <span class="text-muted small">{{ b.manufactureDate | date:'mediumDate' }}</span>
+                </td>
+                <td>
+                  <span class="text-muted small">{{ b.expiryDate | date:'mediumDate' }}</span>
+                </td>
+                <td>
+                  <div class="fw-bold text-dark">${{ b.purchasePrice | number:'1.2-2' }}</div>
+                </td>
+                <td>
+                  <div class="fw-bold text-success">${{ b.sellingPrice | number:'1.2-2' }}</div>
+                </td>
+                <td class="text-center">
+                  <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
+                        [ngClass]="b.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                    {{ b.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td class="text-end pe-4">
+                  <div class="d-inline-flex gap-2">
+                    <a [routerLink]="['/dashboard/medicine-batches/details', b.id]" 
+                       class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1 text-decoration-none"
+                       title="View Details">
+                      <i class="bi bi-eye-fill"></i>
+                      <span>Details</span>
+                    </a>
+                    <button (click)="deleteBatch(b.id)" 
+                            class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1"
+                            title="Delete Batch">
+                      <i class="bi bi-trash-fill"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <ng-template #emptyState>
+        <div class="text-center py-5 px-4">
+          <div class="empty-state-icon mb-3">
+            <i class="bi bi-stack text-muted-teal display-4"></i>
+          </div>
+          <h5 class="fw-bold text-dark-teal mb-2">No Batches Configured</h5>
+          <p class="text-muted small mx-auto mb-4" style="max-width: 400px;">
+            There are no recorded batches matching these filter parameters. Batch data must be input into the inventory records.
+          </p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

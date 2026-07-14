@@ -69,6 +69,7 @@ export interface MedicineModelRequest extends BaseEntity {
   reorderQuantity?: number;
   defaultPurchasePrice?: number;
   defaultSellingPrice?: number;
+  vatPercentage?:number;
   description?: string;
   image?: string;
 }
@@ -93,6 +94,8 @@ export interface MedicineModelResponse extends BaseEntity {
   reorderQuantity: number;
   defaultPurchasePrice: number;
   defaultSellingPrice: number;
+  vatPercentage:number;
+  description: string;
   isActive: boolean;
   image: string;
 }

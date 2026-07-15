@@ -8,8 +8,8 @@ import { BaseEntity } from "./baseEntity.model";
 
 // ==========================================
 export enum BranchType {
-  MAIN = 'MAIN',
-  SUB = 'SUB'
+  BRANCH = 'BRANCH',
+  CENTRAL_HUB = 'CENTRAL_HUB'
 }
 
 // ==========================================
@@ -34,7 +34,7 @@ export interface BranchResponse extends BaseEntity {
   branchCode: string;
   name: string;
   branchType: BranchType;
-  address: Address;
+  address?: Address;
   phone: string;
   email: string;
   licenseNumber: string;

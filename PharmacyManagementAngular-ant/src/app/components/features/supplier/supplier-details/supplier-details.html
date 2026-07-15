@@ -68,8 +68,8 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                   <i class="bi bi-geo-alt text-teal"></i>
-                  <span class="text-truncate text-dark" title="{{ item.address.city }}, {{ item.address.country }}">
-                    {{ item.address.city || 'N/A' }}, {{ item.address.country || 'N/A' }}
+                  <span class="text-truncate text-dark" title="{{ item.address?.city || '' }}, {{ item.address?.country || '' }}">
+                    {{ item.address?.city || 'N/A' }}, {{ item.address?.country || 'N/A' }}
                   </span>
                 </div>
               </div>
@@ -412,12 +412,18 @@
         <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Address Profile</h6>
         <div class="row g-3 mb-4" *ngIf="editData.address">
           <div class="col-md-6">
-            <label for="addressLine1" class="form-label fw-semibold">Address Line 1</label>
+            <label for="addressLine1" class="form-label fw-semibold">Address Line 1 <span class="text-danger">*</span></label>
             <input type="text" 
                    id="addressLine1" 
                    name="addressLine1" 
                    class="form-control bg-light-focus" 
-                   [(ngModel)]="editData.address.addressLine1" />
+                   [(ngModel)]="editData.address.addressLine1" 
+                   #addressLine1Input="ngModel"
+                   required
+                   [class.is-invalid]="addressLine1Input.invalid && (addressLine1Input.dirty || addressLine1Input.touched || submitted)" />
+            <div class="invalid-feedback">
+              Address line 1 is required.
+            </div>
           </div>
 
           <div class="col-md-6">
@@ -430,12 +436,18 @@
           </div>
 
           <div class="col-md-3">
-            <label for="city" class="form-label fw-semibold">City</label>
+            <label for="city" class="form-label fw-semibold">City <span class="text-danger">*</span></label>
             <input type="text" 
                    id="city" 
                    name="city" 
                    class="form-control bg-light-focus" 
-                   [(ngModel)]="editData.address.city" />
+                   [(ngModel)]="editData.address.city" 
+                   #cityInput="ngModel"
+                   required
+                   [class.is-invalid]="cityInput.invalid && (cityInput.dirty || cityInput.touched || submitted)" />
+            <div class="invalid-feedback">
+              City is required.
+            </div>
           </div>
 
           <div class="col-md-3">
@@ -448,21 +460,33 @@
           </div>
 
           <div class="col-md-3">
-            <label for="postalCode" class="form-label fw-semibold">Postal / ZIP Code</label>
+            <label for="postalCode" class="form-label fw-semibold">Postal / ZIP Code <span class="text-danger">*</span></label>
             <input type="text" 
                    id="postalCode" 
                    name="postalCode" 
                    class="form-control bg-light-focus" 
-                   [(ngModel)]="editData.address.postalCode" />
+                   [(ngModel)]="editData.address.postalCode" 
+                   #postalCodeInput="ngModel"
+                   required
+                   [class.is-invalid]="postalCodeInput.invalid && (postalCodeInput.dirty || postalCodeInput.touched || submitted)" />
+            <div class="invalid-feedback">
+              Postal code is required.
+            </div>
           </div>
 
           <div class="col-md-3">
-            <label for="country" class="form-label fw-semibold">Country</label>
+            <label for="country" class="form-label fw-semibold">Country <span class="text-danger">*</span></label>
             <input type="text" 
                    id="country" 
                    name="country" 
                    class="form-control bg-light-focus" 
-                   [(ngModel)]="editData.address.country" />
+                   [(ngModel)]="editData.address.country" 
+                   #countryInput="ngModel"
+                   required
+                   [class.is-invalid]="countryInput.invalid && (countryInput.dirty || countryInput.touched || submitted)" />
+            <div class="invalid-feedback">
+              Country is required.
+            </div>
           </div>
         </div>
 

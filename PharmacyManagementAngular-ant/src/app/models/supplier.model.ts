@@ -29,5 +29,5 @@ export interface SupplierResponse extends BaseEntity {
   tradeLicenseNo: string;
   taxId: string;
   isActive: boolean;
-  address: Address;
+  address?: Address;
 }

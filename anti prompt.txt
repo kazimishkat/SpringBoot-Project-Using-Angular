@@ -1,8 +1,26 @@
 angular command
 1.now give me complete model ,service and ts under component by following my previous instruction
 2.now give me complete branch-list,branch-add
+3.branch-details ts complete code under component,like supplier finalize ts you gave me take those as sample for branch
+4.these my service and model from angular
 
-branch-details ts complete code under component,like supplier finalize ts you gave me take those as sample for branch
+stock-movement
+
+│
+
+├── movement-history
+
+│
+
+├── stock-movement.service.ts
+
+├── stock-movement.model.ts
+
+└── stock-movement.routes.ts
+
+you gave me this pattern,is it final or anything you want to change? 
+
+
 
 anti gravity
 2.i want generic database inputed data showing 

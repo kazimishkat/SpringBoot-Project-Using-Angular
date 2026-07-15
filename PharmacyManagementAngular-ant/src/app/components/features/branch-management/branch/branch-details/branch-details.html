@@ -50,7 +50,7 @@
                   <h5 class="mb-0 fw-bold text-dark-teal text-truncate" title="{{ item.name }}">{{ item.name }}</h5>
                   <div class="d-flex align-items-center gap-1.5 mt-1 flex-wrap">
                     <span class="badge bg-teal-light text-teal fw-bold font-monospace text-xs">{{ item.branchCode }}</span>
-                    <span class="badge text-xs" [ngClass]="item.branchType === 'MAIN' ? 'bg-mint text-dark-teal' : 'bg-light text-dark'">{{ item.branchType }}</span>
+                    <span class="badge text-xs" [ngClass]="item.branchType === 'CENTRAL_HUB' ? 'bg-mint text-dark-teal' : 'bg-light text-dark'">{{ item.branchType }}</span>
                   </div>
                 </div>
               </div>
@@ -71,8 +71,8 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                   <i class="bi bi-geo-alt text-teal"></i>
-                  <span class="text-truncate text-dark" title="{{ item.address.city }}, {{ item.address.country }}">
-                    {{ item.address.city || 'N/A' }}, {{ item.address.country || 'N/A' }}
+                  <span class="text-truncate text-dark" title="{{ item.address?.city || '' }}, {{ item.address?.country || '' }}">
+                    {{ item.address?.city || 'N/A' }}, {{ item.address?.country || 'N/A' }}
                   </span>
                 </div>
               </div>
@@ -145,7 +145,7 @@
             <h4 class="mb-1 fw-bold text-dark-teal">{{ branchDetails.name }}</h4>
             <div class="d-flex align-items-center gap-2 flex-wrap">
               <span class="badge bg-teal-light text-teal fw-bold font-monospace px-2.5 py-1 text-xs">{{ branchDetails.branchCode }}</span>
-              <span class="badge text-xs" [ngClass]="branchDetails.branchType === 'MAIN' ? 'bg-mint text-dark-teal' : 'bg-light text-dark'">{{ branchDetails.branchType }}</span>
+              <span class="badge text-xs" [ngClass]="branchDetails.branchType === 'CENTRAL_HUB' ? 'bg-mint text-dark-teal' : 'bg-light text-dark'">{{ branchDetails.branchType }}</span>
               <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs animate-pulse" 
                     [ngClass]="branchDetails.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
                 {{ branchDetails.isActive ? 'Active' : 'Inactive' }}
@@ -419,12 +419,18 @@
         <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Address Profile</h6>
         <div class="row g-3 mb-4" *ngIf="editData.address">
           <div class="col-md-6">
-            <label for="addressLine1" class="form-label fw-semibold">Address Line 1</label>
+            <label for="addressLine1" class="form-label fw-semibold">Address Line 1 <span class="text-danger">*</span></label>
             <input type="text" 
                    id="addressLine1" 
                    name="addressLine1" 
                    class="form-control bg-light-focus" 
-                   [(ngModel)]="editData.address.addressLine1" />
+                   [(ngModel)]="editData.address.addressLine1" 
+                   #addressLine1Input="ngModel"
+                   required
+                   [class.is-invalid]="addressLine1Input.invalid && (addressLine1Input.dirty || addressLine1Input.touched || submitted)" />
+            <div class="invalid-feedback">
+              Address line 1 is required.
+            </div>
           </div>
 
           <div class="col-md-6">
@@ -437,12 +443,18 @@
           </div>
 
           <div class="col-md-3">
-            <label for="city" class="form-label fw-semibold">City</label>
+            <label for="city" class="form-label fw-semibold">City <span class="text-danger">*</span></label>
             <input type="text" 
                    id="city" 
                    name="city" 
                    class="form-control bg-light-focus" 
-                   [(ngModel)]="editData.address.city" />
+                   [(ngModel)]="editData.address.city" 
+                   #cityInput="ngModel"
+                   required
+                   [class.is-invalid]="cityInput.invalid && (cityInput.dirty || cityInput.touched || submitted)" />
+            <div class="invalid-feedback">
+              City is required.
+            </div>
           </div>
 
           <div class="col-md-3">
@@ -455,21 +467,33 @@
           </div>
 
           <div class="col-md-3">
-            <label for="postalCode" class="form-label fw-semibold">Postal / ZIP Code</label>
+            <label for="postalCode" class="form-label fw-semibold">Postal / ZIP Code <span class="text-danger">*</span></label>
             <input type="text" 
                    id="postalCode" 
                    name="postalCode" 
                    class="form-control bg-light-focus" 
-                   [(ngModel)]="editData.address.postalCode" />
+                   [(ngModel)]="editData.address.postalCode" 
+                   #postalCodeInput="ngModel"
+                   required
+                   [class.is-invalid]="postalCodeInput.invalid && (postalCodeInput.dirty || postalCodeInput.touched || submitted)" />
+            <div class="invalid-feedback">
+              Postal code is required.
+            </div>
           </div>
 
           <div class="col-md-3">
-            <label for="country" class="form-label fw-semibold">Country</label>
+            <label for="country" class="form-label fw-semibold">Country <span class="text-danger">*</span></label>
             <input type="text" 
                    id="country" 
                    name="country" 
                    class="form-control bg-light-focus" 
-                   [(ngModel)]="editData.address.country" />
+                   [(ngModel)]="editData.address.country" 
+                   #countryInput="ngModel"
+                   required
+                   [class.is-invalid]="countryInput.invalid && (countryInput.dirty || countryInput.touched || submitted)" />
+            <div class="invalid-feedback">
+              Country is required.
+            </div>
           </div>
         </div>
 

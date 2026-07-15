@@ -74,7 +74,7 @@ export class AddBranch implements OnInit {
       .createBranch(this.branch)
       .subscribe({
         next: (res) => {
-          alert('Branch Profile Saved Successfully');
+          alert('Branch Saved Successfully');
           this.resetForm();
         },
         error: (err) => {

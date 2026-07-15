@@ -85,7 +85,7 @@
                 <div class="fw-bold text-dark-teal">{{ b.name }}</div>
               </td>
               <td>
-                <span class="badge" [ngClass]="b.branchType === 'MAIN' ? 'bg-mint text-dark-teal' : 'bg-light text-dark'">
+                <span class="badge" [ngClass]="b.branchType === 'CENTRAL_HUB' ? 'bg-mint text-dark-teal' : 'bg-light text-dark'">
                   {{ b.branchType }}
                 </span>
               </td>
@@ -96,7 +96,7 @@
                 <span class="text-muted small">{{ b.phone || 'N/A' }}</span>
               </td>
               <td>
-                <span class="text-muted small">{{ b.address.city || 'N/A' }}</span>
+                <span class="text-muted small">{{ b.address?.city || 'N/A' }}</span>
               </td>
               <td class="text-center">
                 <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 

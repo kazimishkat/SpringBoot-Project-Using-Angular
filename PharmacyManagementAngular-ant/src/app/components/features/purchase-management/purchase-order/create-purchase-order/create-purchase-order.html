@@ -1,0 +1,225 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Create Purchase Order</h3>
+      <p class="text-muted small mb-0">Draft a new purchase order requisition to replenish pharmacy inventories.</p>
+    </div>
+    <div>
+      <a routerLink="/dashboard/purchase-orders" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm text-decoration-none">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to List</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Form Card -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-gradient-teal py-3 px-4 text-white">
+      <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+        <i class="bi bi-file-earmark-plus"></i>
+        <span>Purchase Order Form</span>
+      </h5>
+    </div>
+    <div class="card-body p-4">
+      <form #poForm="ngForm" (ngSubmit)="savePurchaseOrder()" novalidate>
+        
+        <!-- SECTION 1: Header / Metadata -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Requisition Headers</h6>
+        <div class="row g-3 mb-4">
+          <!-- PO Number -->
+          <div class="col-md-4">
+            <label for="poNumber" class="form-label fw-semibold">PO Number <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-hash"></i></span>
+              <input type="text" 
+                     id="poNumber" 
+                     name="poNumber" 
+                     class="form-control bg-light-focus border-start-0" 
+                     placeholder="e.g. PO-2026-001" 
+                     [(ngModel)]="poRequest.poNumber" 
+                     #poNumberInput="ngModel" 
+                     required 
+                     [class.is-invalid]="poNumberInput.invalid && (poNumberInput.dirty || poNumberInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Purchase Order number is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Date -->
+          <div class="col-md-4">
+            <label for="orderDate" class="form-label fw-semibold">Order Date <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+              <input type="date" 
+                     id="orderDate" 
+                     name="orderDate" 
+                     class="form-control bg-light-focus border-start-0" 
+                     [(ngModel)]="poRequest.orderDate" 
+                     #orderDateInput="ngModel" 
+                     required 
+                     [class.is-invalid]="orderDateInput.invalid && (orderDateInput.dirty || orderDateInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Order date is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- Expected Delivery Date -->
+          <div class="col-md-4">
+            <label for="expectedDeliveryDate" class="form-label fw-semibold">Expected Delivery Date</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-check"></i></span>
+              <input type="date" 
+                     id="expectedDeliveryDate" 
+                     name="expectedDeliveryDate" 
+                     class="form-control bg-light-focus border-start-0" 
+                     [(ngModel)]="poRequest.expectedDeliveryDate" />
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <!-- Supplier Dropdown -->
+          <div class="col-md-6">
+            <label for="supplierId" class="form-label fw-semibold">Target Supplier <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-building"></i></span>
+              <select id="supplierId" 
+                      name="supplierId" 
+                      class="form-select bg-light-focus border-start-0" 
+                      [(ngModel)]="poRequest.supplierId" 
+                      #supplierInput="ngModel" 
+                      required 
+                      [class.is-invalid]="supplierInput.invalid && (supplierInput.dirty || supplierInput.touched || submitted)">
+                <option [value]="undefined" disabled selected>-- Select Vendor --</option>
+                <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
+              </select>
+              <div class="invalid-feedback">
+                Supplier selection is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- Branch Dropdown -->
+          <div class="col-md-6">
+            <label for="branchId" class="form-label fw-semibold">Receiving Branch <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-shop-window"></i></span>
+              <select id="branchId" 
+                      name="branchId" 
+                      class="form-select bg-light-focus border-start-0" 
+                      [(ngModel)]="poRequest.branchId" 
+                      #branchInput="ngModel" 
+                      required 
+                      [class.is-invalid]="branchInput.invalid && (branchInput.dirty || branchInput.touched || submitted)">
+                <option [value]="undefined" disabled selected>-- Select Destination Branch --</option>
+                <option *ngFor="let b of branches" [value]="b.id">{{ b.branchName || b.name }}</option>
+              </select>
+              <div class="invalid-feedback">
+                Receiving branch selection is required.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 2: Dynamic Purchase Items Row Grid -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0">Requested Medicines List</h6>
+          <button type="button" class="btn btn-sm btn-outline-mint d-flex align-items-center gap-1" (click)="addItemRow()">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Add Item</span>
+          </button>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-responsive border rounded-3 mb-4 overflow-hidden">
+          <table class="table align-middle mb-0">
+            <thead class="table-light text-uppercase font-size-xs fw-bold text-muted">
+              <tr>
+                <th scope="col" style="min-width: 250px;" class="ps-3">Medicine Brand <span class="text-danger">*</span></th>
+                <th scope="col" style="width: 150px;">Quantity <span class="text-danger">*</span></th>
+                <th scope="col" style="width: 180px;">Unit Price (USD) <span class="text-danger">*</span></th>
+                <th scope="col" class="text-center" style="width: 80px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of poRequest.items; let i = index">
+                <td class="ps-3">
+                  <select [id]="'med-' + i" 
+                          [name]="'med-' + i" 
+                          class="form-select bg-light-focus border-0" 
+                          [(ngModel)]="item.medicineId" 
+                          #itemMed="ngModel" 
+                          required 
+                          [class.is-invalid]="itemMed.invalid && (itemMed.dirty || itemMed.touched || submitted)">
+                    <option [value]="undefined" disabled selected>-- Select Medicine --</option>
+                    <option *ngFor="let m of medicines" [value]="m.id">{{ m.brandName }} ({{ m.medicineCode }})</option>
+                  </select>
+                </td>
+                <td>
+                  <input type="number" 
+                         [id]="'qty-' + i" 
+                         [name]="'qty-' + i" 
+                         class="form-control bg-light-focus border-0" 
+                         min="1" 
+                         [(ngModel)]="item.orderedQuantity" 
+                         #itemQty="ngModel" 
+                         required 
+                         [class.is-invalid]="itemQty.invalid && (itemQty.dirty || itemQty.touched || submitted)" />
+                </td>
+                <td>
+                  <div class="input-group">
+                    <span class="input-group-text border-0 bg-transparent text-muted small">$</span>
+                    <input type="number" 
+                           step="0.01"
+                           [id]="'price-' + i" 
+                           [name]="'price-' + i" 
+                           class="form-control bg-light-focus border-0" 
+                           min="0" 
+                           [(ngModel)]="item.unitPrice" 
+                           #itemPrice="ngModel" 
+                           required 
+                           [class.is-invalid]="itemPrice.invalid && (itemPrice.dirty || itemPrice.touched || submitted)" />
+                  </div>
+                </td>
+                <td class="text-center">
+                  <button type="button" 
+                          class="btn btn-link text-danger p-0" 
+                          [disabled]="poRequest.items.length <= 1"
+                          (click)="removeItemRow(i)" 
+                          title="Remove row">
+                    <i class="bi bi-trash-fill fs-5"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Form Submission Panel -->
+        <div class="d-flex align-items-center justify-content-end gap-3 mt-5 pt-3 border-top border-light">
+          <button type="button" class="btn btn-light px-4 py-2.5 fw-semibold border text-muted" (click)="resetForm()">
+            Reset
+          </button>
+          <button type="submit" class="btn btn-mint-primary px-4 py-2.5 fw-semibold d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Commit Order</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

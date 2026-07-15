@@ -1,0 +1,316 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Alert Banner -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- STATE 1: Browse Delivery Companies (Default Grid View) -->
+  <div *ngIf="!companyDetails">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Company Details Registry</h3>
+        <p class="text-muted small mb-0">Browse contact credentials, operating status, and configurations for logistics partners.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <!-- Search Input in Header -->
+        <div class="input-group" style="max-width: 300px;">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input #filterInput 
+                 (input)="0" 
+                 type="text" 
+                 class="form-control bg-light-focus border-start-0" 
+                 placeholder="Search by company or person..." />
+        </div>
+        <a routerLink="/dashboard/delivery-companies/add" class="btn btn-mint-primary fw-semibold text-decoration-none d-flex align-items-center gap-2 shadow-sm">
+          <i class="bi bi-plus-circle-fill"></i>
+          <span>Add Company</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Company Card Grid -->
+    <div class="row g-3" *ngIf="masterCompanyList.length > 0; else emptyRegistry">
+      <ng-container *ngFor="let item of masterCompanyList">
+        <!-- Template Filter matching name or contact person -->
+        <div class="col-lg-4 col-md-6 col-sm-12 animate-fade-in" 
+             *ngIf="!filterInput.value || item.companyName.toLowerCase().includes(filterInput.value.toLowerCase()) || (item.contactPerson && item.contactPerson.toLowerCase().includes(filterInput.value.toLowerCase()))">
+          <div class="card border-0 shadow-sm rounded-4 h-100 company-overview-card d-flex flex-column">
+            <!-- Card Body -->
+            <div class="card-body p-4 flex-grow-1">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="company-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-4 rounded-circle flex-shrink-0">
+                  {{ item.companyName.charAt(0).toUpperCase() }}
+                </div>
+                <div class="overflow-hidden">
+                  <h5 class="mb-0 fw-bold text-dark-teal text-truncate" title="{{ item.companyName }}">{{ item.companyName }}</h5>
+                  <span class="badge bg-teal-light text-teal fw-bold font-monospace mt-1">ID: #{{ item.id }}</span>
+                </div>
+              </div>
+
+              <!-- Quick Info -->
+              <div class="company-quick-details small mt-3 text-muted">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-person text-teal"></i>
+                  <span class="text-dark fw-medium text-truncate">{{ item.contactPerson || 'N/A' }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-telephone text-teal"></i>
+                  <span class="font-monospace text-dark">{{ item.phoneNumber }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="card-footer bg-light border-0 py-3 px-4 d-flex align-items-center justify-content-between rounded-bottom-4 mt-auto">
+              <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
+                    [ngClass]="item.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                {{ item.isActive ? 'Active' : 'Inactive' }}
+              </span>
+              <button (click)="fetchGranularDetailsPanel(item.id)" 
+                      class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1.5 px-2.5 py-1.5 font-size-xs fw-semibold" 
+                      title="View Details">
+                <i class="bi bi-eye-fill"></i>
+                <span>Details</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Empty Registry Layout -->
+    <ng-template #emptyRegistry>
+      <div class="card border-0 shadow-sm rounded-4 text-center py-5 px-4">
+        <div class="empty-state-icon mb-3">
+          <i class="bi bi-truck text-muted-teal display-4"></i>
+        </div>
+        <h5 class="fw-bold text-dark-teal mb-2">No Delivery Companies Registered</h5>
+        <p class="text-muted small mx-auto mb-4" style="max-width: 400px;">
+          No logistics service providers are configured in the database. Register a company to manage delivery zones, dispatch orders, and configure API access keys.
+        </p>
+        <a routerLink="/dashboard/delivery-companies/add" class="btn btn-mint-primary px-4 py-2 fw-bold text-decoration-none">
+          <i class="bi bi-plus-circle-fill me-2"></i>Register Delivery Company
+        </a>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- STATE 2: Read-Only Detail Card View (Single Selected Company) -->
+  <div class="animate-fade-in" *ngIf="companyDetails && !isEditMode">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Company Profile Card</h3>
+        <p class="text-muted small mb-0">Granular logistics configurations and communication parameters.</p>
+      </div>
+      <button (click)="companyDetails = null" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to Overview</span>
+      </button>
+    </div>
+
+    <!-- Hero Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 company-hero-card">
+      <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="company-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-3 rounded-circle">
+            {{ companyDetails.companyName.charAt(0).toUpperCase() }}
+          </div>
+          <div>
+            <h4 class="mb-1 fw-bold text-dark-teal">{{ companyDetails.companyName }}</h4>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge bg-teal-light text-teal fw-bold font-monospace px-2.5 py-1 text-xs">ID: #{{ companyDetails.id }}</span>
+              <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
+                    [ngClass]="companyDetails.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                {{ companyDetails.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <button (click)="toggleCompanyStatus()" 
+                  class="btn btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm text-decoration-none"
+                  [ngClass]="companyDetails.isActive ? 'btn-outline-danger' : 'btn-mint-primary'">
+            <i class="bi" [ngClass]="companyDetails.isActive ? 'bi-x-circle-fill' : 'bi-check-circle-fill'"></i>
+            <span>{{ companyDetails.isActive ? 'Deactivate' : 'Activate' }}</span>
+          </button>
+          <button (click)="enableEditMode()" class="btn btn-sm btn-light border d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm text-muted">
+            <i class="bi bi-pencil-fill"></i>
+            <span>Edit Profile</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Card Information -->
+    <div class="row g-4 mb-5">
+      <div class="col-md-12">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+          <div class="card-header bg-white border-bottom py-3 px-4">
+            <h6 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
+              <i class="bi bi-info-circle-fill"></i>
+              <span>Core Information</span>
+            </h6>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <div class="p-3 bg-light rounded-3">
+                  <span class="text-muted d-block small mb-1">Company Legal Name</span>
+                  <strong class="text-dark-teal fs-5">{{ companyDetails.companyName }}</strong>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="p-3 bg-light rounded-3">
+                  <span class="text-muted d-block small mb-1">Contact Representative</span>
+                  <strong class="text-dark fs-5">{{ companyDetails.contactPerson || 'N/A' }}</strong>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="p-3 bg-light rounded-3">
+                  <span class="text-muted d-block small mb-1">Primary Hotline</span>
+                  <strong class="text-dark font-monospace fs-5">{{ companyDetails.phoneNumber }}</strong>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="p-3 bg-light rounded-3">
+                  <span class="text-muted d-block small mb-1">Operational Tracking ID</span>
+                  <strong class="text-dark font-monospace fs-5">L-00{{ companyDetails.id }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATE 3: Edit Mode Card View (Form Integration) -->
+  <div class="animate-fade-in" *ngIf="companyDetails && isEditMode">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Edit Logistics Profile</h3>
+        <p class="text-muted small mb-0">Modify contact credentials, API keys, and operational fields.</p>
+      </div>
+      <button (click)="cancelEdit()" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+        <i class="bi bi-x-circle"></i>
+        <span>Cancel Edit</span>
+      </button>
+    </div>
+
+    <!-- Edit Form Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+      <div class="card-header bg-gradient-teal py-3 px-4 text-white">
+        <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+          <i class="bi bi-pencil-square"></i>
+          <span>Modify Partner Profile</span>
+        </h5>
+      </div>
+      <div class="card-body p-4">
+        <form #companyForm="ngForm" novalidate>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="editCompanyName" class="form-label fw-semibold">Company Name <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-building"></i></span>
+                <input type="text" 
+                       id="editCompanyName" 
+                       name="companyName" 
+                       class="form-control bg-light-focus border-start-0" 
+                       [(ngModel)]="editData.companyName" 
+                       #editCompanyNameInput="ngModel" 
+                       required 
+                       [class.is-invalid]="editCompanyNameInput.invalid && (editCompanyNameInput.dirty || editCompanyNameInput.touched || submitted)" />
+                <div class="invalid-feedback">
+                  Company name is required.
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <label for="editContactPerson" class="form-label fw-semibold">Contact Person</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-person"></i></span>
+                <input type="text" 
+                       id="editContactPerson" 
+                       name="contactPerson" 
+                       class="form-control bg-light-focus border-start-0" 
+                       [(ngModel)]="editData.contactPerson" />
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="editPhoneNumber" class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-telephone"></i></span>
+                <input type="text" 
+                       id="editPhoneNumber" 
+                       name="phoneNumber" 
+                       class="form-control bg-light-focus border-start-0" 
+                       [(ngModel)]="editData.phoneNumber" 
+                       #editPhoneNumberInput="ngModel" 
+                       required 
+                       [class.is-invalid]="editPhoneNumberInput.invalid && (editPhoneNumberInput.dirty || editPhoneNumberInput.touched || submitted)" />
+                <div class="invalid-feedback">
+                  Phone number is required.
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <label for="editApiKey" class="form-label fw-semibold">API Access Key</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-key-fill"></i></span>
+                <input type="password" 
+                       id="editApiKey" 
+                       name="apiKey" 
+                       class="form-control bg-light-focus border-start-0" 
+                       placeholder="Enter new API key (Leave empty to keep existing)"
+                       [(ngModel)]="editData.apiKey" />
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <div class="form-check form-switch p-0 ps-5 mt-2">
+                <input class="form-check-input custom-switch-toggle" 
+                       type="checkbox" 
+                       id="editIsActive" 
+                       name="isActive" 
+                       [(ngModel)]="editData.isActive" />
+                <label class="form-check-label fw-semibold ms-2" for="editIsActive">Active Operational Status</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Staged Edit Note & Action Buttons -->
+          <div class="alert alert-info border-0 shadow-xs rounded-3 mb-4 d-flex align-items-start gap-2.5">
+            <i class="bi bi-info-circle-fill fs-5 text-teal"></i>
+            <div class="small">
+              <strong>Demonstration Notice:</strong> Field modification staging is configured. Changes will display locally and revert to active database states once edit is cancelled. To fully change live records, use central backend APIs.
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-end gap-3 pt-3 border-top border-light">
+            <button type="button" class="btn btn-light px-4 py-2.5 fw-semibold border text-muted" (click)="cancelEdit()">
+              Cancel
+            </button>
+            <button type="button" class="btn btn-mint-primary px-4 py-2.5 fw-semibold d-flex align-items-center gap-2" (click)="cancelEdit()">
+              <i class="bi bi-check-circle-fill"></i>
+              <span>Save Changes</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

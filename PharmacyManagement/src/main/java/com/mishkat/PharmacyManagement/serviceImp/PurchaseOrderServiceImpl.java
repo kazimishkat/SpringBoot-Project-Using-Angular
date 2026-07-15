@@ -6,11 +6,13 @@ import com.mishkat.PharmacyManagement.dto.requestDTO.PurchaseOrderRequestDto;
 import com.mishkat.PharmacyManagement.dto.responseDTO.PurchaseOrderResponseDto;
 import com.mishkat.PharmacyManagement.entity.*;
 import com.mishkat.PharmacyManagement.enums.PurchaseOrderStatus;
+import com.mishkat.PharmacyManagement.enums.StockMovementType;
 import com.mishkat.PharmacyManagement.repository.BranchRepository;
 import com.mishkat.PharmacyManagement.repository.MedicineRepository;
 import com.mishkat.PharmacyManagement.repository.PurchaseOrderRepository;
 import com.mishkat.PharmacyManagement.repository.SupplierRepository;
 import com.mishkat.PharmacyManagement.service.PurchaseOrderService;
+import com.mishkat.PharmacyManagement.service.StockMovementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,36 +23,33 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PurchaseOrderServiceImpl implements PurchaseOrderService {
-    // সমস্ত প্রয়োজনীয় Repository ইনজেক্ট করা হলো
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final SupplierRepository supplierRepository;
     private final BranchRepository branchRepository;
     private final MedicineRepository medicineRepository;
 
-    // ম্যাপারের মেথডগুলো নন-স্ট্যাটিক হওয়ায় ইনস্ট্যান্স তৈরি করা হলো
+    // Injecting Stock Movement Internal Audit Ledger
+    private final StockMovementService stockMovementService;
+
     private final PurchaseOrderMapper mapper = new PurchaseOrderMapper();
 
     @Override
     @Transactional
     public PurchaseOrderResponseDto createPurchaseOrder(PurchaseOrderRequestDto dto) {
-        // ১. PO Number ইউনিক কি না চেক করা
         if (purchaseOrderRepository.findByPoNumber(dto.getPoNumber()).isPresent()) {
             throw new RuntimeException("Purchase Order already exists with PO Number: " + dto.getPoNumber());
         }
 
         PurchaseOrder order = mapper.toEntity(dto);
 
-        // ২. Supplier সেট করা
         Supplier supplier = supplierRepository.findById(dto.getSupplierId())
                 .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + dto.getSupplierId()));
         order.setSupplier(supplier);
 
-        // ৩. Branch সেট করা
         Branch branch = branchRepository.findById(dto.getBranchId())
                 .orElseThrow(() -> new RuntimeException("Branch not found with id: " + dto.getBranchId()));
         order.setBranch(branch);
 
-        // ৪. প্রতিটি Item-এর জন্য Medicine সেট করা
         if (order.getItems() != null && dto.getItems() != null) {
             for (int i = 0; i < order.getItems().size(); i++) {
                 PurchaseOrderItem item = order.getItems().get(i);
@@ -62,10 +61,13 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
             }
         }
 
-        // [নোট]: createdByUser সাধারণত Spring Security Context থেকে নেওয়া হয়।
-        // তাই Request DTO থেকে এটা সেট করার প্রয়োজন নেই।
-
         PurchaseOrder savedOrder = purchaseOrderRepository.save(order);
+
+        // If initial status state configuration falls straight into RECEIVED, write ledger entries
+        if (savedOrder.getStatus() == PurchaseOrderStatus.RECEIVED) {
+            logStockMovementsForPO(savedOrder);
+        }
+
         return mapper.toDTO(savedOrder);
     }
 
@@ -88,7 +90,6 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     @Override
     @Transactional(readOnly = true)
     public PurchaseOrderResponseDto getPurchaseOrderByPoNumber(String poNumber) {
-        // Repository-তে findByPoNumber মেথডটি থাকতে হবে
         PurchaseOrder order = purchaseOrderRepository.findByPoNumber(poNumber)
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found with PO Number: " + poNumber));
         return mapper.toDTO(order);
@@ -100,49 +101,49 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         PurchaseOrder existingOrder = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found with id: " + id));
 
-        // PO Number পরিবর্তন হলে ডুপ্লিকেট চেক
         if (dto.getPoNumber() != null && !existingOrder.getPoNumber().equals(dto.getPoNumber())) {
             if (purchaseOrderRepository.findByPoNumber(dto.getPoNumber()).isPresent()) {
                 throw new RuntimeException("PO Number already exists: " + dto.getPoNumber());
             }
         }
 
-        // সাধারণ ফিল্ড আপডেট
         mapper.updateEntityFromDto(dto, existingOrder);
 
-        // Supplier আপডেট
         if (dto.getSupplierId() != null && !existingOrder.getSupplier().getId().equals(dto.getSupplierId())) {
             Supplier supplier = supplierRepository.findById(dto.getSupplierId())
                     .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + dto.getSupplierId()));
             existingOrder.setSupplier(supplier);
         }
 
-        // Branch আপডেট
         if (dto.getBranchId() != null && !existingOrder.getBranch().getId().equals(dto.getBranchId())) {
             Branch branch = branchRepository.findById(dto.getBranchId())
                     .orElseThrow(() -> new RuntimeException("Branch not found with id: " + dto.getBranchId()));
             existingOrder.setBranch(branch);
         }
 
-        // Items আপডেট (পুরোনো লিস্ট ক্লিয়ার করে নতুন আইটেম যোগ করা - orphanRemoval এটি সামলাবে)
         if (dto.getItems() != null) {
-            existingOrder.getItems().clear(); // পুরোনো আইটেম রিমুভ
+            existingOrder.getItems().clear();
             for (PurchaseOrderItemRequestDto itemDto : dto.getItems()) {
                 PurchaseOrderItem newItem = new PurchaseOrderItem();
                 newItem.setOrderedQuantity(itemDto.getOrderedQuantity());
                 newItem.setUnitPrice(itemDto.getUnitPrice());
-                newItem.setReceivedQuantity(0); // নতুন করে অর্ডার আপডেট হলে রিসিভ কোয়ান্টিটি 0 হবে
+                newItem.setReceivedQuantity(0);
 
                 Medicine medicine = medicineRepository.findById(itemDto.getMedicineId())
                         .orElseThrow(() -> new RuntimeException("Medicine not found with id: " + itemDto.getMedicineId()));
                 newItem.setMedicine(medicine);
 
-                newItem.setPurchaseOrder(existingOrder); // Parent লিংক করা
+                newItem.setPurchaseOrder(existingOrder);
                 existingOrder.getItems().add(newItem);
             }
         }
 
         PurchaseOrder savedOrder = purchaseOrderRepository.save(existingOrder);
+
+        if (savedOrder.getStatus() == PurchaseOrderStatus.RECEIVED) {
+            logStockMovementsForPO(savedOrder);
+        }
+
         return mapper.toDTO(savedOrder);
     }
 
@@ -152,8 +153,16 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         PurchaseOrder order = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found with id: " + id));
 
+        PurchaseOrderStatus oldStatus = order.getStatus();
         order.setStatus(status);
-        return mapper.toDTO(purchaseOrderRepository.save(order));
+        PurchaseOrder savedOrder = purchaseOrderRepository.save(order);
+
+        // State Machine validation guard to avoid multiple dynamic hits to stock ledger
+        if (status == PurchaseOrderStatus.RECEIVED && oldStatus != PurchaseOrderStatus.RECEIVED) {
+            logStockMovementsForPO(savedOrder);
+        }
+
+        return mapper.toDTO(savedOrder);
     }
 
     @Override
@@ -162,5 +171,54 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
         PurchaseOrder order = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found with id: " + id));
         purchaseOrderRepository.delete(order);
+    }
+
+    // ── Angular Required Method Implementations ──
+
+    @Override
+    @Transactional
+    public PurchaseOrderResponseDto approvePurchaseOrder(Long id) {
+        PurchaseOrder order = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Purchase Order execution failed: Invalid identity key " + id));
+        order.setStatus(PurchaseOrderStatus.APPROVED);
+        return mapper.toDTO(purchaseOrderRepository.save(order));
+    }
+
+    @Override
+    @Transactional
+    public PurchaseOrderResponseDto rejectPurchaseOrder(Long id) {
+        PurchaseOrder order = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Purchase Order execution failed: Invalid identity key " + id));
+        order.setStatus(PurchaseOrderStatus.REJECTED);
+        return mapper.toDTO(purchaseOrderRepository.save(order));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PurchaseOrderResponseDto> getPurchaseOrdersByStatus(PurchaseOrderStatus status) {
+        return purchaseOrderRepository.findByStatus(status).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    // Helper logic maps order quantities onto stock movement audit traces
+    private void logStockMovementsForPO(PurchaseOrder order) {
+        if (order.getItems() != null) {
+            for (PurchaseOrderItem item : order.getItems()) {
+                // [বিঃদ্রঃ]: আপনার রিয়েল ইনভেন্টরিতে ব্যাচ ক্রিয়েশন বা ট্র্যাকিং চেইনের জন্য
+                // যে আইডি জেনারেট হয় তা এখানে পাস করবেন (ডিফল্ট হিসেবে ১ এল রাখা হয়েছে)।
+                Long detectedBatchId = 1L;
+
+                stockMovementService.recordMovement(
+                        order.getBranch().getId(),
+                        detectedBatchId,
+                        StockMovementType.PURCHASE_RECEIVED,
+                        item.getOrderedQuantity(),
+                        "PURCHASE_ORDER",
+                        order.getId(),
+                        "Stock inward generated via Purchase Order fulfillment matching invoice tracker: " + order.getPoNumber()
+                );
+            }
+        }
     }
 }

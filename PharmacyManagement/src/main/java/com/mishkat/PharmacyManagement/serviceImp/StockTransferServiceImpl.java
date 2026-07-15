@@ -5,8 +5,10 @@ import com.mishkat.PharmacyManagement.dto.requestDTO.StockTransferItemRequestDto
 import com.mishkat.PharmacyManagement.dto.requestDTO.StockTransferRequestDto;
 import com.mishkat.PharmacyManagement.dto.responseDTO.StockTransferResponseDto;
 import com.mishkat.PharmacyManagement.entity.*;
+import com.mishkat.PharmacyManagement.enums.StockMovementType;
 import com.mishkat.PharmacyManagement.enums.TransferStatus;
 import com.mishkat.PharmacyManagement.repository.*;
+import com.mishkat.PharmacyManagement.service.StockMovementService;
 import com.mishkat.PharmacyManagement.service.StockTransferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,17 +27,16 @@ public class StockTransferServiceImpl implements StockTransferService {
     private final MedicineBatchRepository medicineBatchRepository;
     private final RequisitionRepository requisitionRepository;
 
-    // Using an instance wrapper of your custom mapper matching the existing pattern
+    // Injecting Internal Stock Ledger Engine
+    private final StockMovementService stockMovementService;
+
     private final StockTransferMapper stockTransferMapper = new StockTransferMapper();
 
     @Override
     @Transactional
     public StockTransferResponseDto createTransfer(StockTransferRequestDto dto) {
-
-        // 1. Convert base request to Entity via mapper chains
         StockTransfer transfer = stockTransferMapper.toEntity(dto);
 
-        // 2. Validate and map Source & Destination branches
         Branch fromBranch = branchRepository.findById(dto.getFromBranchId())
                 .orElseThrow(() -> new RuntimeException("Source branch not found with ID: " + dto.getFromBranchId()));
 
@@ -45,7 +46,6 @@ public class StockTransferServiceImpl implements StockTransferService {
         transfer.setFromBranch(fromBranch);
         transfer.setToBranch(toBranch);
 
-        // 3. Resolve parent tracking linkages (Dispatched user & Requisitions)
         if (dto.getDispatchedById() != null) {
             User dispatcher = userRepository.findById(dto.getDispatchedById())
                     .orElseThrow(() -> new RuntimeException("Dispatcher user account not found with ID: " + dto.getDispatchedById()));
@@ -58,7 +58,6 @@ public class StockTransferServiceImpl implements StockTransferService {
             transfer.setRequisition(requisition);
         }
 
-        // 4. Match and extract individual Medicine inventory unit batches inside items collection
         if (transfer.getItems() != null && dto.getItems() != null) {
             for (int i = 0; i < transfer.getItems().size(); i++) {
                 StockTransferItem item = transfer.getItems().get(i);
@@ -71,6 +70,12 @@ public class StockTransferServiceImpl implements StockTransferService {
         }
 
         StockTransfer saved = stockTransferRepository.save(transfer);
+
+        // Handle immediate stock reduction if initialized directly as DISPATCHED
+        if (saved.getStatus() == TransferStatus.DISPATCHED) {
+            logTransferOutMovements(saved);
+        }
+
         return stockTransferMapper.toResponseDto(saved);
     }
 
@@ -128,16 +133,25 @@ public class StockTransferServiceImpl implements StockTransferService {
         StockTransfer transfer = stockTransferRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Stock transfer log entry target not found"));
 
+        TransferStatus oldStatus = transfer.getStatus();
         transfer.setStatus(status);
 
-        // If manifest arrives directly at the branch, record the receiver profile updates
         if (status == TransferStatus.RECEIVED && userId != null) {
             User receiver = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("Receiver assignment tracking failure, user invalid"));
             transfer.setReceivedBy(receiver);
         }
 
-        return stockTransferMapper.toResponseDto(stockTransferRepository.save(transfer));
+        StockTransfer saved = stockTransferRepository.save(transfer);
+
+        // State Transition Trigger Logic
+        if (status == TransferStatus.DISPATCHED && oldStatus != TransferStatus.DISPATCHED) {
+            logTransferOutMovements(saved);
+        } else if (status == TransferStatus.RECEIVED && oldStatus != TransferStatus.RECEIVED) {
+            logTransferInMovements(saved);
+        }
+
+        return stockTransferMapper.toResponseDto(saved);
     }
 
     @Override
@@ -149,10 +163,10 @@ public class StockTransferServiceImpl implements StockTransferService {
         User receiver = userRepository.findById(receivedById)
                 .orElseThrow(() -> new RuntimeException("Assigned verification receiver not found"));
 
+        TransferStatus oldStatus = transfer.getStatus();
         transfer.setReceivedBy(receiver);
         transfer.setStatus(TransferStatus.RECEIVED);
 
-        // Create fast Map lookups using streaming expressions to process arrival records efficiently
         Map<Long, Integer> targetArrivedMap = itemUpdates.stream()
                 .collect(Collectors.toMap(StockTransferItemRequestDto::getBatchId, StockTransferItemRequestDto::getSentQuantity));
 
@@ -163,6 +177,46 @@ public class StockTransferServiceImpl implements StockTransferService {
             }
         }
 
-        return stockTransferMapper.toResponseDto(stockTransferRepository.save(transfer));
+        StockTransfer saved = stockTransferRepository.save(transfer);
+
+        // Log the inbound inventory increase upon successful completion
+        if (oldStatus != TransferStatus.RECEIVED) {
+            logTransferInMovements(saved);
+        }
+
+        return stockTransferMapper.toResponseDto(saved);
+    }
+
+    private void logTransferOutMovements(StockTransfer transfer) {
+        if (transfer.getItems() != null) {
+            for (StockTransferItem item : transfer.getItems()) {
+                stockMovementService.recordMovement(
+                        transfer.getFromBranch().getId(),
+                        item.getBatch().getId(),
+                        StockMovementType.TRANSFER_OUT,
+                        item.getSentQuantity(),
+                        "STOCK_TRANSFER",
+                        transfer.getId(),
+                        "Stock reduced due to outbound branch transfer dispatch: " + transfer.getTransferNumber()
+                );
+            }
+        }
+    }
+
+    private void logTransferInMovements(StockTransfer transfer) {
+        if (transfer.getItems() != null) {
+            for (StockTransferItem item : transfer.getItems()) {
+                int finalReceived = item.getReceivedQuantity() != null ? item.getReceivedQuantity() : item.getSentQuantity();
+                stockMovementService.recordMovement(
+                        transfer.getToBranch().getId(),
+                        item.getBatch().getId(),
+                        StockMovementType.TRANSFER_IN,
+                        finalReceived,
+                        "STOCK_TRANSFER",
+                        transfer.getId(),
+                        "Stock added upon inward branch transfer reception: " + transfer.getTransferNumber()
+                );
+            }
+        }
     }
 }

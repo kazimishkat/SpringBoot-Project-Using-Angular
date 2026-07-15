@@ -20,4 +20,11 @@ public interface PurchaseOrderService {
     PurchaseOrderResponseDto updatePurchaseOrderStatus(Long id, PurchaseOrderStatus status);
 
     void deletePurchaseOrder(Long id);
+
+    // ── Angular Service Compatibility Methods ──
+    PurchaseOrderResponseDto approvePurchaseOrder(Long id);
+
+    PurchaseOrderResponseDto rejectPurchaseOrder(Long id);
+
+    List<PurchaseOrderResponseDto> getPurchaseOrdersByStatus(PurchaseOrderStatus status);
 }

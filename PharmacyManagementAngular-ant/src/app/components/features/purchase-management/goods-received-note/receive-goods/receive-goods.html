@@ -1,0 +1,240 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Receive Goods (GRN)</h3>
+      <p class="text-muted small mb-0">Record and verify incoming stocks received from suppliers against committed purchase orders.</p>
+    </div>
+    <div>
+      <a routerLink="/dashboard/grns" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2.5 fw-semibold shadow-sm text-decoration-none transition-all">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to List</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm rounded-4" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Form Card -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-gradient-teal py-3 px-4 text-white border-0">
+      <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+        <i class="bi bi-box-seam-fill"></i>
+        <span>Warehouse Stock Inward Form</span>
+      </h5>
+    </div>
+    <div class="card-body p-4 bg-white">
+      <form #grnForm="ngForm" (ngSubmit)="saveReceivedGoods()" novalidate>
+        
+        <!-- SECTION 1: Intake Metadata -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Intake Metadata</h6>
+        <div class="row g-3 mb-4">
+          <!-- GRN Number -->
+          <div class="col-md-4 col-sm-6">
+            <label for="grnNumber" class="form-label fw-semibold text-dark-teal small">GRN Number</label>
+            <div class="input-group shadow-xs rounded">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-hash"></i></span>
+              <input type="text" 
+                     id="grnNumber" 
+                     name="grnNumber" 
+                     class="form-control bg-light border-start-0 text-muted" 
+                     [(ngModel)]="grnRequest.grnNumber" 
+                     readonly />
+            </div>
+          </div>
+
+          <!-- Select Purchase Order -->
+          <div class="col-md-4 col-sm-6">
+            <label for="purchaseOrderId" class="form-label fw-semibold text-dark-teal small">Source Purchase Order <span class="text-danger">*</span></label>
+            <div class="input-group shadow-xs rounded">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-file-earmark-text"></i></span>
+              <!-- Bind ngModelChange to guarantee order state mapping loads instantly -->
+              <select id="purchaseOrderId" 
+                      name="purchaseOrderId" 
+                      class="form-select bg-light-focus border-start-0" 
+                      [(ngModel)]="grnRequest.purchaseOrderId" 
+                      (ngModelChange)="onPurchaseOrderSelectionChange($event)"
+                      #poInput="ngModel" 
+                      required
+                      [class.is-invalid]="poInput.invalid && (poInput.dirty || poInput.touched || submitted)">
+                <option [value]="undefined" disabled selected>-- Select Approved PO --</option>
+                <option *ngFor="let po of purchaseOrders" [value]="po.id">{{ po.poNumber }} ({{ po.supplierName }})</option>
+              </select>
+              <div class="invalid-feedback">
+                Approved purchase order selection is required.
+              </div>
+            </div>
+          </div>
+
+          <!-- Received Date -->
+          <div class="col-md-4 col-sm-6">
+            <label for="receivedDate" class="form-label fw-semibold text-dark-teal small">Date of Receipt <span class="text-danger">*</span></label>
+            <div class="input-group shadow-xs rounded">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-check"></i></span>
+              <input type="date" 
+                     id="receivedDate" 
+                     name="receivedDate" 
+                     class="form-control bg-light-focus border-start-0" 
+                     [(ngModel)]="grnRequest.receivedDate" 
+                     #dateInput="ngModel" 
+                     required 
+                     [class.is-invalid]="dateInput.invalid && (dateInput.dirty || dateInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Received date is required.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PO Reference Meta Info -->
+        <div *ngIf="selectedOrderDetails" class="card border-0 bg-light p-3 mb-4 animate-fade-in rounded-3">
+          <div class="card-body p-0">
+            <h6 class="fw-bold text-dark-teal mb-2 d-flex align-items-center gap-1.5">
+              <i class="bi bi-info-circle-fill text-teal"></i>
+              <span>Associated Requisition Sheet</span>
+            </h6>
+            <div class="row g-3 text-dark small">
+              <div class="col-sm-4">
+                <span class="text-muted d-block small">Vendor Corporate Profile</span>
+                <strong>{{ selectedOrderDetails.supplierName }}</strong>
+              </div>
+              <div class="col-sm-4">
+                <span class="text-muted d-block small">Destination Stock Branch</span>
+                <strong>{{ selectedOrderDetails.branchName }}</strong>
+              </div>
+              <div class="col-sm-4">
+                <span class="text-muted d-block small">Requisition Date</span>
+                <strong>{{ selectedOrderDetails.orderDate | date:'mediumDate' }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 2: Dynamic Stock Items Verification -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Received Items Verification</h6>
+        
+        <div class="table-responsive border rounded-3 mb-4 overflow-hidden shadow-xs animate-fade-in" *ngIf="grnRequest.items.length > 0; else noItemsPrompt">
+          <table class="table align-middle mb-0 custom-verification-table">
+            <thead class="table-light text-uppercase font-size-xs fw-bold text-muted border-bottom">
+              <tr>
+                <th scope="col" class="ps-3" style="min-width: 200px;">Medicine Brand</th>
+                <th scope="col" style="width: 140px;">Batch No <span class="text-danger">*</span></th>
+                <th scope="col" style="width: 155px;">Mfg. Date</th>
+                <th scope="col" style="width: 155px;">Expiry Date <span class="text-danger">*</span></th>
+                <th scope="col" style="width: 110px;">Qty Recv <span class="text-danger">*</span></th>
+                <th scope="col" style="width: 130px;">Cost (USD) <span class="text-danger">*</span></th>
+                <th scope="col" style="width: 130px;">Sell (USD) <span class="text-danger">*</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of grnRequest.items; let i = index" class="verification-row">
+                <td class="ps-3">
+                  <!-- Match 1-to-1 array map index safely back to selectedOrderDetails brand names -->
+                  <div class="fw-bold text-dark-teal">
+                    {{ selectedOrderDetails?.items?.[i]?.brandName || ('Medicine #' + item.medicineId) }}
+                  </div>
+                  <span class="text-muted small font-monospace d-block">
+                    Code: {{ selectedOrderDetails?.items?.[i]?.medicineCode || 'N/A' }}
+                  </span>
+                </td>
+                <td>
+                  <input type="text" 
+                         [id]="'batch-' + i" 
+                         [name]="'batch-' + i" 
+                         class="form-control bg-light border-1 rounded" 
+                         placeholder="e.g. B-92" 
+                         [(ngModel)]="item.batchNumber" 
+                         #itemBatch="ngModel" 
+                         required 
+                         [class.is-invalid]="itemBatch.invalid && (itemBatch.dirty || itemBatch.touched || submitted)" />
+                </td>
+                <td>
+                  <input type="date" 
+                         [id]="'mfg-' + i" 
+                         [name]="'mfg-' + i" 
+                         class="form-control bg-light border-1 rounded" 
+                         [(ngModel)]="item.manufactureDate" />
+                </td>
+                <td>
+                  <input type="date" 
+                         [id]="'exp-' + i" 
+                         [name]="'exp-' + i" 
+                         class="form-control bg-light border-1 rounded" 
+                         [(ngModel)]="item.expiryDate" 
+                         #itemExp="ngModel" 
+                         required 
+                         [class.is-invalid]="itemExp.invalid && (itemExp.dirty || itemExp.touched || submitted)" />
+                </td>
+                <td>
+                  <input type="number" 
+                         [id]="'qty-' + i" 
+                         [name]="'qty-' + i" 
+                         class="form-control bg-light border-1 rounded text-center" 
+                         min="1" 
+                         [(ngModel)]="item.receivedQuantity" 
+                         #itemQty="ngModel" 
+                         required 
+                         [class.is-invalid]="itemQty.invalid && (itemQty.dirty || itemQty.touched || submitted)" />
+                </td>
+                <td>
+                  <input type="number" 
+                         step="0.01"
+                         [id]="'purchase-' + i" 
+                         [name]="'purchase-' + i" 
+                         class="form-control bg-light border-1 rounded text-end" 
+                         min="0" 
+                         [(ngModel)]="item.purchasePrice" 
+                         #itemPurchase="ngModel" 
+                         required 
+                         [class.is-invalid]="itemPurchase.invalid && (itemPurchase.dirty || itemPurchase.touched || submitted)" />
+                </td>
+                <td>
+                  <input type="number" 
+                         step="0.01"
+                         [id]="'selling-' + i" 
+                         [name]="'selling-' + i" 
+                         class="form-control bg-light border-1 rounded text-end" 
+                         min="0" 
+                         [(ngModel)]="item.sellingPrice" 
+                         #itemSelling="ngModel" 
+                         required 
+                         [class.is-invalid]="itemSelling.invalid && (itemSelling.dirty || itemSelling.touched || submitted)" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <ng-template #noItemsPrompt>
+          <div class="text-center py-5 border rounded-4 bg-light text-muted small shadow-xs">
+            <i class="bi bi-file-earmark-arrow-up display-5 mb-2 text-muted-teal"></i>
+            <div class="fw-semibold mb-1">Source Requisition Needed</div>
+            <div class="text-muted">Please select an Approved Purchase Order above to automatically load items to receive.</div>
+          </div>
+        </ng-template>
+
+        <!-- Form Submission Panel -->
+        <div class="d-flex align-items-center justify-content-end gap-3 mt-5 pt-3 border-top border-light">
+          <button type="button" class="btn btn-light px-4 py-2.5 fw-semibold border text-muted" (click)="resetFormStructure()">
+            Reset
+          </button>
+          <button type="submit" 
+                  class="btn btn-mint-primary px-4 py-2.5 fw-semibold d-flex align-items-center gap-2 shadow-sm"
+                  [disabled]="grnRequest.items.length === 0">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Commit GRN</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

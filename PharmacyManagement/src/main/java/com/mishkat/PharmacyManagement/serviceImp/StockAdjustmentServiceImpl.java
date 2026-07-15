@@ -5,11 +5,13 @@ import com.mishkat.PharmacyManagement.dto.requestDTO.StockAdjustmentItemRequestD
 import com.mishkat.PharmacyManagement.dto.requestDTO.StockAdjustmentRequestDto;
 import com.mishkat.PharmacyManagement.dto.responseDTO.StockAdjustmentResponseDto;
 import com.mishkat.PharmacyManagement.entity.*;
+import com.mishkat.PharmacyManagement.enums.StockMovementType;
 import com.mishkat.PharmacyManagement.repository.BranchRepository;
 import com.mishkat.PharmacyManagement.repository.MedicineBatchRepository;
 import com.mishkat.PharmacyManagement.repository.StockAdjustmentRepository;
 import com.mishkat.PharmacyManagement.repository.UserRepository;
 import com.mishkat.PharmacyManagement.service.StockAdjustmentService;
+import com.mishkat.PharmacyManagement.service.StockMovementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,33 +27,30 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
     private final UserRepository userRepository;
     private final MedicineBatchRepository medicineBatchRepository;
 
-    // ম্যাপারের মেথডগুলো নন-স্ট্যাটিক হওয়ায় একটি ইনস্ট্যান্স তৈরি করা হলো
+    // Injecting Internal Stock Ledger Engine
+    private final StockMovementService stockMovementService;
+
     private final StockAdjustmentMapper mapper = new StockAdjustmentMapper();
 
     @Override
     @Transactional
     public StockAdjustmentResponseDto createStockAdjustment(StockAdjustmentRequestDto dto) {
-        // ১. Adjustment Number ইউনিক কি না চেক করা
         if (stockAdjustmentRepository.findByAdjustmentNumber(dto.getAdjustmentNumber()).isPresent()) {
             throw new RuntimeException("Stock Adjustment already exists with number: " + dto.getAdjustmentNumber());
         }
 
-        // ২. DTO থেকে Entity-তে রূপান্তর
         StockAdjustment adjustment = mapper.toEntity(dto);
 
-        // ৩. Branch অবজেক্ট সেট করা
         Branch branch = branchRepository.findById(dto.getBranchId())
                 .orElseThrow(() -> new RuntimeException("Branch not found with id: " + dto.getBranchId()));
         adjustment.setBranch(branch);
 
-        // ৪. Approved By (User) অবজেক্ট সেট করা (যদি থাকে)
         if (dto.getApprovedById() != null) {
             User user = userRepository.findById(dto.getApprovedById())
                     .orElseThrow(() -> new RuntimeException("User not found with id: " + dto.getApprovedById()));
             adjustment.setApprovedBy(user);
         }
 
-        // ৫. চাইল্ড আইটেমগুলোর জন্য MedicineBatch সেট করা
         if (adjustment.getItems() != null && dto.getItems() != null) {
             for (int i = 0; i < adjustment.getItems().size(); i++) {
                 StockAdjustmentItem item = adjustment.getItems().get(i);
@@ -64,6 +63,10 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
         }
 
         StockAdjustment savedAdjustment = stockAdjustmentRepository.save(adjustment);
+
+        // Compute delta evaluation and commit to audit trail logs instantly
+        logStockMovementsForAdjustment(savedAdjustment);
+
         return mapper.toDTO(savedAdjustment);
     }
 
@@ -105,24 +108,20 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
         StockAdjustment existingAdjustment = stockAdjustmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Stock Adjustment not found with id: " + id));
 
-        // Adjustment Number পরিবর্তন হলে ডুপ্লিকেট চেক
         if (dto.getAdjustmentNumber() != null && !existingAdjustment.getAdjustmentNumber().equals(dto.getAdjustmentNumber())) {
             if (stockAdjustmentRepository.findByAdjustmentNumber(dto.getAdjustmentNumber()).isPresent()) {
                 throw new RuntimeException("Adjustment number already exists: " + dto.getAdjustmentNumber());
             }
         }
 
-        // সাধারণ ফিল্ড আপডেট
         mapper.updateEntityFromDto(dto, existingAdjustment);
 
-        // Branch আপডেট
         if (!existingAdjustment.getBranch().getId().equals(dto.getBranchId())) {
             Branch branch = branchRepository.findById(dto.getBranchId())
                     .orElseThrow(() -> new RuntimeException("Branch not found"));
             existingAdjustment.setBranch(branch);
         }
 
-        // Approved By আপডেট
         if (dto.getApprovedById() != null) {
             if (existingAdjustment.getApprovedBy() == null || !existingAdjustment.getApprovedBy().getId().equals(dto.getApprovedById())) {
                 User user = userRepository.findById(dto.getApprovedById())
@@ -131,7 +130,6 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
             }
         }
 
-        // ম্যাপারের নির্দেশনা অনুযায়ী Orphan Removal লজিক মেনে আইটেম আপডেট
         existingAdjustment.getItems().clear();
         if (dto.getItems() != null) {
             for (StockAdjustmentItemRequestDto itemDto : dto.getItems()) {
@@ -145,12 +143,16 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
                         .orElseThrow(() -> new RuntimeException("Medicine Batch not found with id: " + itemDto.getBatchId()));
 
                 newItem.setBatch(batch);
-                newItem.setStockAdjustment(existingAdjustment); // Parent-Child লিংক
+                newItem.setStockAdjustment(existingAdjustment);
                 existingAdjustment.getItems().add(newItem);
             }
         }
 
         StockAdjustment savedAdjustment = stockAdjustmentRepository.save(existingAdjustment);
+
+        // Ledger records are generally immutable, but re-triggering calculation updates current ledger states.
+        logStockMovementsForAdjustment(savedAdjustment);
+
         return mapper.toDTO(savedAdjustment);
     }
 
@@ -160,5 +162,45 @@ public class StockAdjustmentServiceImpl implements StockAdjustmentService {
         StockAdjustment adjustment = stockAdjustmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Stock Adjustment not found with id: " + id));
         stockAdjustmentRepository.delete(adjustment);
+    }
+
+    private void logStockMovementsForAdjustment(StockAdjustment adjustment) {
+        if (adjustment.getItems() != null) {
+            for (StockAdjustmentItem item : adjustment.getItems()) {
+                int qBefore = item.getQuantityBefore() != null ? item.getQuantityBefore() : 0;
+                int qAfter = item.getQuantityAfter() != null ? item.getQuantityAfter() : 0;
+                int diff = qAfter - qBefore;
+
+                if (diff == 0) continue; // No structural volume deviation detected
+
+                StockMovementType detectedType;
+                int trackingQuantity = Math.abs(diff);
+
+                // Check delta polarity to classify system audit behavioral updates
+                if (diff > 0) {
+                    detectedType = StockMovementType.ADJUSTMENT_INCREASE;
+                } else {
+                    // Check explicitly if specific reasons map out to granular types
+                    String reasonStr = item.getReason() != null ? item.getReason().name() : "";
+                    if (reasonStr.contains("EXPIRED")) {
+                        detectedType = StockMovementType.EXPIRED_WRITE_OFF;
+                    } else if (reasonStr.contains("DAMAGED")) {
+                        detectedType = StockMovementType.DAMAGED_WRITE_OFF;
+                    } else {
+                        detectedType = StockMovementType.ADJUSTMENT_DECREASE;
+                    }
+                }
+
+                stockMovementService.recordMovement(
+                        adjustment.getBranch().getId(),
+                        item.getBatch().getId(),
+                        detectedType,
+                        trackingQuantity,
+                        "STOCK_ADJUSTMENT",
+                        adjustment.getId(),
+                        item.getRemarks() != null ? item.getRemarks() : "Inventory audit log balance synchronization."
+                );
+            }
+        }
     }
 }

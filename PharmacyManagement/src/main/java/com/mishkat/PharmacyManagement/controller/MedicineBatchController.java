@@ -19,13 +19,6 @@ import java.util.List;
 public class MedicineBatchController {
     private final MedicineBatchService batchService;
 
-    // POST /api/medicine-batches
-    @PostMapping
-    public ResponseEntity<MedicineBatchResponseDto> create(
-            @Valid @RequestBody MedicineBatchRequestDto dto) {
-        return new ResponseEntity<>(batchService.createBatch(dto), HttpStatus.CREATED);
-    }
-
     // GET /api/medicine-batches
     @GetMapping
     public ResponseEntity<List<MedicineBatchResponseDto>> getAll() {
@@ -59,7 +52,7 @@ public class MedicineBatchController {
                 : ResponseEntity.ok(list);
     }
 
-    // GET /api/medicine-batches/expiring?beforeDate=2024-12-31
+    // GET /api/medicine-batches/expiring?beforeDate=2026-12-31
     @GetMapping("/expiring")
     public ResponseEntity<List<MedicineBatchResponseDto>> getExpiringBatches(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beforeDate) {
@@ -69,18 +62,11 @@ public class MedicineBatchController {
                 : ResponseEntity.ok(list);
     }
 
-    // PUT /api/medicine-batches/1
+    // PUT /api/medicine-batches/1 (সংশোধিত: Mapped with MedicineBatchRequestDto)
     @PutMapping("/{id}")
     public MedicineBatchResponseDto update(
             @PathVariable Long id,
             @Valid @RequestBody MedicineBatchRequestDto dto) {
         return batchService.updateBatch(id, dto);
-    }
-
-    // DELETE /api/medicine-batches/1
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        batchService.deleteBatch(id);
-        return ResponseEntity.ok("Medicine Batch deleted successfully");
     }
 }

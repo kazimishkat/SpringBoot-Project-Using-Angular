@@ -18,35 +18,44 @@ import java.util.List;
 public class GoodsReceivedNoteController {
     private final GoodsReceivedNoteService grnService;
 
-    // POST /api/grns
+    // POST /api/grn
     @PostMapping
-    public ResponseEntity<GoodsReceivedNoteResponseDto> create(
+    public ResponseEntity<GoodsReceivedNoteResponseDto> receiveGoods(
             @Valid @RequestBody GoodsReceivedNoteRequestDto dto) {
-        return new ResponseEntity<>(grnService.createGrn(dto), HttpStatus.CREATED);
+        return new ResponseEntity<>(grnService.receiveGoods(dto), HttpStatus.CREATED);
     }
 
-    // GET /api/grns
+    // GET /api/grn
     @GetMapping
-    public ResponseEntity<List<GoodsReceivedNoteResponseDto>> getAll() {
+    public ResponseEntity<List<GoodsReceivedNoteResponseDto>> getAllGrns() {
         List<GoodsReceivedNoteResponseDto> list = grnService.getAllGrns();
         return list.isEmpty()
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.ok(list);
     }
 
-    // GET /api/grns/1
+    // GET /api/grn/1
     @GetMapping("/{id}")
-    public GoodsReceivedNoteResponseDto getById(@PathVariable Long id) {
+    public GoodsReceivedNoteResponseDto getGrnById(@PathVariable Long id) {
         return grnService.getGrnById(id);
     }
 
-    // GET /api/grns/number/GRN-2023-001
+    // GET /api/grn/number/GRN-2023-001
     @GetMapping("/number/{grnNumber}")
     public GoodsReceivedNoteResponseDto getByGrnNumber(@PathVariable String grnNumber) {
         return grnService.getGrnByNumber(grnNumber);
     }
 
-    // GET /api/grns/status/PENDING
+    // GET /api/grn/purchase-order/5
+    @GetMapping("/purchase-order/{purchaseOrderId}")
+    public ResponseEntity<List<GoodsReceivedNoteResponseDto>> getGrnByPurchaseOrder(@PathVariable Long purchaseOrderId) {
+        List<GoodsReceivedNoteResponseDto> list = grnService.getGrnByPurchaseOrder(purchaseOrderId);
+        return list.isEmpty()
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(list);
+    }
+
+    // GET /api/grn/status/PENDING
     @GetMapping("/status/{status}")
     public ResponseEntity<List<GoodsReceivedNoteResponseDto>> getByStatus(
             @PathVariable String status) {
@@ -59,7 +68,13 @@ public class GoodsReceivedNoteController {
         }
     }
 
-    // PUT /api/grns/1
+    // GET /api/grn/1/print
+    @GetMapping("/{id}/print")
+    public ResponseEntity<GoodsReceivedNoteResponseDto> printGrn(@PathVariable Long id) {
+        return ResponseEntity.ok(grnService.printGrn(id));
+    }
+
+    // PUT /api/grn/1
     @PutMapping("/{id}")
     public GoodsReceivedNoteResponseDto update(
             @PathVariable Long id,
@@ -67,7 +82,7 @@ public class GoodsReceivedNoteController {
         return grnService.updateGrn(id, dto);
     }
 
-    // PATCH /api/grns/1/status?status=APPROVED
+    // PATCH /api/grn/1/status?status=APPROVED
     @PatchMapping("/{id}/status")
     public GoodsReceivedNoteResponseDto updateStatus(
             @PathVariable Long id,
@@ -75,10 +90,9 @@ public class GoodsReceivedNoteController {
         return grnService.updateApprovalStatus(id, status);
     }
 
-    // DELETE /api/grns/1
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        grnService.deleteGrn(id);
-        return ResponseEntity.ok("Goods Received Note deleted successfully");
+    // ── 🟢 নতুন যুক্ত করা হলো: PATCH /api/grn/1/cancel ──
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<GoodsReceivedNoteResponseDto> cancelGrn(@PathVariable Long id) {
+        return ResponseEntity.ok(grnService.cancelGrn(id));
     }
 }

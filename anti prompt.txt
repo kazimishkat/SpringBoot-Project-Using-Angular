@@ -29,7 +29,14 @@ added scroll bar,i dont want scroll bar for seeing
 all data,so adjust all generic medicine database data in my screen,if need then small font or decrease margin or padding for thats why all data adjust in screen,so do it for generic medicine and for other menues also,work 
 only under components and if need then dashborad section,keep my code clean
 
-create supplier
+create menu first then inside
+3.generate company-list,company-add,company-details UI inside dashborad,in sidebar section create 
+menu named Delivery Companies,by click this menu showing drop down menu and these menu names company-list,company-add,company-details.company-list,company-add,company-details code write only their html and css under component folder,
+also work only sidebar for add menues,dont go and change any other folder ,work route page in app.route.ts.
+or any others code in this project,dont add any dummy data for showing 
+data base section,i want to input these data,keep my code clean
+
+create menu to menu inside
 3.generate branch-inventory-list,branch-inventory-details UI inside dashborad,in sidebar section 
 menu named branch inventory,by click this showing drop down menu and these menu names branch-inventory-list,branch-inventory-details.branch-inventory-list,branch-inventory-details code write only their html and css under component folder,
 also work only sidebar for add menues,dont go and change any other folder ,work route page in app.route.ts.

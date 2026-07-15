@@ -7,8 +7,11 @@ import com.mishkat.PharmacyManagement.enums.StockMovementType;
 import java.util.List;
 
 public interface StockMovementService {
-    StockMovementResponseDto createStockMovement(StockMovementRequestDto dto);
+    // ── Internal Service Communication API (No Public Controller Access) ──
+    void recordMovement(Long branchId, Long batchId, StockMovementType movementType,
+                        Integer quantity, String referenceType, Long referenceId, String remarks);
 
+    // ── Reporting & Audit Trail APIs ──────────────────────────────────────
     List<StockMovementResponseDto> getAllStockMovements();
 
     StockMovementResponseDto getStockMovementById(Long id);
@@ -20,6 +23,4 @@ public interface StockMovementService {
     List<StockMovementResponseDto> getMovementsByBranchAndType(Long branchId, StockMovementType movementType);
 
     List<StockMovementResponseDto> getMovementsByReference(String referenceType, Long referenceId);
-
-    // Note: No update or delete methods provided to maintain ledger immutability.
 }

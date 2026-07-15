@@ -14,8 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,30 +27,48 @@ public class MedicineBatchServiceImpl implements MedicineBatchService {
     private final MedicineRepository medicineRepository;
     private final SupplierRepository supplierRepository;
 
-    // ম্যাপারের মেথডগুলো স্ট্যাটিক না হওয়ায় ইনস্ট্যান্স তৈরি করা হলো
     private final MedicineBatchMapper mapper = new MedicineBatchMapper();
 
     @Override
     @Transactional
-    public MedicineBatchResponseDto createBatch(MedicineBatchRequestDto dto) {
-        MedicineBatch batch = mapper.toEntity(dto);
+    public MedicineBatch createOrUpdateBatch(Long medicineId, String batchNumber, Long supplierId,
+                                             LocalDate manufactureDate, LocalDate expiryDate,
+                                             BigDecimal purchasePrice, BigDecimal sellingPrice) {
 
-        // Medicine অবজেক্ট খুঁজে সেট করা
-        Medicine medicine = medicineRepository.findById(dto.getMedicineId())
-                .orElseThrow(() -> new RuntimeException("Medicine not found with id: " + dto.getMedicineId()));
-        batch.setMedicine(medicine);
+        List<MedicineBatch> existingBatches = medicineBatchRepository.findByBatchNumber(batchNumber);
+        Optional<MedicineBatch> matchingBatch = existingBatches.stream()
+                .filter(b -> b.getMedicine().getId().equals(medicineId))
+                .findFirst();
 
-        // Supplier অবজেক্ট খুঁজে সেট করা (যদি থাকে)
-        if (dto.getSupplierId() != null) {
-            Supplier supplier = supplierRepository.findById(dto.getSupplierId())
-                    .orElseThrow(() -> new RuntimeException("Supplier not found with id: " + dto.getSupplierId()));
-            batch.setSupplier(supplier);
+        if (matchingBatch.isPresent()) {
+            MedicineBatch existing = matchingBatch.get();
+            existing.setPurchasePrice(purchasePrice);
+            existing.setSellingPrice(sellingPrice);
+            existing.setExpiryDate(expiryDate);
+            if (manufactureDate != null) existing.setManufactureDate(manufactureDate);
+            return medicineBatchRepository.save(existing);
         }
 
-        batch.setIsActive(true); // নতুন ব্যাচ অ্যাকটিভ থাকবে
+        MedicineBatch newBatch = new MedicineBatch();
 
-        MedicineBatch savedBatch = medicineBatchRepository.save(batch);
-        return mapper.toDTO(savedBatch);
+        Medicine medicine = medicineRepository.findById(medicineId)
+                .orElseThrow(() -> new RuntimeException("Medicine configuration profile missing with ID: " + medicineId));
+        newBatch.setMedicine(medicine);
+
+        newBatch.setBatchNumber(batchNumber);
+        newBatch.setManufactureDate(manufactureDate);
+        newBatch.setExpiryDate(expiryDate);
+        newBatch.setPurchasePrice(purchasePrice);
+        newBatch.setSellingPrice(sellingPrice);
+        newBatch.setIsActive(true);
+
+        if (supplierId != null) {
+            Supplier supplier = supplierRepository.findById(supplierId)
+                    .orElseThrow(() -> new RuntimeException("Supplier profile missing with ID: " + supplierId));
+            newBatch.setSupplier(supplier);
+        }
+
+        return medicineBatchRepository.save(newBatch);
     }
 
     @Override
@@ -97,7 +117,7 @@ public class MedicineBatchServiceImpl implements MedicineBatchService {
         MedicineBatch batch = medicineBatchRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Medicine Batch not found with id: " + id));
 
-        // সাধারণ ফিল্ডগুলো ম্যাপারের মাধ্যমে আপডেট করা
+        // আপনার ম্যাপারের updateEntityFromDto মেথড দিয়ে আপডেট করা
         mapper.updateEntityFromDto(dto, batch);
 
         // Medicine আইডি পরিবর্তন হলে আপডেট করা
@@ -115,19 +135,10 @@ public class MedicineBatchServiceImpl implements MedicineBatchService {
                 batch.setSupplier(supplier);
             }
         } else {
-            // যদি রিকোয়েস্টে সাপ্লায়ার না থাকে, তবে নাল করে দেওয়া
             batch.setSupplier(null);
         }
 
         MedicineBatch savedBatch = medicineBatchRepository.save(batch);
         return mapper.toDTO(savedBatch);
-    }
-
-    @Override
-    @Transactional
-    public void deleteBatch(Long id) {
-        MedicineBatch batch = medicineBatchRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Medicine Batch not found with id: " + id));
-        medicineBatchRepository.delete(batch);
     }
 }

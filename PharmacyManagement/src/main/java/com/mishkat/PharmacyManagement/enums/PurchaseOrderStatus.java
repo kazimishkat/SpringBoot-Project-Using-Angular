@@ -1,10 +1,7 @@
 package com.mishkat.PharmacyManagement.enums;
 
 public enum PurchaseOrderStatus {
-    DRAFT,
-    SENT,
-    CONFIRMED,
-    PARTIALLY_RECEIVED,
+    PENDING, APPROVED, REJECTED,
     RECEIVED,
     CANCELLED,
     CLOSED

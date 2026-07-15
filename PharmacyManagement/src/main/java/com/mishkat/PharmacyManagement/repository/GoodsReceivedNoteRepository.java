@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface GoodsReceivedNoteRepository extends JpaRepository<GoodsReceivedNote, Long> {
     Optional<GoodsReceivedNote> findByGrnNumber(String grnNumber);
     List<GoodsReceivedNote> findByApprovalStatus(ApprovalStatus approvalStatus);
+    List<GoodsReceivedNote> findByPurchaseOrderId(Long purchaseOrderId);
 }

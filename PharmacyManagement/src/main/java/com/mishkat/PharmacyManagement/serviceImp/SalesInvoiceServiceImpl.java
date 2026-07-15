@@ -7,8 +7,10 @@ import com.mishkat.PharmacyManagement.dto.responseDTO.SalesInvoiceResponseDto;
 import com.mishkat.PharmacyManagement.entity.*;
 import com.mishkat.PharmacyManagement.enums.DiscountType;
 import com.mishkat.PharmacyManagement.enums.InvoiceStatus;
+import com.mishkat.PharmacyManagement.enums.StockMovementType;
 import com.mishkat.PharmacyManagement.repository.*;
 import com.mishkat.PharmacyManagement.service.SalesInvoiceService;
+import com.mishkat.PharmacyManagement.service.StockMovementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +29,10 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
     private final PrescriptionRepository prescriptionRepository;
     private final UserRepository userRepository;
     private final MedicineBatchRepository medicineBatchRepository;
-
-    // ── 🟢 নতুন যুক্ত করা হলো: অনলাইন অর্ডারের ডাটাবেজ রেফারেন্স তুলে আনার জন্য ──
     private final OnlineOrderRepository onlineOrderRepository;
+
+    // Injecting Internal Stock Movement Ledger Engine
+    private final StockMovementService stockMovementService;
 
     private final SalesInvoiceMapper mapper = new SalesInvoiceMapper();
 
@@ -42,38 +45,32 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
 
         SalesInvoice invoice = mapper.toEntity(dto);
 
-        // Branch সেট করা
         Branch branch = branchRepository.findById(dto.getBranchId())
                 .orElseThrow(() -> new RuntimeException("Branch not found with id: " + dto.getBranchId()));
         invoice.setBranch(branch);
 
-        // Sold By (User) সেট করা
         User soldBy = userRepository.findById(dto.getSoldById())
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + dto.getSoldById()));
         invoice.setSoldBy(soldBy);
 
-        // Customer সেট করা (ঐচ্ছিক)
         if (dto.getCustomerId() != null) {
             Customer customer = customerRepository.findById(dto.getCustomerId())
                     .orElseThrow(() -> new RuntimeException("Customer not found"));
             invoice.setCustomer(customer);
         }
 
-        // Prescription সেট করা (ঐচ্ছিক)
         if (dto.getPrescriptionId() != null) {
             Prescription prescription = prescriptionRepository.findById(dto.getPrescriptionId())
                     .orElseThrow(() -> new RuntimeException("Prescription not found"));
             invoice.setPrescription(prescription);
         }
 
-        // ── 🟢 নতুন যুক্ত করা হলো: অনলাইন অর্ডার থেকে ইনভয়েস জেনারেশনের সময় লিঙ্ক তৈরি করা ──
         if (dto.getOnlineOrderId() != null) {
             OnlineOrder onlineOrder = onlineOrderRepository.findById(dto.getOnlineOrderId())
                     .orElseThrow(() -> new RuntimeException("Online Order not found with id: " + dto.getOnlineOrderId()));
             invoice.setOnlineOrder(onlineOrder);
         }
 
-        // আইটেম প্রসেসিং এবং Line Total ক্যালকুলেশন
         if (invoice.getItems() != null && dto.getItems() != null) {
             for (int i = 0; i < invoice.getItems().size(); i++) {
                 SalesInvoiceItem item = invoice.getItems().get(i);
@@ -90,6 +87,12 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
         }
 
         SalesInvoice savedInvoice = salesInvoiceRepository.save(invoice);
+
+        // Log stock movements if paid or partially paid immediately upon creation
+        if (savedInvoice.getStatus() == InvoiceStatus.PAID || savedInvoice.getStatus() == InvoiceStatus.PARTIALLY_PAID) {
+            logStockMovementsForInvoice(savedInvoice);
+        }
+
         return mapper.toDTO(savedInvoice);
     }
 
@@ -163,9 +166,10 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
         existingInvoice.setTotalAmount(updatedData.getTotalAmount());
         existingInvoice.setPaidAmount(updatedData.getPaidAmount());
         existingInvoice.setDueAmount(updatedData.getDueAmount());
+
+        InvoiceStatus oldStatus = existingInvoice.getStatus();
         existingInvoice.setStatus(updatedData.getStatus());
 
-        // ── 🟢 নতুন যুক্ত করা হলো: আপডেটের সময় অনলাইন অর্ডার অ্যাসাইনমেন্ট রি-চেক ──
         if (dto.getOnlineOrderId() != null) {
             if (existingInvoice.getOnlineOrder() == null || !existingInvoice.getOnlineOrder().getId().equals(dto.getOnlineOrderId())) {
                 OnlineOrder onlineOrder = onlineOrderRepository.findById(dto.getOnlineOrderId())
@@ -193,7 +197,15 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
             }
         }
 
-        return mapper.toDTO(salesInvoiceRepository.save(existingInvoice));
+        SalesInvoice savedInvoice = salesInvoiceRepository.save(existingInvoice);
+
+        // Deduct stock if transitioned to a valid payout status state from an unpaid one
+        if ((savedInvoice.getStatus() == InvoiceStatus.PAID || savedInvoice.getStatus() == InvoiceStatus.PARTIALLY_PAID)
+                && (oldStatus != InvoiceStatus.PAID && oldStatus != InvoiceStatus.PARTIALLY_PAID)) {
+            logStockMovementsForInvoice(savedInvoice);
+        }
+
+        return mapper.toDTO(savedInvoice);
     }
 
     @Override
@@ -201,8 +213,17 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
     public SalesInvoiceResponseDto updateInvoiceStatus(Long id, InvoiceStatus status) {
         SalesInvoice invoice = salesInvoiceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
+
+        InvoiceStatus oldStatus = invoice.getStatus();
         invoice.setStatus(status);
-        return mapper.toDTO(salesInvoiceRepository.save(invoice));
+        SalesInvoice savedInvoice = salesInvoiceRepository.save(invoice);
+
+        if ((status == InvoiceStatus.PAID || status == InvoiceStatus.PARTIALLY_PAID)
+                && (oldStatus != InvoiceStatus.PAID && oldStatus != InvoiceStatus.PARTIALLY_PAID)) {
+            logStockMovementsForInvoice(savedInvoice);
+        }
+
+        return mapper.toDTO(savedInvoice);
     }
 
     @Override
@@ -224,6 +245,22 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
             return baseTotal.subtract(discountAmount);
         } else {
             return baseTotal.subtract(discountValue);
+        }
+    }
+
+    private void logStockMovementsForInvoice(SalesInvoice invoice) {
+        if (invoice.getItems() != null) {
+            for (SalesInvoiceItem item : invoice.getItems()) {
+                stockMovementService.recordMovement(
+                        invoice.getBranch().getId(),
+                        item.getBatch().getId(),
+                        StockMovementType.SALE,
+                        item.getQuantity(),
+                        "SALES_INVOICE",
+                        invoice.getId(),
+                        "Inventory unit reduction via checkout sale docket: " + invoice.getInvoiceNumber()
+                );
+            }
         }
     }
 }

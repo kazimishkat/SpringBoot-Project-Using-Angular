@@ -1,0 +1,254 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Alert Banner -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm rounded-4" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- STATE 1: Browse Goods Received Notes (Default Card Grid View) -->
+  <div *ngIf="!grnDetails">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">GRN Details Registry</h3>
+        <p class="text-muted small mb-0">Browse batch allocations, cost and selling rates, and approval status for warehouse stock-ins.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <!-- Search Input in Header -->
+        <div class="input-group" style="max-width: 300px;">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input #filterInput 
+                 (input)="0" 
+                 type="text" 
+                 class="form-control bg-light-focus border-start-0" 
+                 placeholder="Search GRN, PO, or Receiver..." />
+        </div>
+        <a routerLink="/dashboard/grns/receive" class="btn btn-mint-primary fw-semibold text-decoration-none d-flex align-items-center gap-2 shadow-sm transition-all">
+          <i class="bi bi-plus-circle-fill"></i>
+          <span>Receive Goods</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- GRN Card Grid -->
+    <div class="row g-3" *ngIf="masterGrnList.length > 0; else emptyRegistry">
+      <ng-container *ngFor="let item of masterGrnList">
+        <!-- Template Filter matching GRN, PO, or Receiver name -->
+        <div class="col-lg-4 col-md-6 col-sm-12 animate-fade-in" 
+             *ngIf="!filterInput.value || item.grnNumber.toLowerCase().includes(filterInput.value.toLowerCase()) || item.poNumber.toLowerCase().includes(filterInput.value.toLowerCase()) || (item.receivedByName && item.receivedByName.toLowerCase().includes(filterInput.value.toLowerCase()))">
+          <div class="card border-0 shadow-sm rounded-4 h-100 grn-overview-card d-flex flex-column transition-all">
+            <!-- Card Body -->
+            <div class="card-body p-4 flex-grow-1">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="grn-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-4 rounded-circle flex-shrink-0">
+                  <i class="bi bi-journal-text"></i>
+                </div>
+                <div class="overflow-hidden">
+                  <h5 class="mb-0 fw-bold text-dark-teal text-truncate" title="{{ item.grnNumber }}">{{ item.grnNumber }}</h5>
+                  <span class="badge bg-teal-light text-teal fw-bold font-monospace mt-1">PO: {{ item.poNumber }}</span>
+                </div>
+              </div>
+
+              <!-- Quick Info -->
+              <div class="grn-quick-details small mt-3 text-muted">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-person-fill text-teal"></i>
+                  <span class="text-dark fw-medium text-truncate">Receiver: {{ item.receivedByName || ('User #' + item.receivedById) }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-calendar-check-fill text-teal"></i>
+                  <span class="text-dark">Date: {{ item.receivedDate | date:'mediumDate' }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-boxes text-teal"></i>
+                  <span class="text-dark">Stock items: {{ item.items ? item.items.length : 0 }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="card-footer bg-light border-0 py-3 px-4 d-flex align-items-center justify-content-between rounded-bottom-4 mt-auto">
+              <span class="badge rounded-pill px-3 py-1.5 fw-semibold text-xs transition-all shadow-xs" 
+                    [ngClass]="{
+                      'bg-mint text-dark-teal': item.approvalStatus === 'APPROVED',
+                      'bg-light-warning text-warning': item.approvalStatus === 'PENDING',
+                      'bg-light-danger text-danger': item.approvalStatus === 'REJECTED' || item.approvalStatus === 'CANCELLED'
+                    }">
+                {{ item.approvalStatus }}
+              </span>
+              <button (click)="fetchGranularDetailsPanel(item.id)" 
+                      class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1.5 px-3 py-2 font-size-xs fw-semibold shadow-xs" 
+                      title="View Details">
+                <i class="bi bi-eye-fill"></i>
+                <span>Details</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Empty Registry Layout -->
+    <ng-template #emptyRegistry>
+      <div class="card border-0 shadow-sm rounded-4 text-center py-5 px-4 bg-white">
+        <div class="empty-state-icon mb-3">
+          <i class="bi bi-box-seam text-muted-teal display-3"></i>
+        </div>
+        <h5 class="fw-bold text-dark-teal mb-2">No Goods Received Notes Found</h5>
+        <p class="text-muted small mx-auto mb-4" style="max-width: 450px;">
+          No goods received notes were found in the database directory. Please complete a purchase order receipt process first.
+        </p>
+        <a routerLink="/dashboard/grns/receive" class="btn btn-mint-primary px-4 py-2.5 fw-bold text-decoration-none shadow-sm">
+          <i class="bi bi-plus-circle-fill me-2"></i>Receive Goods (GRN)
+        </a>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- STATE 2: Read-Only Ledger Details View (Single Selected GRN) -->
+  <div class="animate-fade-in" *ngIf="grnDetails">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2 print-hide">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">GRN Stock Receipt</h3>
+        <p class="text-muted small mb-0">Granular inventory batch entries, purchase values, and warehouse allocations sheet.</p>
+      </div>
+      <button (click)="grnDetails = null" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2.5 fw-semibold shadow-sm transition-all">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to Overview</span>
+      </button>
+    </div>
+
+    <!-- Ledger Invoice Container -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 invoice-container">
+      <!-- Invoice Header Banner -->
+      <div class="bg-gradient-teal p-4 text-white d-flex align-items-center justify-content-between flex-wrap gap-3 border-0">
+        <div class="d-flex align-items-center gap-3">
+          <div class="grn-avatar d-flex align-items-center justify-content-center bg-white text-teal fw-bold fs-3 rounded-circle shadow">
+            <i class="bi bi-receipt-cutoff"></i>
+          </div>
+          <div>
+            <h4 class="mb-1 fw-bold text-white">{{ grnDetails.grnNumber }}</h4>
+            <div class="d-flex align-items-center gap-2 flex-wrap text-white-50">
+              <span class="small font-monospace">Receipt ID Reference: #GRN-0{{ grnDetails.id }}</span>
+              <span class="text-white-50">•</span>
+              <span class="small">Inward Logistics Manager: {{ grnDetails.receivedByName || ('User #' + grnDetails.receivedById) }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="text-end">
+          <span class="badge rounded-pill px-3 py-2 fw-semibold text-sm shadow-sm" 
+                [ngClass]="{
+                  'bg-mint text-dark-teal': grnDetails.approvalStatus === 'APPROVED',
+                  'bg-light-warning text-warning': grnDetails.approvalStatus === 'PENDING',
+                  'bg-light-danger text-danger': grnDetails.approvalStatus === 'REJECTED' || grnDetails.approvalStatus === 'CANCELLED'
+                }">
+            <i class="bi me-1" 
+               [ngClass]="{
+                 'bi-check-circle-fill': grnDetails.approvalStatus === 'APPROVED',
+                 'bi-clock-fill': grnDetails.approvalStatus === 'PENDING',
+                 'bi-x-circle-fill': grnDetails.approvalStatus === 'REJECTED' || grnDetails.approvalStatus === 'CANCELLED'
+               }"></i>
+            {{ grnDetails.approvalStatus }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Invoicing Addresses / Stakeholders -->
+      <div class="card-body p-4 bg-white">
+        <div class="row g-4 mb-4 border-bottom pb-4">
+          <div class="col-sm-6 border-end">
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2">Purchase Order Source</h6>
+            <div class="fw-bold text-dark fs-5 mb-1">{{ grnDetails.poNumber }}</div>
+            <div class="text-muted small">Linked Purchase Order ID: #PO-{{ grnDetails.purchaseOrderId }}</div>
+          </div>
+          <div class="col-sm-6">
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2">Receipt Metadata Details</h6>
+            <div class="mb-1 text-dark small">
+              <strong>Received Date:</strong> {{ grnDetails.receivedDate | date:'mediumDate' }}
+            </div>
+            <div class="text-dark small">
+              <strong>Stock Inward Time:</strong> {{ grnDetails.createdAt | date:'medium' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Verified Stock Batch Lines</h6>
+        <div class="table-responsive border rounded-3 mb-4 overflow-hidden shadow-xs">
+          <table class="table align-middle mb-0 custom-ledger-table">
+            <thead class="table-light text-uppercase font-size-xs fw-bold text-muted border-bottom">
+              <tr>
+                <th scope="col" class="ps-3">Medicine Brand</th>
+                <th scope="col" class="text-center">Batch Number</th>
+                <th scope="col" class="text-center">Mfg. Date</th>
+                <th scope="col" class="text-center">Expiry Date</th>
+                <th scope="col" class="text-center">Qty Received</th>
+                <th scope="col" class="text-end">Cost Price</th>
+                <th scope="col" class="text-end">Selling Price</th>
+                <th scope="col" class="text-end pe-3">Line Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of grnDetails.items" class="ledger-row">
+                <td class="ps-3">
+                  <div class="fw-bold text-dark">{{ item.brandName || ('Medicine #' + item.medicineId) }}</div>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-teal-light text-teal fw-bold font-monospace py-1.5 px-2.5 rounded">{{ item.batchNumber }}</span>
+                </td>
+                <td class="text-center text-muted small">
+                  {{ item.manufactureDate ? (item.manufactureDate | date:'mediumDate') : 'N/A' }}
+                </td>
+                <td class="text-center text-dark-teal small">
+                  {{ item.expiryDate | date:'mediumDate' }}
+                </td>
+                <td class="text-center text-dark font-monospace fw-semibold">
+                  {{ item.receivedQuantity }}
+                </td>
+                <td class="text-end text-dark font-monospace">
+                  {{ item.purchasePrice | currency }}
+                </td>
+                <td class="text-end text-muted font-monospace">
+                  {{ item.sellingPrice | currency }}
+                </td>
+                <td class="text-end pe-3 text-dark-teal font-monospace fw-bold">
+                  {{ calculateItemLineTotal(item.purchasePrice, item.receivedQuantity) | currency }}
+                </td>
+              </tr>
+              <!-- Subtotals summary line -->
+              <tr class="table-light fw-bold text-dark fs-5 border-top">
+                <td colspan="7" class="text-end ps-3">Total Inward Valuation:</td>
+                <td class="text-end pe-3 text-dark-teal font-monospace">
+                  {{ calculateGrnGrandTotal() | currency }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Action Control Center -->
+        <div class="d-flex align-items-center justify-content-between mt-5 pt-3 border-top border-light print-hide">
+          <div>
+            <button type="button" class="btn btn-outline-dark d-flex align-items-center gap-2 px-3 py-2 fw-semibold transition-all shadow-xs" (click)="printGrnSheetReport()">
+              <i class="bi bi-printer-fill"></i>
+              <span>Print GRN Report</span>
+            </button>
+          </div>
+          
+          <div class="d-flex gap-2" *ngIf="grnDetails.approvalStatus === 'PENDING'">
+            <button type="button" class="btn btn-outline-danger px-4 py-2 fw-bold transition-all shadow-xs" (click)="cancelGrnInvoice()">
+              Cancel GRN Requisition
+            </button>
+            <button type="button" class="btn btn-mint-primary px-4 py-2 fw-bold transition-all shadow-sm" (click)="approveGrnInvoice()">
+              Approve GRN Entry
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

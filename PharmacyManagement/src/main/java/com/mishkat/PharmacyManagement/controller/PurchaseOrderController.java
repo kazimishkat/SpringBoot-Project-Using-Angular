@@ -34,6 +34,15 @@ public class PurchaseOrderController {
                 : ResponseEntity.ok(list);
     }
 
+    // GET /api/purchase-orders/status/PENDING
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<PurchaseOrderResponseDto>> getByStatus(@PathVariable PurchaseOrderStatus status) {
+        List<PurchaseOrderResponseDto> list = purchaseOrderService.getPurchaseOrdersByStatus(status);
+        return list.isEmpty()
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.ok(list);
+    }
+
     // GET /api/purchase-orders/1
     @GetMapping("/{id}")
     public PurchaseOrderResponseDto getById(@PathVariable Long id) {
@@ -54,12 +63,24 @@ public class PurchaseOrderController {
         return purchaseOrderService.updatePurchaseOrder(id, dto);
     }
 
-    // PATCH /api/purchase-orders/1/status?status=APPROVED
+    // PATCH /api/purchase-orders/1/status?status=RECEIVED
     @PatchMapping("/{id}/status")
     public PurchaseOrderResponseDto updateStatus(
             @PathVariable Long id,
             @RequestParam PurchaseOrderStatus status) {
         return purchaseOrderService.updatePurchaseOrderStatus(id, status);
+    }
+
+    // PATCH /api/purchase-orders/1/approve
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<PurchaseOrderResponseDto> approveOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(purchaseOrderService.approvePurchaseOrder(id));
+    }
+
+    // PATCH /api/purchase-orders/1/reject
+    @PatchMapping("/{id}/reject")
+    public ResponseEntity<PurchaseOrderResponseDto> rejectOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(purchaseOrderService.rejectPurchaseOrder(id));
     }
 
     // DELETE /api/purchase-orders/1

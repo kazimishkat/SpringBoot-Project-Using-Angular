@@ -1,0 +1,118 @@
+/* Receive Goods UI Styling */
+.bg-gradient-teal {
+  background: linear-gradient(135deg, #0fa895 0%, #0a4f45 100%) !important;
+}
+
+.text-dark-teal {
+  color: #0a4f45;
+}
+
+.text-teal {
+  color: #0fa895;
+}
+
+.border-light-teal {
+  border-color: rgba(15, 168, 149, 0.1) !important;
+}
+
+.letter-spacing-1 {
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+}
+
+.bg-light-focus {
+  transition: all 0.25s ease;
+  border-color: #e2e8f0;
+}
+
+.bg-light-focus:focus {
+  background-color: #ffffff;
+  border-color: #0fa895;
+  box-shadow: 0 0 0 0.25rem rgba(15, 168, 149, 0.15);
+}
+
+.input-group-text {
+  border-color: #e2e8f0;
+}
+
+.btn-mint-primary {
+  background-color: #0fa895;
+  color: #ffffff;
+  border: 1px solid #0fa895;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-mint-primary:hover {
+  background-color: #0a4f45;
+  border-color: #0a4f45;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 168, 149, 0.25);
+}
+
+/* Verification Table styles */
+.custom-verification-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.custom-verification-table thead th {
+  font-size: 0.75rem;
+  letter-spacing: 0.8px;
+  padding: 1rem 0.75rem;
+  border-bottom: 2px solid rgba(15, 168, 149, 0.08);
+}
+
+.verification-row {
+  transition: background-color 0.25s ease;
+}
+
+.verification-row:hover {
+  background-color: rgba(15, 168, 149, 0.01) !important;
+}
+
+.custom-verification-table td {
+  padding: 0.95rem 0.6rem;
+  border-bottom: 1px solid rgba(15, 168, 149, 0.05);
+}
+
+.custom-verification-table input,
+.custom-verification-table select {
+  font-size: 0.9rem;
+  padding: 0.45rem 0.6rem;
+  border-color: #e2e8f0;
+}
+
+.custom-verification-table input:focus,
+.custom-verification-table select:focus {
+  outline: none;
+  border-color: #0fa895;
+  box-shadow: 0 0 0 0.15rem rgba(15, 168, 149, 0.15);
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.font-size-xs {
+  font-size: 0.75rem;
+}
+.text-muted-teal {
+  color: rgba(15, 168, 149, 0.4);
+}
+.shadow-xs {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}

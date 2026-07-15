@@ -185,6 +185,120 @@
         </div>
       </li>
 
+      <!-- Delivery Companies Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleDeliveryCompanyDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-truck"></i>
+            <span>Delivery Companies</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isDeliveryCompanyDropdownOpen" [class.bi-chevron-up]="isDeliveryCompanyDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isDeliveryCompanyDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/delivery-companies" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>company-list</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/delivery-companies/add" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>company-add</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/delivery-companies/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>company-details</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Purchase Order Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="togglePurchaseOrderDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-file-earmark-text"></i>
+            <span>Purchase Order</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isPurchaseOrderDropdownOpen" [class.bi-chevron-up]="isPurchaseOrderDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isPurchaseOrderDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/purchase-orders" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>purchase-order-list</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/purchase-orders/create" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>create-purchase-order</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/purchase-orders/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>purchase-order-details</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Goods Received Note (GRN) Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleGrnDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-journal-text"></i>
+            <span>Goods Received Note (GRN)</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isGrnDropdownOpen" [class.bi-chevron-up]="isGrnDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isGrnDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/grns" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>GRN-list</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/grns/receive" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>receive-goods</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/grns/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>GRN-details</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
       <!-- Branch Link with Dropdown -->
       <li class="nav-item">
         <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleBranchDropdown()"

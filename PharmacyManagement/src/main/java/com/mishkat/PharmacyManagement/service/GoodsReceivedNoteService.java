@@ -7,7 +7,7 @@ import com.mishkat.PharmacyManagement.enums.ApprovalStatus;
 import java.util.List;
 
 public interface GoodsReceivedNoteService {
-    GoodsReceivedNoteResponseDto createGrn(GoodsReceivedNoteRequestDto dto);
+    GoodsReceivedNoteResponseDto receiveGoods(GoodsReceivedNoteRequestDto dto);
 
     List<GoodsReceivedNoteResponseDto> getAllGrns();
 
@@ -17,9 +17,14 @@ public interface GoodsReceivedNoteService {
 
     List<GoodsReceivedNoteResponseDto> getGrnsByStatus(ApprovalStatus status);
 
+    List<GoodsReceivedNoteResponseDto> getGrnByPurchaseOrder(Long purchaseOrderId);
+
     GoodsReceivedNoteResponseDto updateGrn(Long id, GoodsReceivedNoteRequestDto dto);
 
-    void deleteGrn(Long id);
+    // ── 🟢 deleteGrn-এর পরিবর্তে cancelGrn যুক্ত করা হলো ──
+    GoodsReceivedNoteResponseDto cancelGrn(Long id);
 
     GoodsReceivedNoteResponseDto updateApprovalStatus(Long id, ApprovalStatus status);
+
+    GoodsReceivedNoteResponseDto printGrn(Long id);
 }

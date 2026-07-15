@@ -16,6 +16,9 @@ export class Sidebar {
   isGenericDropdownOpen = false;
   isMedicineDropdownOpen = false;
   isMedicineBatchDropdownOpen = false;
+  isDeliveryCompanyDropdownOpen = false;
+  isPurchaseOrderDropdownOpen = false;
+  isGrnDropdownOpen = false;
 
   toggleSupplierDropdown(): void {
     this.isSupplierDropdownOpen = !this.isSupplierDropdownOpen;
@@ -43,6 +46,18 @@ export class Sidebar {
 
   toggleMedicineBatchDropdown(): void {
     this.isMedicineBatchDropdownOpen = !this.isMedicineBatchDropdownOpen;
+  }
+
+  toggleDeliveryCompanyDropdown(): void {
+    this.isDeliveryCompanyDropdownOpen = !this.isDeliveryCompanyDropdownOpen;
+  }
+
+  togglePurchaseOrderDropdown(): void {
+    this.isPurchaseOrderDropdownOpen = !this.isPurchaseOrderDropdownOpen;
+  }
+
+  toggleGrnDropdown(): void {
+    this.isGrnDropdownOpen = !this.isGrnDropdownOpen;
   }
 }
 

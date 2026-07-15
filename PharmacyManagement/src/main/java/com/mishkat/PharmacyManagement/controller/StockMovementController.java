@@ -18,12 +18,7 @@ import java.util.List;
 public class StockMovementController {
     private final StockMovementService stockMovementService;
 
-    // POST /api/stock-movements
-    @PostMapping
-    public ResponseEntity<StockMovementResponseDto> create(
-            @Valid @RequestBody StockMovementRequestDto dto) {
-        return new ResponseEntity<>(stockMovementService.createStockMovement(dto), HttpStatus.CREATED);
-    }
+    // ── Read-Only Audit Trail Operations (Reporting APIs) ──
 
     // GET /api/stock-movements
     @GetMapping
@@ -36,11 +31,11 @@ public class StockMovementController {
 
     // GET /api/stock-movements/1
     @GetMapping("/{id}")
-    public StockMovementResponseDto getById(@PathVariable Long id) {
-        return stockMovementService.getStockMovementById(id);
+    public ResponseEntity<StockMovementResponseDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(stockMovementService.getStockMovementById(id));
     }
 
-    // GET /api/stock-movements/branch/5
+    // GET /api/stock-movements/branch/2
     @GetMapping("/branch/{branchId}")
     public ResponseEntity<List<StockMovementResponseDto>> getByBranchId(@PathVariable Long branchId) {
         List<StockMovementResponseDto> list = stockMovementService.getMovementsByBranchId(branchId);
@@ -49,7 +44,7 @@ public class StockMovementController {
                 : ResponseEntity.ok(list);
     }
 
-    // GET /api/stock-movements/batch/10
+    // GET /api/stock-movements/batch/15
     @GetMapping("/batch/{batchId}")
     public ResponseEntity<List<StockMovementResponseDto>> getByBatchId(@PathVariable Long batchId) {
         List<StockMovementResponseDto> list = stockMovementService.getMovementsByBatchId(batchId);
@@ -58,7 +53,7 @@ public class StockMovementController {
                 : ResponseEntity.ok(list);
     }
 
-    // GET /api/stock-movements/branch/5/type/IN
+    // GET /api/stock-movements/branch/2/type/SALE
     @GetMapping("/branch/{branchId}/type/{movementType}")
     public ResponseEntity<List<StockMovementResponseDto>> getByBranchAndType(
             @PathVariable Long branchId,
@@ -69,7 +64,7 @@ public class StockMovementController {
                 : ResponseEntity.ok(list);
     }
 
-    // GET /api/stock-movements/reference?type=SALES_INVOICE&id=25
+    // GET /api/stock-movements/reference?type=PURCHASE_ORDER&id=50
     @GetMapping("/reference")
     public ResponseEntity<List<StockMovementResponseDto>> getByReference(
             @RequestParam String type,

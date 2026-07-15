@@ -14,20 +14,21 @@ public class MedicineBatchRequestDto {
     private Long medicineId;
 
     @NotBlank(message = "Batch number is required")
-    @Size(max = 50)
+    @Size(max = 50, message = "Batch number cannot exceed 50 characters")
     private String batchNumber;
 
     private Long supplierId;
+
     private LocalDate manufactureDate;
 
     @NotNull(message = "Expiry date is required")
     private LocalDate expiryDate;
 
     @NotNull(message = "Purchase price is required")
-    @Positive
+    @Positive(message = "Purchase price must be positive")
     private BigDecimal purchasePrice;
 
     @NotNull(message = "Selling price is required")
-    @Positive
+    @Positive(message = "Selling price must be positive")
     private BigDecimal sellingPrice;
 }

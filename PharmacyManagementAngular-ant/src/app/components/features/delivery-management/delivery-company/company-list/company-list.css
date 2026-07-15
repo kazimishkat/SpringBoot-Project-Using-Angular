@@ -1,0 +1,130 @@
+/* Delivery Company List CSS Stylesheet */
+
+.text-dark-teal {
+  color: #0a4f45;
+}
+
+.text-teal {
+  color: #0fa895;
+}
+
+.text-muted-teal {
+  color: rgba(15, 168, 149, 0.4);
+}
+
+.bg-teal-light {
+  background-color: rgba(15, 168, 149, 0.08) !important;
+}
+
+.bg-mint {
+  background-color: #d1f4f0 !important;
+}
+
+.bg-light-danger {
+  background-color: #fee2e2 !important;
+}
+
+.bg-light-focus {
+  transition: all 0.25s ease;
+  border-color: #e2e8f0;
+}
+
+.bg-light-focus:focus {
+  background-color: #ffffff;
+  border-color: #0fa895;
+  box-shadow: 0 0 0 0.25rem rgba(15, 168, 149, 0.15);
+}
+
+.btn-mint-primary {
+  background-color: #0fa895;
+  color: #ffffff;
+  border: 1px solid #0fa895;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-mint-primary:hover {
+  background-color: #0a4f45;
+  border-color: #0a4f45;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 168, 149, 0.25);
+}
+
+.btn-outline-mint {
+  color: #0fa895;
+  border: 1px solid rgba(15, 168, 149, 0.3);
+  background-color: transparent;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-outline-mint:hover {
+  color: #0a4f45;
+  background-color: #f0fdf4;
+  border-color: #0fa895;
+}
+
+/* Custom Table Styles */
+.custom-company-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.custom-company-table thead th {
+  font-size: 0.75rem;
+  letter-spacing: 0.8px;
+  padding: 1rem 0.75rem;
+  border-bottom: 2px solid rgba(15, 168, 149, 0.08);
+}
+
+.custom-company-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.custom-company-table tbody tr:hover {
+  background-color: rgba(15, 168, 149, 0.02) !important;
+}
+
+.custom-company-table td {
+  padding: 1.1rem 0.75rem;
+  border-bottom: 1px solid rgba(15, 168, 149, 0.05);
+}
+
+.company-row:last-child td {
+  border-bottom: none;
+}
+
+/* Custom switch toggle color */
+.custom-switch-toggle:checked {
+  background-color: #0fa895;
+  border-color: #0fa895;
+}
+
+.custom-switch-toggle:focus {
+  box-shadow: 0 0 0 0.25rem rgba(15, 168, 149, 0.25);
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.font-size-xs {
+  font-size: 0.75rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}

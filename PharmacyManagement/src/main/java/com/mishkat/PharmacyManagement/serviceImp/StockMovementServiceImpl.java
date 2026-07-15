@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,21 +30,30 @@ public class StockMovementServiceImpl implements StockMovementService {
 
     @Override
     @Transactional
-    public StockMovementResponseDto createStockMovement(StockMovementRequestDto dto) {
-        StockMovement movement = mapper.toEntity(dto);
+    public void recordMovement(Long branchId, Long batchId, StockMovementType movementType,
+                               Integer quantity, String referenceType, Long referenceId, String remarks) {
 
-        // Branch সেট করা
-        Branch branch = branchRepository.findById(dto.getBranchId())
-                .orElseThrow(() -> new RuntimeException("Branch not found with id: " + dto.getBranchId()));
+        // ১. লক্ষ্য করা ব্রাঞ্চ ডাটাবেজে আছে কি না তা নিশ্চিত করা
+        Branch branch = branchRepository.findById(branchId)
+                .orElseThrow(() -> new RuntimeException("Stock record linkage failed: Branch missing with ID: " + branchId));
+
+        // ২. মেডিসিন ইনভেন্টরি ব্যাচ ভ্যালিডেশন করা
+        MedicineBatch batch = medicineBatchRepository.findById(batchId)
+                .orElseThrow(() -> new RuntimeException("Stock record linkage failed: Medicine Batch missing with ID: " + batchId));
+
+        // ৩. ইমিউটেবল (Immutable) অডিট লগ অবজেক্ট তৈরি করা
+        StockMovement movement = new StockMovement();
         movement.setBranch(branch);
-
-        // MedicineBatch সেট করা
-        MedicineBatch batch = medicineBatchRepository.findById(dto.getBatchId())
-                .orElseThrow(() -> new RuntimeException("Medicine Batch not found with id: " + dto.getBatchId()));
         movement.setBatch(batch);
+        movement.setMovementType(movementType);
+        movement.setQuantity(quantity);
+        movement.setReferenceType(referenceType);
+        movement.setReferenceId(referenceId);
+        movement.setMovementDate(LocalDateTime.now());
+        movement.setRemarks(remarks);
 
-        StockMovement savedMovement = stockMovementRepository.save(movement);
-        return mapper.toDTO(savedMovement);
+        // অটোমেটিকভাবে ব্যাকএন্ড লেজারে সেভ হবে
+        stockMovementRepository.save(movement);
     }
 
     @Override
@@ -58,7 +68,7 @@ public class StockMovementServiceImpl implements StockMovementService {
     @Transactional(readOnly = true)
     public StockMovementResponseDto getStockMovementById(Long id) {
         StockMovement movement = stockMovementRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Stock Movement not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Stock Ledger Entry not found with ID: " + id));
         return mapper.toDTO(movement);
     }
 

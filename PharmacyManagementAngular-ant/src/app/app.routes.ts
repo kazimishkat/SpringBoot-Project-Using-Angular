@@ -20,6 +20,15 @@ import { MedicineDetailsComponent } from './components/features/medicine-catalog
 import { MedicineBatchList } from './components/features/medicine-catalog/medicine-batch/medicine-batch-list/medicine-batch-list';
 import { MedicineBatchDetails } from './components/features/medicine-catalog/medicine-batch/medicine-batch-details/medicine-batch-details';
 import { MedicineBatchAdd } from './components/features/medicine-catalog/medicine-batch/medicine-batch-add/medicine-batch-add';
+import { DeliveryCompanyListComponent } from './components/features/delivery-management/delivery-company/company-list/company-list';
+import { DeliveryCompanyAdd } from './components/features/delivery-management/delivery-company/company-add/company-add';
+import { DeliveryCompanyDetails } from './components/features/delivery-management/delivery-company/company-details/company-details';
+import { PurchaseOrderList } from './components/features/purchase-management/purchase-order/purchase-order-list/purchase-order-list';
+import { CreatePurchaseOrderComponent } from './components/features/purchase-management/purchase-order/create-purchase-order/create-purchase-order';
+import { PurchaseOrderDetailsComponent } from './components/features/purchase-management/purchase-order/purchase-order-details/purchase-order-details';
+import { GoodsReceivedNoteList } from './components/features/purchase-management/goods-received-note/grn-list/grn-list';
+import { ReceiveGoods } from './components/features/purchase-management/goods-received-note/receive-goods/receive-goods';
+import { GoodsReceivedNoteDetails } from './components/features/purchase-management/goods-received-note/grn-details/grn-details';
 
 
 export const routes: Routes = [
@@ -53,6 +62,18 @@ export const routes: Routes = [
       { path: 'medicine-batches/add', component: MedicineBatchAdd },
       { path: 'medicine-batches/details', component: MedicineBatchDetails },
       { path: 'medicine-batches/details/:id', component: MedicineBatchDetails },
+      { path: 'delivery-companies', component: DeliveryCompanyListComponent },
+      { path: 'delivery-companies/add', component: DeliveryCompanyAdd },
+      { path: 'delivery-companies/details', component: DeliveryCompanyDetails },
+      { path: 'delivery-companies/details/:id', component: DeliveryCompanyDetails },
+      { path: 'purchase-orders', component: PurchaseOrderList },
+      { path: 'purchase-orders/create', component: CreatePurchaseOrderComponent },
+      { path: 'purchase-orders/details', component: PurchaseOrderDetailsComponent },
+      { path: 'purchase-orders/details/:id', component: PurchaseOrderDetailsComponent },
+      { path: 'grns', component: GoodsReceivedNoteList },
+      { path: 'grns/receive', component: ReceiveGoods },
+      { path: 'grns/details', component: GoodsReceivedNoteDetails },
+      { path: 'grns/details/:id', component: GoodsReceivedNoteDetails },
     ]
   }
 ];

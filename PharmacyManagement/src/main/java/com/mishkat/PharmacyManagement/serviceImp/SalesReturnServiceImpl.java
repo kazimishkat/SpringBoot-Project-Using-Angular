@@ -5,11 +5,13 @@ import com.mishkat.PharmacyManagement.dto.requestDTO.SalesReturnItemRequestDto;
 import com.mishkat.PharmacyManagement.dto.requestDTO.SalesReturnRequestDto;
 import com.mishkat.PharmacyManagement.dto.responseDTO.SalesReturnResponseDto;
 import com.mishkat.PharmacyManagement.entity.*;
+import com.mishkat.PharmacyManagement.enums.StockMovementType;
 import com.mishkat.PharmacyManagement.repository.MedicineBatchRepository;
 import com.mishkat.PharmacyManagement.repository.SalesInvoiceRepository;
 import com.mishkat.PharmacyManagement.repository.SalesReturnRepository;
 import com.mishkat.PharmacyManagement.repository.UserRepository;
 import com.mishkat.PharmacyManagement.service.SalesReturnService;
+import com.mishkat.PharmacyManagement.service.StockMovementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,32 +27,30 @@ public class SalesReturnServiceImpl implements SalesReturnService {
     private final MedicineBatchRepository medicineBatchRepository;
     private final UserRepository userRepository;
 
-    // ম্যাপারের মেথডগুলো স্ট্যাটিক না হওয়ায় ইনস্ট্যান্স তৈরি করা হলো
+    // Injecting Internal Stock Movement Ledger Engine
+    private final StockMovementService stockMovementService;
+
     private final SalesReturnMapper mapper = new SalesReturnMapper();
 
     @Override
     @Transactional
     public SalesReturnResponseDto createSalesReturn(SalesReturnRequestDto dto) {
-        // ১. ইউনিক Return Number চেক করা
         if (salesReturnRepository.findByReturnNumber(dto.getReturnNumber()).isPresent()) {
             throw new RuntimeException("Sales Return already exists with Return Number: " + dto.getReturnNumber());
         }
 
         SalesReturn salesReturn = mapper.toEntity(dto);
 
-        // ২. Invoice অবজেক্ট সেট করা
         SalesInvoice invoice = salesInvoiceRepository.findById(dto.getInvoiceId())
                 .orElseThrow(() -> new RuntimeException("Sales Invoice not found with id: " + dto.getInvoiceId()));
         salesReturn.setInvoice(invoice);
 
-        // ৩. Processed By (User) অবজেক্ট সেট করা
         if (dto.getProcessedById() != null) {
             User user = userRepository.findById(dto.getProcessedById())
                     .orElseThrow(() -> new RuntimeException("User not found with id: " + dto.getProcessedById()));
             salesReturn.setProcessedBy(user);
         }
 
-        // ৪. প্রতিটি Item এর জন্য MedicineBatch সেট করা
         if (salesReturn.getItems() != null && dto.getItems() != null) {
             for (int i = 0; i < salesReturn.getItems().size(); i++) {
                 SalesReturnItem item = salesReturn.getItems().get(i);
@@ -63,6 +63,22 @@ public class SalesReturnServiceImpl implements SalesReturnService {
         }
 
         SalesReturn savedReturn = salesReturnRepository.save(salesReturn);
+
+        // Automatically log inward stock addition back to branch inventory tracker
+        if (savedReturn.getItems() != null) {
+            for (SalesReturnItem item : savedReturn.getItems()) {
+                stockMovementService.recordMovement(
+                        invoice.getBranch().getId(), // Extracting the branch context chain via mapped invoice
+                        item.getBatch().getId(),
+                        StockMovementType.SALE_RETURN,
+                        item.getQuantity(),
+                        "SALES_RETURN",
+                        savedReturn.getId(),
+                        "Stock roll back inward credit via customer sales Return manifest: " + savedReturn.getReturnNumber()
+                );
+            }
+        }
+
         return mapper.toDTO(savedReturn);
     }
 
@@ -104,7 +120,6 @@ public class SalesReturnServiceImpl implements SalesReturnService {
         SalesReturn existingReturn = salesReturnRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sales Return not found with id: " + id));
 
-        // Return Number পরিবর্তন হলে ডুপ্লিকেট চেক
         if (dto.getReturnNumber() != null && !existingReturn.getReturnNumber().equals(dto.getReturnNumber())) {
             if (salesReturnRepository.findByReturnNumber(dto.getReturnNumber()).isPresent()) {
                 throw new RuntimeException("Return Number already exists: " + dto.getReturnNumber());
@@ -116,14 +131,12 @@ public class SalesReturnServiceImpl implements SalesReturnService {
         existingReturn.setReturnNumber(updatedData.getReturnNumber());
         existingReturn.setReturnDate(updatedData.getReturnDate());
 
-        // Invoice আপডেট
         if (!existingReturn.getInvoice().getId().equals(dto.getInvoiceId())) {
             SalesInvoice invoice = salesInvoiceRepository.findById(dto.getInvoiceId())
                     .orElseThrow(() -> new RuntimeException("Sales Invoice not found"));
             existingReturn.setInvoice(invoice);
         }
 
-        // Processed By আপডেট
         if (dto.getProcessedById() != null) {
             if (existingReturn.getProcessedBy() == null || !existingReturn.getProcessedBy().getId().equals(dto.getProcessedById())) {
                 User user = userRepository.findById(dto.getProcessedById())
@@ -132,7 +145,6 @@ public class SalesReturnServiceImpl implements SalesReturnService {
             }
         }
 
-        // Items আপডেট (পুরোনো লিস্ট ক্লিয়ার করে নতুনগুলো অ্যাড করা, orphanRemoval এটা হ্যান্ডেল করবে)
         existingReturn.getItems().clear();
         if (updatedData.getItems() != null && dto.getItems() != null) {
             for (int i = 0; i < updatedData.getItems().size(); i++) {
@@ -143,7 +155,7 @@ public class SalesReturnServiceImpl implements SalesReturnService {
                         .orElseThrow(() -> new RuntimeException("Medicine Batch not found"));
 
                 newItem.setBatch(batch);
-                newItem.setSalesReturn(existingReturn); // Parent পুনরায় সেট করা
+                newItem.setSalesReturn(existingReturn);
                 existingReturn.getItems().add(newItem);
             }
         }

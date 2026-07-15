@@ -91,6 +91,9 @@ export class ReceiveGoods implements OnInit {
     this.errorMessage = '';
 
     if (this.grnForm.invalid || !this.grnRequest.purchaseOrderId) {
+      this.errorMessage = 'Please select an Approved Purchase Order and fill in all required fields correctly (Batch No, Expiry Date, Qty, Cost, and Sell price for each item).';
+      this.grnForm.control.markAllAsTouched();
+      this.cdr.markForCheck();
       return;
     }
 

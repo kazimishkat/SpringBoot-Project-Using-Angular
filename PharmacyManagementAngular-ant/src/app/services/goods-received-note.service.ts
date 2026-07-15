@@ -10,7 +10,7 @@ import { GoodsReceivedNoteRequest, GoodsReceivedNoteResponse, ApprovalStatus } f
 export class GoodsReceivedNoteService {
   
   // API base endpoint matching backend REST controller mapping configuration
-  private apiUrl = environment.apiUrl + 'goods-received-notes';
+  private apiUrl = environment.apiUrl + 'grn';
 
   constructor(private http: HttpClient) {}
 

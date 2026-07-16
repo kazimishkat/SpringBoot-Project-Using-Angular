@@ -1,71 +1,104 @@
+/* Medicine Batch List Component CSS Hook rules */
 .text-dark-teal {
-  color: #0d5c56 !important;
+  color: #0a4f45 !important;
+}
+
+.text-teal {
+  color: #0fa895 !important;
 }
 
 .bg-teal-light {
-  background-color: rgba(13, 92, 86, 0.08) !important;
-  color: #0d5c56 !important;
+  background-color: rgba(15, 168, 149, 0.08) !important;
 }
 
 .bg-mint {
-  background-color: #d1f2e5 !important;
-  color: #0d5c56 !important;
+  background-color: #d1fae5 !important;
+}
+
+.text-dark-teal {
+  color: #065f46 !important;
 }
 
 .bg-light-danger {
   background-color: #fee2e2 !important;
 }
 
-.text-xs {
-  font-size: 0.75rem !important;
+.btn-mint-primary {
+  background-color: #0fa895;
+  color: #ffffff;
+  border: 1px solid #0fa895;
+  border-radius: 8px;
+  transition: all 0.25s ease;
 }
 
-.font-size-xs {
-  font-size: 0.75rem !important;
-}
-
-.letter-spacing-1 {
-  letter-spacing: 0.05em;
-}
-
-.bg-light-focus:focus {
-  background-color: #fff !important;
-  border-color: #8cd4be !important;
-  box-shadow: 0 0 0 0.25rem rgba(140, 212, 190, 0.25) !important;
-}
-
-.custom-batch-table tbody tr {
-  transition: all 0.2s ease-in-out;
-}
-
-.custom-batch-table tbody tr:hover {
-  background-color: rgba(209, 242, 229, 0.15) !important;
+.btn-mint-primary:hover {
+  background-color: #0a4f45;
+  border-color: #0a4f45;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 168, 149, 0.25);
 }
 
 .btn-outline-mint {
-  color: #0d5c56;
-  border-color: #0d5c56;
+  color: #0fa895;
+  border: 1px solid rgba(15, 168, 149, 0.3);
   background-color: transparent;
-  transition: all 0.2s ease-in-out;
+  border-radius: 8px;
+  transition: all 0.25s ease;
 }
 
 .btn-outline-mint:hover {
-  color: #fff;
-  background-color: #0d5c56;
-  border-color: #0d5c56;
+  color: #0a4f45;
+  background-color: #f0fdf4;
+  border-color: #0fa895;
+}
+
+.bg-light-focus {
+  transition: all 0.25s ease;
+  border-color: #e2e8f0;
+}
+
+.bg-light-focus:focus {
+  background-color: #ffffff;
+  border-color: #0fa895;
+  box-shadow: 0 0 0 0.25rem rgba(15, 168, 149, 0.15);
+}
+
+.text-muted-teal {
+  color: rgba(15, 168, 149, 0.4);
+}
+
+.custom-batch-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.batch-row {
+  transition: background-color 0.2s ease;
+}
+
+.batch-row:hover {
+  background-color: rgba(15, 168, 149, 0.02) !important;
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.4s ease-out;
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.font-size-xs {
+  font-size: 0.75rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
 }

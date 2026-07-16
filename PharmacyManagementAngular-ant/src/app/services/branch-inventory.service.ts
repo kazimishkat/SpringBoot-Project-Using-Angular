@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { BranchInventoryRequest, BranchInventoryResponse } from '../models/branch-inventory.model';
@@ -9,48 +9,51 @@ import { BranchInventoryRequest, BranchInventoryResponse } from '../models/branc
 })
 export class BranchInventoryService {
   
-  // API endpoint matching backend mapping
-  private apiUrl = environment.apiUrl + 'branch-inventories';
+  // API base endpoint matching backend controller mapping
+  private apiUrl = environment.apiUrl + 'branch-inventories'; // adjust path to match your spring boot app routing if needed
 
   constructor(private http: HttpClient) {}
 
-  // Fetch all stock distribution matrix records
-  getAll(): Observable<BranchInventoryResponse[]> {
+  // Fetch all recorded inventory configurations across branches
+  getAllInventory(): Observable<BranchInventoryResponse[]> {
     return this.http.get<BranchInventoryResponse[]>(this.apiUrl);
   }
 
-  // Get single inventory tracking record by technical primary ID
-  getById(id: number): Observable<BranchInventoryResponse> {
+  // Find detailed inventory data row using its database primary key ID
+  getInventoryById(id: number): Observable<BranchInventoryResponse> {
     return this.http.get<BranchInventoryResponse>(`${this.apiUrl}/${id}`);
   }
 
-  // Fetch all stock rows belonging to a targeted branch assignment
-  getByBranch(branchId: number): Observable<BranchInventoryResponse[]> {
+  // Retrieve matching inventory sheets mapped to a specific branch primary ID
+  getInventoryByBranch(branchId: number): Observable<BranchInventoryResponse[]> {
     return this.http.get<BranchInventoryResponse[]>(`${this.apiUrl}/branch/${branchId}`);
   }
 
-  // Find unique stock allocation by target combinations (branch + batch)
-  getByBranchAndBatch(branchId: number, batchId: number): Observable<BranchInventoryResponse> {
-    return this.http.get<BranchInventoryResponse>(`${this.apiUrl}/branch/${branchId}/batch/${batchId}`);
+  // Retrieve inventory balances mapped to specific pharmaceutical items
+  getInventoryByMedicine(medicineId: number): Observable<BranchInventoryResponse[]> {
+    return this.http.get<BranchInventoryResponse[]>(`${this.apiUrl}/medicine/${medicineId}`);
   }
 
-  // Calculate cumulative item pieces across specific medicine lines inside a branch
-  getTotalQuantityByBranchAndMedicine(branchId: number, medicineId: number): Observable<number> {
-    return this.http.get<number>(`${this.apiUrl}/branch/${branchId}/medicine/${medicineId}/total`);
+  // Fetch low stock items with optional warning threshold parameters
+  getLowStock(threshold?: number): Observable<BranchInventoryResponse[]> {
+    let params = new HttpParams();
+    if (threshold !== undefined) {
+      params = params.set('threshold', threshold.toString());
+    }
+    return this.http.get<BranchInventoryResponse[]>(`${this.apiUrl}/low-stock`, { params });
   }
 
-  // Setup new stock allocation balance matrix records
-  createInventory(dto: BranchInventoryRequest): Observable<BranchInventoryResponse> {
-    return this.http.post<BranchInventoryResponse>(this.apiUrl, dto);
+  // Fetch products out of stock (available quantity matches zero)
+  getOutOfStock(): Observable<BranchInventoryResponse[]> {
+    return this.http.get<BranchInventoryResponse[]>(`${this.apiUrl}/out-of-stock`);
   }
 
-  // Adjust target inventory values (Updates quantityOnHand variables)
-  updateInventory(id: number, dto: BranchInventoryRequest): Observable<BranchInventoryResponse> {
-    return this.http.put<BranchInventoryResponse>(`${this.apiUrl}/${id}`, dto);
-  }
-
-  // Purge allocated row references permanently from central tables
-  deleteInventory(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+  // Fetch expiring batches matching ISO date string limits parameterization
+  getExpiringInventory(beforeDate?: string): Observable<BranchInventoryResponse[]> {
+    let params = new HttpParams();
+    if (beforeDate) {
+      params = params.set('beforeDate', beforeDate);
+    }
+    return this.http.get<BranchInventoryResponse[]>(`${this.apiUrl}/expiring`, { params });
   }
 }

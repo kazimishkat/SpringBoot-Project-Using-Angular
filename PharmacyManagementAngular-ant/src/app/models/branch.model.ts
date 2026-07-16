@@ -9,7 +9,9 @@ import { BaseEntity } from "./baseEntity.model";
 // ==========================================
 export enum BranchType {
   BRANCH = 'BRANCH',
-  CENTRAL_HUB = 'CENTRAL_HUB'
+  CENTRAL_HUB = 'CENTRAL_HUB',
+  MAIN= 'MAIN',
+  SUB='SUB'
 }
 
 // ==========================================

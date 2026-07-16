@@ -1,25 +1,30 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { MedicineBatchResponse } from '../../../../../models/medicine-batch.model';
+import { RouterLink, RouterModule } from '@angular/router';
 import { MedicineBatchService } from '../../../../../services/medicine-batch.service';
-
+import { MedicineBatchResponse } from '../../../../../models/medicine-batch.model';
 
 @Component({
   selector: 'app-medicine-batch-list',
-  imports: [FormsModule, CommonModule, RouterLink],
+  imports: [FormsModule, CommonModule, RouterModule],
   templateUrl: './medicine-batch-list.html',
   styleUrl: './medicine-batch-list.css'
 })
 export class MedicineBatchList implements OnInit {
 
   // =====================================================
-  // VIEW GRID & FILTER CONTROL STATES
+  // FILTER BINDINGS & DATAGRID CONTAINER STATES
   // =====================================================
   batches: MedicineBatchResponse[] = [];
-  searchBatchNumber: string = '';
+  
+  // UI filter parameter strings requested
+  searchMedicineQuery: string = '';
+  searchSupplierQuery: string = '';
   expiryFilterDate: string = '';
+  statusToggleFilter: string = ''; // Supports "ALL", "ACTIVE", "INACTIVE"
+  searchBatchNum: string = '';     // Unique batch number fast search bypass
+
   errorMessage: string = '';
 
   constructor(
@@ -28,86 +33,87 @@ export class MedicineBatchList implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadAllBatches();
+    this.loadAllSystemBatches();
   }
 
   // =====================================================
-  // LOAD SYSTEM BATCH INVENTORY
+  // CATALOG RETRIEVAL LOOPS
   // =====================================================
-  /**
-   * Retrieve all recorded medicine batches from backend registry logs.
-   */
-  loadAllBatches(): void {
+  /** Load master index matrix from centralized services backend */
+  loadAllSystemBatches(): void {
     this.errorMessage = '';
     this.batchService.getAllBatches().subscribe({
       next: (data) => {
         this.batches = data || [];
-        this.cdr.markForCheck(); // Explicit grid layout state recalculation push
+        this.cdr.markForCheck(); // Push immediate grid rendering updates down the layout tree
       },
-      error: (err) => this.handleError('Failed to load medicine batches directory', err)
+      error: (err) => this.handleError('Failed to parse central medicine batches catalogue', err)
     });
   }
 
   // =====================================================
-  // FILTER & SEARCH STRATEGIES
+  // ADAPTIVE FILTER SELECTION STRATEGIES
   // =====================================================
-  /**
-   * Trigger filtering routines using unique batch number identifiers.
-   */
-  onSearchByNumber(): void {
-    if (!this.searchBatchNumber.trim()) {
-      this.loadAllBatches();
-      return;
-    }
-
+  /** Decodes filter parameters to call dedicated endpoints or process locally */
+  onFilterPipelineExecute(): void {
     this.errorMessage = '';
-    this.batchService.getBatchesByNumber(this.searchBatchNumber.trim()).subscribe({
-      next: (data) => {
-        this.batches = data || [];
-        this.cdr.markForCheck();
-      },
-      error: (err) => this.handleError('Search routine by batch number failed', err)
-    });
-  }
 
-  /**
-   * Filter out batch configurations facing early expiration metrics before specified threshold date.
-   */
-  onFilterExpiration(): void {
-    if (!this.expiryFilterDate) {
-      this.loadAllBatches();
-      return;
-    }
-
-    this.errorMessage = '';
-    this.batchService.getExpiringBatches(this.expiryFilterDate).subscribe({
-      next: (data) => {
-        this.batches = data || [];
-        this.cdr.markForCheck();
-      },
-      error: (err) => this.handleError('Expiration threshold filtering aborted', err)
-    });
-  }
-
-  // =====================================================
-  // WIPE RECORD TRANSACTIONS
-  // =====================================================
-  /**
-   * Drops specific batch files permanently from active records using primary IDs.
-   */
-  deleteBatch(id: number): void {
-    if (confirm('Are you sure you want to completely drop this medicine batch from system records?')) {
-      this.batchService.deleteBatch(id).subscribe({
-        next: () => {
-          this.loadAllBatches(); // Sync local catalog arrays seamlessly
+    // 1. Fast unique endpoint execution route using direct batch text tokens lookup
+    if (this.searchBatchNum.trim()) {
+      this.batchService.getBatchesByNumber(this.searchBatchNum.trim()).subscribe({
+        next: (data) => {
+          this.batches = data || [];
+          this.cdr.markForCheck();
         },
-        error: (err) => this.handleError('Batch disposal instruction rejected by database rules', err)
+        error: (err) => this.handleError('Batch string locator processing aborted', err)
       });
+      return;
     }
+
+    // 2. Continuous time bounds checks utilizing date parameters map route
+    if (this.expiryFilterDate) {
+      this.batchService.getExpiringBatches(this.expiryFilterDate).subscribe({
+        next: (data) => {
+          this.batches = data || [];
+          this.applyLocalFiltersFallback();
+        },
+        error: (err) => this.handleError('Expiration data validation streams broken', err)
+      });
+      return;
+    }
+
+    // Baseline catalog reload loop executing custom text block match algorithms
+    this.batchService.getAllBatches().subscribe({
+      next: (data) => {
+        this.batches = data || [];
+        this.applyLocalFiltersFallback();
+      },
+      error: (err) => this.handleError('Catalog trace load fault encountered', err)
+    });
+  }
+
+  /** Resolves localized properties adjustments matching string criteria blocks */
+  private applyLocalFiltersFallback(): void {
+    if (this.searchMedicineQuery.trim()) {
+      const med = this.searchMedicineQuery.trim().toLowerCase();
+      this.batches = this.batches.filter(x => x.brandName?.toLowerCase().includes(med) || x.medicineId.toString() === med);
+    }
+
+    if (this.searchSupplierQuery.trim()) {
+      const sup = this.searchSupplierQuery.trim().toLowerCase();
+      this.batches = this.batches.filter(x => x.supplierName?.toLowerCase().includes(sup));
+    }
+
+    if (this.statusToggleFilter) {
+      const targetFlag = this.statusToggleFilter === 'ACTIVE';
+      this.batches = this.batches.filter(x => x.isActive === targetFlag);
+    }
+
+    this.cdr.markForCheck();
   }
 
   // =====================================================
-  // SHARED EXCEPTION INTERCEPTOR LOGGER
+  // LOGGERS FOR UNIVERSAL EXCEPTIONS
   // =====================================================
   private handleError(context: string, error: any): void {
     console.error(error);

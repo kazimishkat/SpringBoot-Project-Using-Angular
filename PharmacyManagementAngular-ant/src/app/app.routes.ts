@@ -16,10 +16,7 @@ import { GenericAdd } from './components/features/medicine-catalog/generic-medic
 import { GenericDetailsComponent } from './components/features/medicine-catalog/generic-medicine/generic-details/generic-details';
 import { MedicineListComponent } from './components/features/medicine-catalog/medicine/medicine-list/medicine-list';
 import { MedicineAdd } from './components/features/medicine-catalog/medicine/medicine-add/medicine-add';
-import { MedicineDetailsComponent } from './components/features/medicine-catalog/medicine/medicine-details/medicine-details';
-import { MedicineBatchList } from './components/features/medicine-catalog/medicine-batch/medicine-batch-list/medicine-batch-list';
-import { MedicineBatchDetails } from './components/features/medicine-catalog/medicine-batch/medicine-batch-details/medicine-batch-details';
-import { MedicineBatchAdd } from './components/features/medicine-catalog/medicine-batch/medicine-batch-add/medicine-batch-add';
+import { MedicineDetailsComponent } from './components/features/medicine-catalog/medicine/medicine-details/medicine-details'; 
 import { DeliveryCompanyListComponent } from './components/features/delivery-management/delivery-company/company-list/company-list';
 import { DeliveryCompanyAdd } from './components/features/delivery-management/delivery-company/company-add/company-add';
 import { DeliveryCompanyDetails } from './components/features/delivery-management/delivery-company/company-details/company-details';
@@ -29,6 +26,8 @@ import { PurchaseOrderDetailsComponent } from './components/features/purchase-ma
 import { GoodsReceivedNoteList } from './components/features/purchase-management/goods-received-note/grn-list/grn-list';
 import { ReceiveGoods } from './components/features/purchase-management/goods-received-note/receive-goods/receive-goods';
 import { GoodsReceivedNoteDetails } from './components/features/purchase-management/goods-received-note/grn-details/grn-details';
+import { MedicineBatchList } from './components/features/medicine-catalog/medicine-batch/medicine-batch-list/medicine-batch-list';
+import { MedicineBatchDetailsComponent } from './components/features/medicine-catalog/medicine-batch/medicine-batch-details/medicine-batch-details';
 
 
 export const routes: Routes = [
@@ -59,9 +58,8 @@ export const routes: Routes = [
       { path: 'medicines/details', component: MedicineDetailsComponent },
       { path: 'medicines/details/:id', component: MedicineDetailsComponent },
       { path: 'medicine-batches', component: MedicineBatchList },
-      { path: 'medicine-batches/add', component: MedicineBatchAdd },
-      { path: 'medicine-batches/details', component: MedicineBatchDetails },
-      { path: 'medicine-batches/details/:id', component: MedicineBatchDetails },
+      { path: 'medicine-batches/details', component: MedicineBatchDetailsComponent },
+      { path: 'medicine-batches/details/:id', component: MedicineBatchDetailsComponent },
       { path: 'delivery-companies', component: DeliveryCompanyListComponent },
       { path: 'delivery-companies/add', component: DeliveryCompanyAdd },
       { path: 'delivery-companies/details', component: DeliveryCompanyDetails },

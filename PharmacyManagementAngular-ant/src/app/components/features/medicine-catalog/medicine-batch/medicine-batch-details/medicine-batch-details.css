@@ -1,6 +1,6 @@
-/* Medicine Batch Details UI Styling */
+/* Medicine Batch Details Component CSS Hook rules */
 .bg-gradient-teal {
-  background: linear-gradient(135deg, #0fa895 0%, #0a4f45 100%) !important;
+  background: linear-gradient(135deg, #0fa895 0%, #0a4f45 100%);
 }
 
 .text-dark-teal {
@@ -11,8 +11,20 @@
   color: #0fa895 !important;
 }
 
+.text-muted-teal {
+  color: rgba(15, 168, 149, 0.4);
+}
+
 .bg-teal-light {
   background-color: rgba(15, 168, 149, 0.08) !important;
+}
+
+.bg-mint {
+  background-color: #d1fae5 !important;
+}
+
+.bg-light-danger {
+  background-color: #fee2e2 !important;
 }
 
 .border-light-teal {
@@ -33,10 +45,6 @@
   background-color: #ffffff;
   border-color: #0fa895;
   box-shadow: 0 0 0 0.25rem rgba(15, 168, 149, 0.15);
-}
-
-.input-group-text {
-  border-color: #e2e8f0;
 }
 
 .btn-mint-primary {
@@ -68,67 +76,43 @@
   border-color: #0fa895;
 }
 
-/* Custom form switcher styles */
-.edit-switch-input:checked {
-  background-color: #0fa895 !important;
-  border-color: #0fa895 !important;
+/* Master-Detail Active Batch Selector Highlight */
+.list-group-item {
+  border-left: 3px solid transparent;
+  cursor: pointer;
+}
+
+.list-group-item:hover {
+  background-color: rgba(15, 168, 149, 0.02);
+  border-left-color: rgba(15, 168, 149, 0.3);
+}
+
+.list-group-item.active-batch {
+  background-color: rgba(15, 168, 149, 0.05) !important;
+  border-left-color: #0fa895 !important;
+}
+
+.batch-avatar {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #0fa895 0%, #0a4f45 100%);
+  color: #ffffff;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 10px rgba(15, 168, 149, 0.15);
+}
+
+.detail-info-card {
+  border: 1px solid rgba(15, 168, 149, 0.07);
+  background-color: #ffffff;
+}
+
+.custom-switch .form-check-input:checked {
+  background-color: #0fa895;
+  border-color: #0fa895;
 }
 
 .cursor-pointer {
   cursor: pointer;
-}
-
-.bg-mint {
-  background-color: #d1fae5 !important;
-  color: #065f46 !important;
-}
-
-.bg-light-danger {
-  background-color: #fee2e2 !important;
-  color: #ef4444 !important;
-}
-
-/* Overview Card Styles */
-.medicine-overview-card {
-  transition: all 0.3s ease;
-  border: 1px solid #f1f5f9 !important;
-}
-
-.medicine-overview-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
-  border-color: rgba(15, 168, 149, 0.15) !important;
-}
-
-.medicine-avatar {
-  width: 52px;
-  height: 52px;
-  border: 2px solid #ffffff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.bg-teal {
-  background-color: #0fa895 !important;
-}
-
-.text-muted-teal {
-  color: rgba(15, 168, 149, 0.4);
-}
-
-/* Details Panel Styling */
-.medicine-hero-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-}
-
-.detail-info-card {
-  border: 1px solid #e2e8f0 !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.detail-info-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
 }
 
 /* Animations */
@@ -145,4 +129,12 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.font-size-xs {
+  font-size: 0.75rem;
+}
+
+.text-xs {
+  font-size: 0.75rem;
 }

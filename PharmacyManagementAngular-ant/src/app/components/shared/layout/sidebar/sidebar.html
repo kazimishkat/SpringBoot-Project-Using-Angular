@@ -90,24 +90,17 @@
           <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
             <li class="nav-item">
               <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
-                routerLink="/dashboard/medicine-batches/add" routerLinkActive="active">
-                <i class="bi bi-plus-circle"></i>
-                <span>Batch Add</span>
+                routerLink="/dashboard/medicine-batches" [routerLinkActiveOptions]="{exact: true}"
+                routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>batch-list</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
                 routerLink="/dashboard/medicine-batches/details" routerLinkActive="active">
                 <i class="bi bi-info-circle"></i>
-                <span>Batch Details</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
-                routerLink="/dashboard/medicine-batches" [routerLinkActiveOptions]="{exact: true}"
-                routerLinkActive="active">
-                <i class="bi bi-list-ul"></i>
-                <span>Batch List</span>
+                <span>batch-details</span>
               </a>
             </li>
           </ul>
@@ -355,7 +348,7 @@
               <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
                 routerLink="/dashboard/branch-inventories/details" routerLinkActive="active">
                 <i class="bi bi-info-circle"></i>
-                <span>Branch Inventory Details</span>
+                <span>branch-inventory-details</span>
               </a>
             </li>
             <li class="nav-item">
@@ -363,7 +356,7 @@
                 routerLink="/dashboard/branch-inventories" [routerLinkActiveOptions]="{exact: true}"
                 routerLinkActive="active">
                 <i class="bi bi-list-ul"></i>
-                <span>Branch Inventory List</span>
+                <span>branch-inventory-list</span>
               </a>
             </li>
           </ul>

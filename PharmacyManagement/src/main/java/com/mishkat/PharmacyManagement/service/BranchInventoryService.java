@@ -3,22 +3,21 @@ package com.mishkat.PharmacyManagement.service;
 import com.mishkat.PharmacyManagement.dto.requestDTO.BranchInventoryRequestDto;
 import com.mishkat.PharmacyManagement.dto.responseDTO.BranchInventoryResponseDto;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface BranchInventoryService {
-    BranchInventoryResponseDto createInventory(BranchInventoryRequestDto dto);
-
-    List<BranchInventoryResponseDto> getAllInventories();
-
-    List<BranchInventoryResponseDto> getInventoriesByBranch(Long branchId);
+    List<BranchInventoryResponseDto> getAllInventory();
 
     BranchInventoryResponseDto getInventoryById(Long id);
 
-    BranchInventoryResponseDto getInventoryByBranchAndBatch(Long branchId, Long batchId);
+    List<BranchInventoryResponseDto> getInventoryByBranch(Long branchId);
 
-    Integer getTotalQuantityByBranchAndMedicine(Long branchId, Long medicineId);
+    List<BranchInventoryResponseDto> getInventoryByMedicine(Long medicineId);
 
-    BranchInventoryResponseDto updateInventory(Long id, BranchInventoryRequestDto dto);
+    List<BranchInventoryResponseDto> getLowStock(Integer threshold);
 
-    void deleteInventory(Long id);
+    List<BranchInventoryResponseDto> getOutOfStock();
+
+    List<BranchInventoryResponseDto> getExpiringInventory(LocalDate beforeDate);
 }

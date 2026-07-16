@@ -2,14 +2,12 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterModule } from '@angular/router';
-import { BranchInventoryResponse } from '../../../../../models/branch-inventory.model';
-import { BranchResponse } from '../../../../../models/branch.model';
 import { BranchInventoryService } from '../../../../../services/branch-inventory.service';
 import { BranchService } from '../../../../../services/branch.service';
-
+import { BranchInventoryResponse } from '../../../../../models/branch-inventory.model';
 
 @Component({
-  selector: 'app-branch-inventory-list',
+  selector: 'app-inventory-list',
   imports: [FormsModule, CommonModule, RouterModule],
   templateUrl: './branch-inventory-list.html',
   styleUrl: './branch-inventory-list.css'
@@ -17,12 +15,20 @@ import { BranchService } from '../../../../../services/branch.service';
 export class BranchInventoryList implements OnInit {
 
   // =====================================================
-  // VIEW GRID, DROPDOWN & FILTER STATES
+  // GRID CONTROL WORKFLOWS & ADVANCED FILTERS STATES
   // =====================================================
-  inventories: BranchInventoryResponse[] = [];
-  branches: BranchResponse[] = [];
-  selectedBranchId: number | null = null;
-  errorMessage: string = '';
+  inventoryList: BranchInventoryResponse[] = [];
+  branches: any[] = [];
+
+  // Local lookup filter inputs requested
+  searchMedicineQuery: string = '';
+  selectedBranchId: number | '' = '';
+  searchCategoryQuery: string = '';
+  isLowStockFilter = false;
+  isOutOfStockFilter = false;
+  expiryFilterDate: string = '';
+
+  errorMessage = '';
 
   constructor(
     private inventoryService: BranchInventoryService,
@@ -31,31 +37,11 @@ export class BranchInventoryList implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadAllInventories();
+    this.loadInitialDirectoryData();
     this.loadBranchesDropdown();
   }
 
-  // =====================================================
-  // LOAD SYSTEM INVENTORIES
-  // =====================================================
-  /**
-   * Retrieve all stock allocation records across all branches.
-   */
-  loadAllInventories(): void {
-    this.errorMessage = '';
-    this.inventoryService.getAll().subscribe({
-      next: (data) => {
-        this.inventories = data || [];
-        this.cdr.markForCheck(); // Trigger precise change detection rendering cycle
-      },
-      error: (err) => {
-        this.handleError('Failed to fetch structural inventory logs', err);
-      }
-    });
-  }
-
-  /** Load active branches to populate the layout filter dropdown */
-  loadBranchesDropdown(): void {
+  private loadBranchesDropdown(): void {
     this.branchService.getActiveBranches().subscribe({
       next: (data) => {
         this.branches = data || [];
@@ -65,55 +51,88 @@ export class BranchInventoryList implements OnInit {
   }
 
   // =====================================================
-  // FILTER STRATEGIES
+  // DATAGRID RECOVERY CORE SERVICES
   // =====================================================
-  /**
-   * Triggers specific branch contextual listings when dropdown option shifts.
-   */
-  onBranchFilterChange(): void {
-    if (!this.selectedBranchId) {
-      this.loadAllInventories();
+  /** Loads master index tracking sheets depending on selected toggles options */
+  loadInitialDirectoryData(): void {
+    this.errorMessage = '';
+
+    if (this.isOutOfStockFilter) {
+      this.inventoryService.getOutOfStock().subscribe({
+        next: (res) => this.updateGridResult(res),
+        error: (err) => this.handleError('Failed to pull out of stock indexes', err)
+      });
       return;
     }
 
-    this.errorMessage = '';
-    this.inventoryService.getByBranch(this.selectedBranchId).subscribe({
-      next: (data) => {
-        this.inventories = data || [];
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        this.handleError('Failed to filter inventories by selected branch', err);
-      }
+    if (this.isLowStockFilter) {
+      this.inventoryService.getLowStock().subscribe({
+        next: (res) => this.updateGridResult(res),
+        error: (err) => this.handleError('Failed to pull low stock indexes', err)
+      });
+      return;
+    }
+
+    if (this.expiryFilterDate) {
+      this.inventoryService.getExpiringInventory(this.expiryFilterDate).subscribe({
+        next: (res) => this.updateGridResult(res),
+        error: (err) => this.handleError('Failed to parse expiring items parameters', err)
+      });
+      return;
+    }
+
+    this.inventoryService.getAllInventory().subscribe({
+      next: (res) => this.updateGridResult(res),
+      error: (err) => this.handleError('Failed to load system inventory list', err)
     });
   }
 
   // =====================================================
-  // WIPE RECORD TRANSACTIONS
+  // ADAPTIVE TEXT MATCH SEARCH TRIGGERS
   // =====================================================
-  /**
-   * Drops specific stock rows from system databases permanently using IDs.
-   */
-  deleteInventory(id: number): void {
-    if (confirm('Are you sure you want to completely purge this batch inventory record?')) {
-      this.inventoryService.deleteInventory(id).subscribe({
-        next: () => {
-          // Hot reload local logs after complete structural drop operations
-          if (this.selectedBranchId) {
-            this.onBranchFilterChange();
-          } else {
-            this.loadAllInventories();
-          }
-        },
-        error: (err) => {
-          this.handleError('Inventory destruction command rejected by server rules', err);
-        }
-      });
+  /** Trigger precise filtering algorithms based on UI input bindings */
+  onSearchPipelineTrigger(): void {
+    this.loadInitialDirectoryData();
+  }
+
+  private updateGridResult(data: BranchInventoryResponse[]): void {
+    this.inventoryList = data || [];
+    this.applyLocalFiltersFallback();
+  }
+
+  /** Resolves string fields filters mapping Locally across active sheets records */
+  private applyLocalFiltersFallback(): void {
+    if (this.selectedBranchId) {
+      this.inventoryList = this.inventoryList.filter(x => x.branchId === Number(this.selectedBranchId));
     }
+
+    if (this.searchMedicineQuery.trim()) {
+      const q = this.searchMedicineQuery.trim().toLowerCase();
+      this.inventoryList = this.inventoryList.filter(x => 
+        x.medicineBrandName?.toLowerCase().includes(q) || 
+        x.batchNumber?.toLowerCase().includes(q)
+      );
+    }
+
+    if (this.searchCategoryQuery.trim()) {
+      const cat = this.searchCategoryQuery.trim().toLowerCase();
+      this.inventoryList = this.inventoryList.filter(x => x.categoryName?.toLowerCase().includes(cat));
+    }
+
+    this.cdr.markForCheck(); // Push explicit state modifications down template layout nodes
   }
 
   // =====================================================
-  // MASTER EXCEPTION INTERCEPTOR LOGGER
+  // HELPER METRICS RENDER STRATEGIES
+  // =====================================================
+  getStockStatus(item: BranchInventoryResponse): string {
+    if (item.quantityOnHand <= 0) return 'OUT_OF_STOCK';
+    if (item.reorderLevel && item.quantityOnHand <= item.reorderLevel) return 'LOW_STOCK';
+    return 'GOOD';
+  }
+
+  // =====================================================
+  // UNIVERSAL EXCEPTION HANDLERS
   // =====================================================
   private handleError(context: string, error: any): void {
     console.error(error);

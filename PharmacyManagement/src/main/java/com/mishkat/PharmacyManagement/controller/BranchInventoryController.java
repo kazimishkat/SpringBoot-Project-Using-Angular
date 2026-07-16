@@ -5,10 +5,12 @@ import com.mishkat.PharmacyManagement.dto.responseDTO.BranchInventoryResponseDto
 import com.mishkat.PharmacyManagement.service.BranchInventoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -17,68 +19,53 @@ import java.util.List;
 public class BranchInventoryController {
     private final BranchInventoryService branchInventoryService;
 
-    // ── Inventory Management ──────────────────────────────────────────
-
-    // POST /api/branch-inventories
-    @PostMapping
-    public ResponseEntity<BranchInventoryResponseDto> create(
-            @Valid @RequestBody BranchInventoryRequestDto dto) {
-        return new ResponseEntity<>(branchInventoryService.createInventory(dto), HttpStatus.CREATED);
-    }
-
     // GET /api/branch-inventories
     @GetMapping
-    public ResponseEntity<List<BranchInventoryResponseDto>> getAll() {
-        List<BranchInventoryResponseDto> list = branchInventoryService.getAllInventories();
-        return list.isEmpty()
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.ok(list);
+    public ResponseEntity<List<BranchInventoryResponseDto>> getAllInventory() {
+        List<BranchInventoryResponseDto> list = branchInventoryService.getAllInventory();
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
     // GET /api/branch-inventories/1
     @GetMapping("/{id}")
-    public BranchInventoryResponseDto getById(@PathVariable Long id) {
-        return branchInventoryService.getInventoryById(id);
+    public ResponseEntity<BranchInventoryResponseDto> getInventoryById(@PathVariable Long id) {
+        return ResponseEntity.ok(branchInventoryService.getInventoryById(id));
     }
 
-    // GET /api/branch-inventories/branch/3 — all inventories at a specific branch
+    // GET /api/branch-inventories/branch/3
     @GetMapping("/branch/{branchId}")
-    public ResponseEntity<List<BranchInventoryResponseDto>> getByBranch(@PathVariable Long branchId) {
-        List<BranchInventoryResponseDto> list = branchInventoryService.getInventoriesByBranch(branchId);
-        return list.isEmpty()
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.ok(list);
+    public ResponseEntity<List<BranchInventoryResponseDto>> getInventoryByBranch(@PathVariable Long branchId) {
+        List<BranchInventoryResponseDto> list = branchInventoryService.getInventoryByBranch(branchId);
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    // GET /api/branch-inventories/branch/1/batch/5 — specific inventory by branch and batch
-    @GetMapping("/branch/{branchId}/batch/{batchId}")
-    public BranchInventoryResponseDto getByBranchAndBatch(
-            @PathVariable Long branchId,
-            @PathVariable Long batchId) {
-        return branchInventoryService.getInventoryByBranchAndBatch(branchId, batchId);
+    // GET /api/branch-inventories/medicine/10
+    @GetMapping("/medicine/{medicineId}")
+    public ResponseEntity<List<BranchInventoryResponseDto>> getInventoryByMedicine(@PathVariable Long medicineId) {
+        List<BranchInventoryResponseDto> list = branchInventoryService.getInventoryByMedicine(medicineId);
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    // GET /api/branch-inventories/branch/1/medicine/10/total — total quantity of a medicine in a branch
-    @GetMapping("/branch/{branchId}/medicine/{medicineId}/total")
-    public ResponseEntity<Integer> getTotalQuantityByBranchAndMedicine(
-            @PathVariable Long branchId,
-            @PathVariable Long medicineId) {
-        Integer total = branchInventoryService.getTotalQuantityByBranchAndMedicine(branchId, medicineId);
-        return ResponseEntity.ok(total);
+    // GET /api/branch-inventories/low-stock?threshold=15
+    @GetMapping("/low-stock")
+    public ResponseEntity<List<BranchInventoryResponseDto>> getLowStock(
+            @RequestParam(required = false) Integer threshold) {
+        List<BranchInventoryResponseDto> list = branchInventoryService.getLowStock(threshold);
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    // PUT /api/branch-inventories/1
-    @PutMapping("/{id}")
-    public BranchInventoryResponseDto update(
-            @PathVariable Long id,
-            @Valid @RequestBody BranchInventoryRequestDto dto) {
-        return branchInventoryService.updateInventory(id, dto);
+    // GET /api/branch-inventories/out-of-stock
+    @GetMapping("/out-of-stock")
+    public ResponseEntity<List<BranchInventoryResponseDto>> getOutOfStock() {
+        List<BranchInventoryResponseDto> list = branchInventoryService.getOutOfStock();
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    // DELETE /api/branch-inventories/1
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        branchInventoryService.deleteInventory(id);
-        return ResponseEntity.ok("Deleted successfully");
+    // GET /api/branch-inventories/expiring?beforeDate=2026-12-31
+    @GetMapping("/expiring")
+    public ResponseEntity<List<BranchInventoryResponseDto>> getExpiringInventory(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate beforeDate) {
+        List<BranchInventoryResponseDto> list = branchInventoryService.getExpiringInventory(beforeDate);
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 }

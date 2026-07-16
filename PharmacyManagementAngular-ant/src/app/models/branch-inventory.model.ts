@@ -1,5 +1,6 @@
-import { BaseEntity } from "./baseEntity.model";
+import { BaseEntity } from './baseEntity.model';
 
+// ==========================================
 // Branch Inventory Request Model (Maps to RequestDto)
 // ==========================================
 export interface BranchInventoryRequest extends BaseEntity {
@@ -20,4 +21,14 @@ export interface BranchInventoryResponse extends BaseEntity {
   medicineBrandName: string;
   quantityOnHand: number;
   quantityReserved: number;
+  
+  // Real-time stock status fields requested for detail view mappings
+  genericName?: string;
+  categoryName?: string;
+  supplierName?: string;
+  reorderLevel?: number;
+  expiryDate?: Date | string;
+  purchasePrice?: number;
+  sellingPrice?: number;
+  lastUpdated?: Date | string;
 }

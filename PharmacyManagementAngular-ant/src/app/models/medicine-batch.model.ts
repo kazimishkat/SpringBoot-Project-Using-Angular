@@ -1,15 +1,16 @@
-import { BaseEntity } from "./baseEntity.model";
+import { BaseEntity } from './baseEntity.model';
 
+// ==========================================
 // Medicine Batch Request Model (Maps to RequestDto)
 // ==========================================
 export interface MedicineBatchRequest extends BaseEntity {
   medicineId: number;
   batchNumber: string;
   supplierId?: number;
-  manufactureDate?: Date | string; // Maps to LocalDate
-  expiryDate: Date | string;       // Maps to LocalDate
-  purchasePrice: number;           // Maps to BigDecimal
-  sellingPrice: number;            // Maps to BigDecimal
+  manufactureDate?: Date | string;
+  expiryDate: Date | string;
+  purchasePrice: number;
+  sellingPrice: number;
 }
 
 // ==========================================
@@ -19,6 +20,8 @@ export interface MedicineBatchResponse extends BaseEntity {
   id: number;
   medicineId: number;
   brandName: string;
+  genericName?: string; // Mapped for deep details validation
+  medicineName?: string; // Mapped for fallback lookup structures
   batchNumber: string;
   supplierId: number;
   supplierName: string;
@@ -27,4 +30,10 @@ export interface MedicineBatchResponse extends BaseEntity {
   purchasePrice: number;
   sellingPrice: number;
   isActive: boolean;
+  
+  // Real-time stock status components requested for layout view
+  quantityOnHand?: number;
+  quantityReserved?: number;
+  createdAt?: Date | string;
+  createdBy?: string;
 }

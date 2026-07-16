@@ -1,11 +1,10 @@
-/* Branch Inventory Details & Edit UI Styling */
-
+/* Branch Inventory Details Component CSS Hook rules */
 .text-dark-teal {
-  color: #0a4f45;
+  color: #0a4f45 !important;
 }
 
 .text-teal {
-  color: #0fa895;
+  color: #0fa895 !important;
 }
 
 .text-muted-teal {
@@ -17,11 +16,15 @@
 }
 
 .bg-mint {
-  background-color: #d1f4f0 !important;
+  background-color: #d1fae5 !important;
 }
 
 .bg-light-danger {
   background-color: #fee2e2 !important;
+}
+
+.bg-light-warning {
+  background-color: #fef3c7 !important;
 }
 
 .border-light-teal {
@@ -73,43 +76,34 @@
   border-color: #0fa895;
 }
 
-/* Custom form switcher styles */
-.bg-teal-switch:checked {
-  background-color: #0fa895 !important;
-  border-color: #0fa895 !important;
-}
-
-.cursor-pointer {
+/* Master-Detail Active Selection Highlight */
+.list-group-item {
+  border-left: 3px solid transparent;
   cursor: pointer;
 }
 
-/* Inventory Overview Card Grid Layout Styling */
-.inventory-overview-card {
-  border: 1px solid rgba(15, 168, 149, 0.07);
-  background-color: #ffffff;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+.list-group-item:hover {
+  background-color: rgba(15, 168, 149, 0.02);
+  border-left-color: rgba(15, 168, 149, 0.3);
 }
 
-.inventory-overview-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(10, 79, 69, 0.08) !important;
+.list-group-item.active-inventory {
+  background-color: rgba(15, 168, 149, 0.05) !important;
+  border-left-color: #0fa895 !important;
 }
 
-/* Inventory Avatar Badge */
 .inventory-avatar {
-  width: 48px;
-  height: 48px;
-  border: 2px solid #e2e8f0;
-}
-
-/* Detail view specific styles */
-.inventory-hero-card {
-  background-color: #ffffff;
-  border: 1px solid rgba(15, 168, 149, 0.08);
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, #0fa895 0%, #0a4f45 100%);
+  color: #ffffff;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 10px rgba(15, 168, 149, 0.15);
 }
 
 .detail-info-card {
-  border: 1px solid rgba(15, 168, 149, 0.05);
+  border: 1px solid rgba(15, 168, 149, 0.07);
+  background-color: #ffffff;
 }
 
 /* Animations */

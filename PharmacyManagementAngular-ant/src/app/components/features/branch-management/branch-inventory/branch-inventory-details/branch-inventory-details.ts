@@ -1,170 +1,107 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { BranchInventoryRequest, BranchInventoryResponse } from '../../../../../models/branch-inventory.model';
+import { ActivatedRoute, RouterLink, RouterModule } from '@angular/router';
 import { BranchInventoryService } from '../../../../../services/branch-inventory.service';
-
+import { StockMovementService } from '../../../../../services/stock-movement.service';
+import { BranchInventoryResponse } from '../../../../../models/branch-inventory.model';
 
 @Component({
-  selector: 'app-branch-inventory-details',
-  imports: [CommonModule, FormsModule],
+  selector: 'app-inventory-details',
+  imports: [CommonModule, RouterModule],
   templateUrl: './branch-inventory-details.html',
   styleUrl: './branch-inventory-details.css'
 })
 export class BranchInventoryDetails implements OnInit {
 
-  @ViewChild('inventoryForm') inventoryForm!: NgForm;
-
   // =====================================================
-  // DASHBOARD LAYOUT & MUTATION STATE MANAGEMENT
+  // DASHBOARD PROFILE DATA & LEDGER HISTORY TRACK STATES
   // =====================================================
-  /** Master catalogue array loaded on index container section */
   masterInventoryList: BranchInventoryResponse[] = [];
   
   inventoryId!: number;
   inventoryDetails: BranchInventoryResponse | null = null;
+  
+  /** Stores ledger audit records linked to the specific batch container */
+  movementHistory: any[] = [];
+  
   errorMessage = '';
-  submitted = false;
-
-  /** Controls layout template status between view logs vs input editors */
-  isEditMode = false;
-
-  /** Form binding request entity map utilized during value patching */
-  editData!: BranchInventoryRequest;
 
   constructor(
     private inventoryService: BranchInventoryService,
+    private movementService: StockMovementService,
     private route: ActivatedRoute,
-    private router: Router,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
-    // 1. First retrieve all recorded inventory metrics arrays
+    // 1. Initialise the side navigation catalogs array
     this.loadMasterCatalogIndexes();
 
-    // 2. Continuous tracking loop intercepting parameterized route identifier tags
+    // 2. Continuous tracking loop monitoring parameter updates inside URLs paths
     this.route.paramMap.subscribe(params => {
       const idParam = params.get('id');
       if (idParam) {
         this.inventoryId = Number(idParam);
-        this.fetchTargetGranularDetails(this.inventoryId);
+        this.fetchTargetProfileDetails(this.inventoryId);
       }
     });
   }
 
   // =====================================================
-  // MASTER INVENTORY RECOVERY
+  // SIDEBAR CATALOG CONTEXT RECOVERIES
   // =====================================================
   loadMasterCatalogIndexes(): void {
-    this.inventoryService.getAll().subscribe({
+    this.inventoryService.getAllInventory().subscribe({
       next: (data) => {
         this.masterInventoryList = data || [];
         this.cdr.markForCheck();
       },
-      error: (err) => this.interceptError('Catalog inventory stream processing crashed', err)
+      error: (err) => this.interceptError('Catalog directory array loading crashed', err)
     });
   }
 
   // =====================================================
-  // SPECIFIC TARGET LOGIC TRACKING
+  // SPECIFIC INVENTORY DETAILED EXTRACTION
   // =====================================================
-  fetchTargetGranularDetails(id: number): void {
+  fetchTargetProfileDetails(id: number): void {
     this.errorMessage = '';
-    this.isEditMode = false; // Collapse form nodes dynamically if rows shift mid-operation
+    this.movementHistory = []; // Clear current history rows before reloading
     
-    this.inventoryService.getById(id).subscribe({
+    this.inventoryService.getInventoryById(id).subscribe({
       next: (data) => {
         this.inventoryDetails = data;
         this.inventoryId = id;
+        
+        // Cascade triggers down to fetch dynamic movement history logs from batchId reference
+        if (data.batchId) {
+          this.fetchBatchMovementHistory(data.batchId);
+        }
+        
         this.cdr.markForCheck();
       },
-      error: (err) => this.interceptError('Failed to capture targeted stock parameter layouts', err)
+      error: (err) => this.interceptError('Failed to capture targeted inventory profiles metrics', err)
     });
   }
 
   // =====================================================
-  // FORM INTERACTION DOM SWITCHERS
+  // STOCK MOVEMENT HISTORY SEQUENTIAL RETRIEVES
   // =====================================================
-  enableEditMode(): void {
-    if (!this.inventoryDetails) return;
-
-    this.isEditMode = true;
-    this.submitted = false;
-
-    // Maps loaded inventory details precisely onto the request model shape
-    this.editData = {
-      id: this.inventoryDetails.id,
-      branchId: this.inventoryDetails.branchId,
-      batchId: this.inventoryDetails.batchId,
-      quantityOnHand: this.inventoryDetails.quantityOnHand,
-      isActive: this.inventoryDetails.isActive
-    };
-    
-    this.cdr.markForCheck();
-  }
-
-  cancelEdit(): void {
-    this.isEditMode = false;
-    this.submitted = false;
-    this.errorMessage = '';
-
-    if (this.inventoryForm) {
-      this.inventoryForm.resetForm();
-    }
-    this.cdr.markForCheck();
+  /** Fetch audit trail allocation lines using the centralized stock movement service API */
+  private fetchBatchMovementHistory(batchId: number): void {
+    this.movementService.getMovementsByBatchId(batchId).subscribe({
+      next: (logs) => {
+        this.movementHistory = logs || [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        // Log gracefully without stopping the main UI details view from loading
+        console.warn('Silent boundary logger: Failed to fetch ledger history tracks', err);
+      }
+    });
   }
 
   // =====================================================
-  // UPDATE SAVE ROUTINES
-  // =====================================================
-  updateInventory(): void {
-    this.submitted = true;
-    this.errorMessage = '';
-
-    if (this.inventoryForm.invalid) {
-      return;
-    }
-
-    this.inventoryService
-      .updateInventory(this.inventoryId, this.editData)
-      .subscribe({
-        next: (res) => {
-          alert('Inventory Stock Quantity Patched Successfully');
-          this.isEditMode = false;
-          this.loadMasterCatalogIndexes(); // Hot refresh master listings data matrix
-          this.fetchTargetGranularDetails(this.inventoryId); // Reload focused details panel context
-        },
-        error: (err) => this.interceptError('Update transaction rejected by database constraints', err)
-      });
-  }
-
-  // =====================================================
-  // DISPOSAL TERMINATIONS
-  // =====================================================
-  deleteInventory(idToDrop: number): void {
-    if (confirm('Are you completely sure you want to purge this inventory allocation record?')) {
-      this.inventoryService.deleteInventory(idToDrop).subscribe({
-        next: () => {
-          alert('Stock Matrix Log Successfully Dropped');
-          this.loadMasterCatalogIndexes(); // Immediately sync local memory structures
-          
-          // Clear operational active panels safely if the focused row index was drop targeted
-          if (this.inventoryId === idToDrop) {
-            this.inventoryDetails = null;
-            this.isEditMode = false;
-            this.router.navigate(['/branch-inventories/details']); // Purge route parameters mapping
-          }
-          this.cdr.markForCheck();
-        },
-        error: (err) => this.interceptError('Purge sequence rejected by referential constraints', err)
-      });
-    }
-  }
-
-  // =====================================================
-  // CORE EXCEPTIONS ROUTING WRAPPERS
+  // RUNTIME TRANSLATOR ERROR WRAPPERS
   // =====================================================
   private interceptError(context: string, error: any): void {
     console.error(error);

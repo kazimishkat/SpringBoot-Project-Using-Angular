@@ -2,12 +2,18 @@
   <!-- Page Header -->
   <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-      <h3 class="fw-bold text-dark-teal mb-1">Branch Inventory Stock</h3>
-      <p class="text-muted small mb-0">Track and allocate medicine batch quantities across all physical pharmacy outlets.</p>
+      <h3 class="fw-bold text-dark-teal mb-1">Branch Inventory Dashboard</h3>
+      <p class="text-muted small mb-0">Track real-time inventory balances, manage warning levels, and execute stock checks across pharmacy branches.</p>
+    </div>
+    <div>
+      <button (click)="loadInitialDirectoryData()" class="btn btn-outline-mint d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+        <i class="bi bi-arrow-clockwise"></i>
+        <span>Reload Inventory</span>
+      </button>
     </div>
   </div>
 
-  <!-- Alert Messages -->
+  <!-- Error Alerts -->
   <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
     <div class="d-flex align-items-center gap-2">
       <i class="bi bi-exclamation-triangle-fill fs-5"></i>
@@ -16,108 +22,185 @@
     <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
   </div>
 
-  <!-- Filter Controls -->
+  <!-- Search & Filters Container -->
   <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-    <div class="card-body p-3">
-      <div class="row align-items-center">
-        <div class="col-md-8 col-sm-12">
+    <div class="card-body p-4">
+      <h6 class="fw-bold text-dark-teal mb-3 d-flex align-items-center gap-2">
+        <i class="bi bi-funnel-fill text-teal"></i>
+        <span>Stock Pipeline Filter</span>
+      </h6>
+      <div class="row g-3">
+        <!-- Search Medicine or Batch -->
+        <div class="col-lg-3 col-md-6 col-sm-12">
+          <label class="form-label text-xs fw-semibold text-uppercase text-muted">Medicine / Batch Number</label>
           <div class="input-group">
-            <span class="input-group-text bg-light border-end-0 text-teal">
-              <i class="bi bi-shop-window"></i>
-            </span>
-            <select name="selectedBranchId" 
-                    id="branchFilter" 
-                    class="form-select bg-light-focus border-start-0" 
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" 
+                   class="form-control bg-light-focus border-start-0" 
+                   placeholder="Brand name or batch number..."
+                   [(ngModel)]="searchMedicineQuery" 
+                   (input)="onSearchPipelineTrigger()" />
+          </div>
+        </div>
+
+        <!-- Search Category -->
+        <div class="col-lg-2 col-md-6 col-sm-12">
+          <label class="form-label text-xs fw-semibold text-uppercase text-muted">Medicine Category</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-tags"></i></span>
+            <input type="text" 
+                   class="form-control bg-light-focus border-start-0" 
+                   placeholder="Category name..."
+                   [(ngModel)]="searchCategoryQuery" 
+                   (input)="onSearchPipelineTrigger()" />
+          </div>
+        </div>
+
+        <!-- Select Branch -->
+        <div class="col-lg-3 col-md-6 col-sm-12">
+          <label class="form-label text-xs fw-semibold text-uppercase text-muted">Filter by Branch</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-shop-window"></i></span>
+            <select class="form-select bg-light-focus border-start-0" 
                     [(ngModel)]="selectedBranchId" 
-                    (change)="onBranchFilterChange()">
-              <option [ngValue]="null">All System Branches</option>
-              <option *ngFor="let br of branches" [value]="br.id">
-                {{ br.name }} ({{ br.branchCode }})
-              </option>
+                    (change)="onSearchPipelineTrigger()">
+              <option value="">ALL SYSTEM BRANCHES</option>
+              <option *ngFor="let b of branches" [value]="b.id">{{ b.name }} (Code: {{ b.branchCode }})</option>
             </select>
           </div>
         </div>
-        <div class="col-md-4 col-sm-12 text-md-end mt-2 mt-md-0">
-          <button type="button" 
-                  class="btn btn-outline-secondary w-100 w-md-auto px-4" 
-                  (click)="selectedBranchId = null; loadAllInventories()" 
-                  title="Reset Filter">
-            <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filter
-          </button>
+
+        <!-- Expiry Before Date -->
+        <div class="col-lg-2 col-md-6 col-sm-12">
+          <label class="form-label text-xs fw-semibold text-uppercase text-muted">Expiry Before</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+            <input type="date" 
+                   class="form-control bg-light-focus border-start-0" 
+                   [(ngModel)]="expiryFilterDate" 
+                   (change)="onSearchPipelineTrigger()" />
+          </div>
         </div>
+
+        <!-- Fast Stock Warnings -->
+        <div class="col-lg-2 col-md-12 d-flex align-items-end gap-2 flex-wrap">
+          <div class="form-check form-switch custom-switch-danger mb-2">
+            <input class="form-check-input" 
+                   type="checkbox" 
+                   role="switch" 
+                   id="outOfStockToggle"
+                   [(ngModel)]="isOutOfStockFilter" 
+                   (change)="onSearchPipelineTrigger()" />
+            <label class="form-check-label fw-semibold text-xs text-danger text-uppercase cursor-pointer" for="outOfStockToggle">Out of Stock</label>
+          </div>
+          
+          <div class="form-check form-switch custom-switch-warning mb-2">
+            <input class="form-check-input" 
+                   type="checkbox" 
+                   role="switch" 
+                   id="lowStockToggle"
+                   [(ngModel)]="isLowStockFilter" 
+                   (change)="onSearchPipelineTrigger()" />
+            <label class="form-check-label fw-semibold text-xs text-warning text-uppercase cursor-pointer" for="lowStockToggle">Low Stock Alert</label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <button (click)="searchMedicineQuery=''; searchCategoryQuery=''; selectedBranchId=''; expiryFilterDate=''; isLowStockFilter=false; isOutOfStockFilter=false; onSearchPipelineTrigger()" 
+                class="btn btn-sm btn-outline-secondary px-3 py-2 fw-semibold">
+          Reset Filters
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Table Card -->
+  <!-- Data Display Card -->
   <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
     <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
       <h5 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
-        <i class="bi bi-boxes"></i>
-        <span>Stock Allocation Registry</span>
+        <i class="bi bi-list-columns-reverse"></i>
+        <span>Inventory Listings Ledger</span>
       </h5>
       <span class="badge bg-mint text-dark-teal px-3 py-2 rounded-pill fw-bold">
-        Total Batches: {{ inventories.length }}
+        Total Items: {{ inventoryList.length }}
       </span>
     </div>
 
     <div class="card-body p-0">
-      <div class="table-responsive" *ngIf="inventories.length > 0; else emptyState">
+      <div class="table-responsive" *ngIf="inventoryList.length > 0; else emptyState">
         <table class="table table-hover align-middle mb-0 custom-inventory-table">
           <thead class="table-light text-uppercase font-size-xs fw-bold text-muted">
             <tr>
               <th scope="col" class="ps-4">ID</th>
               <th scope="col">Branch Name</th>
-              <th scope="col">Medicine Brand</th>
+              <th scope="col">Medicine Info</th>
+              <th scope="col">Category</th>
               <th scope="col">Batch Number</th>
-              <th scope="col" class="text-end">Quantity On Hand</th>
-              <th scope="col" class="text-end">Quantity Reserved</th>
-              <th scope="col" class="text-center">Status</th>
+              <th scope="col">Expiry Date</th>
+              <th scope="col">Selling Price</th>
+              <th scope="col">Quantity (QOH / Res)</th>
+              <th scope="col" class="text-center">Stock Alert</th>
               <th scope="col" class="text-end pe-4">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let inv of inventories" class="inventory-row">
+            <tr *ngFor="let item of inventoryList" class="inventory-row">
               <td class="ps-4">
-                <span class="badge bg-teal-light text-teal fw-bold font-monospace">#{{ inv.id }}</span>
+                <span class="badge bg-teal-light text-teal fw-bold font-monospace text-xs">#{{ item.id }}</span>
               </td>
               <td>
-                <div class="fw-bold text-dark-teal">{{ inv.branchName }}</div>
+                <span class="fw-bold text-dark-teal">{{ item.branchName }}</span>
+                <div class="text-muted small">Branch ID: {{ item.branchId }}</div>
               </td>
               <td>
-                <div class="fw-semibold text-dark">
-                  <i class="bi bi-capsule-pill text-teal me-1"></i>
-                  {{ inv.medicineBrandName }}
+                <div class="fw-bold text-dark-teal mb-0.5">{{ item.medicineBrandName }}</div>
+                <div class="text-muted small text-truncate-1" [title]="item.genericName" style="max-width: 180px;">{{ item.genericName || 'N/A' }}</div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark">{{ item.categoryName || 'N/A' }}</span>
+              </td>
+              <td>
+                <span class="badge bg-teal-light text-teal fw-semibold font-monospace">{{ item.batchNumber }}</span>
+              </td>
+              <td>
+                <span class="fw-medium text-xs" [class.text-danger]="item.expiryDate && (item.expiryDate | date:'yyyy-MM-dd')! < '2026-07-16'">
+                  {{ item.expiryDate | date:'mediumDate' }}
+                </span>
+              </td>
+              <td>
+                <span class="fw-bold text-success">${{ item.sellingPrice || 0 | number:'1.2-2' }}</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-1.5">
+                  <span class="badge fw-bold" 
+                        [ngClass]="item.quantityOnHand <= 0 ? 'bg-light-danger text-danger' : 'bg-mint text-dark-teal'">
+                    {{ item.quantityOnHand }}
+                  </span>
+                  <span class="text-muted small">/</span>
+                  <span class="badge bg-light text-dark fw-semibold">{{ item.quantityReserved }}</span>
                 </div>
-              </td>
-              <td>
-                <span class="badge bg-light text-dark border font-monospace">{{ inv.batchNumber }}</span>
-              </td>
-              <td class="text-end fw-bold text-dark">
-                {{ inv.quantityOnHand | number }}
-              </td>
-              <td class="text-end fw-semibold text-muted">
-                {{ inv.quantityReserved | number }}
               </td>
               <td class="text-center">
                 <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
-                      [ngClass]="inv.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
-                  {{ inv.isActive ? 'Active' : 'Inactive' }}
+                      [ngClass]="{
+                        'bg-light-danger text-danger': getStockStatus(item) === 'OUT_OF_STOCK',
+                        'bg-light-warning text-warning': getStockStatus(item) === 'LOW_STOCK',
+                        'bg-mint text-dark-teal': getStockStatus(item) === 'GOOD'
+                      }">
+                  <span *ngIf="getStockStatus(item) === 'OUT_OF_STOCK'"><i class="bi bi-x-circle-fill me-1"></i>Out of Stock</span>
+                  <span *ngIf="getStockStatus(item) === 'LOW_STOCK'"><i class="bi bi-exclamation-triangle-fill me-1"></i>Low Stock</span>
+                  <span *ngIf="getStockStatus(item) === 'GOOD'"><i class="bi bi-check-circle-fill me-1"></i>In Stock</span>
                 </span>
               </td>
               <td class="text-end pe-4">
                 <div class="d-inline-flex gap-2">
-                  <a [routerLink]="['/dashboard/branch-inventories/details', inv.id]" 
+                  <a [routerLink]="['/dashboard/branch-inventories/details', item.id]" 
                      class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1 text-decoration-none"
                      title="View Details">
                     <i class="bi bi-eye-fill"></i>
                     <span>Details</span>
                   </a>
-                  <button (click)="deleteInventory(inv.id)" 
-                          class="btn btn-sm btn-outline-danger d-inline-flex align-items-center p-2"
-                          title="Purge Inventory Record">
-                    <i class="bi bi-trash-fill"></i>
-                  </button>
                 </div>
               </td>
             </tr>
@@ -129,11 +212,11 @@
       <ng-template #emptyState>
         <div class="text-center py-5 px-4">
           <div class="empty-state-icon mb-3">
-            <i class="bi bi-box-seam text-muted-teal display-4"></i>
+            <i class="bi bi-boxes text-muted-teal display-4"></i>
           </div>
-          <h5 class="fw-bold text-dark-teal mb-2">No Stock Records Found</h5>
-          <p class="text-muted small mx-auto mb-4" style="max-width: 420px;">
-            There are no stock allocations registered for the selected branch filter. Register new medicine batches or modify filter parameters to show inventory.
+          <h5 class="fw-bold text-dark-teal mb-2">No Branch Inventory Records Found</h5>
+          <p class="text-muted small mx-auto mb-4" style="max-width: 400px;">
+            No database configurations matched your query. Insert new data items into the system.
           </p>
         </div>
       </ng-template>

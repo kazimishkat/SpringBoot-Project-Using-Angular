@@ -9,49 +9,39 @@ import { MedicineBatchRequest, MedicineBatchResponse } from '../models/medicine-
 })
 export class MedicineBatchService {
   
-  // API endpoint for medicine batches
+  // API base endpoint matching backend controller mapping
   private apiUrl = environment.apiUrl + 'medicine-batches';
 
   constructor(private http: HttpClient) {}
 
-  // Fetch all medicine batches
+  // Fetch all recorded medicine batches across system layers
   getAllBatches(): Observable<MedicineBatchResponse[]> {
     return this.http.get<MedicineBatchResponse[]>(this.apiUrl);
   }
 
-  // Get batch by database ID
+  // Find a specific isolated batch configuration log by database primary key ID
   getBatchById(id: number): Observable<MedicineBatchResponse> {
-    return this.http.get<MedicineBatchResponse>(`${`${this.apiUrl}/${id}`}`);
+    return this.http.get<MedicineBatchResponse>(`${this.apiUrl}/${id}`);
   }
 
-  // Fetch batches belonging to a specific medicine ID
+  // Retrieve batch arrays linked structurally to a specific medicine index row
   getBatchesByMedicine(medicineId: number): Observable<MedicineBatchResponse[]> {
     return this.http.get<MedicineBatchResponse[]>(`${this.apiUrl}/medicine/${medicineId}`);
   }
 
-  // Fetch batches matching a specific batch number identifier
+  // Find tracking rows matching an explicit batch number identifier string
   getBatchesByNumber(batchNumber: string): Observable<MedicineBatchResponse[]> {
     return this.http.get<MedicineBatchResponse[]>(`${this.apiUrl}/number/${batchNumber}`);
   }
 
-  // Fetch batches expiring before a targeted ISO date string
+  // Fetch expiring batches intercepting beforeDate parameter via HttpParams map
   getExpiringBatches(beforeDate: string): Observable<MedicineBatchResponse[]> {
     const params = new HttpParams().set('beforeDate', beforeDate);
     return this.http.get<MedicineBatchResponse[]>(`${this.apiUrl}/expiring`, { params });
   }
 
-  // Create a new medicine batch tracking record
-  createBatch(dto: MedicineBatchRequest): Observable<MedicineBatchResponse> {
-    return this.http.post<MedicineBatchResponse>(this.apiUrl, dto);
-  }
-
-  // Update existing batch configuration metrics
+  // Update existing batch metadata tracking parameters using standard PUT operations
   updateBatch(id: number, dto: MedicineBatchRequest): Observable<MedicineBatchResponse> {
     return this.http.put<MedicineBatchResponse>(`${this.apiUrl}/${id}`, dto);
-  }
-
-  // Remove batch instance documentation entirely
-  deleteBatch(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }
 }

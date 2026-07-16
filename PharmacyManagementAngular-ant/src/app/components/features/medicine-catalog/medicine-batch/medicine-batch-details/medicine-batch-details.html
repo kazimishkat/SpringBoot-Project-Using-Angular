@@ -1,394 +1,445 @@
 <div class="container-fluid p-0 animate-fade-in">
-  <!-- Alert Messages -->
-  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
-    <div class="d-flex align-items-center gap-2">
-      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-      <span>{{ errorMessage }}</span>
-    </div>
-    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- STATE 1: BATCH DIRECTORY OVERVIEW (Shown if no specific batch is selected) -->
-  <!-- ========================================================================= -->
-  <div *ngIf="!batchDetails">
-    <!-- Header Controls -->
-    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-      <div>
-        <h3 class="fw-bold text-dark-teal mb-1">Batch Registry Index</h3>
-        <p class="text-muted small mb-0">Browse specific manufacturing runs, active stock expiration timelines, and batch pricing logs.</p>
-      </div>
-      <div class="d-flex gap-2">
-        <div class="input-group" style="max-width: 300px;">
-          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-          <input #filterInput 
-                 (input)="0" 
-                 type="text" 
-                 class="form-control bg-light-focus border-start-0" 
-                 placeholder="Search by batch number..." />
+  <div class="row g-4">
+    <!-- Left Sidebar: Master Directory List of Batches -->
+    <div class="col-lg-4 col-md-5 col-sm-12">
+      <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
+        <div class="card-header bg-white border-bottom py-3 px-4">
+          <h6 class="fw-bold text-dark-teal mb-2 d-flex align-items-center gap-2">
+            <i class="bi bi-folder-fill text-teal"></i>
+            <span>Batches Directory</span>
+          </h6>
+          <!-- Sidebar Search Filter -->
+          <div class="input-group input-group-sm mt-2">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input #sidebarFilter 
+                   (input)="0" 
+                   type="text" 
+                   class="form-control bg-light-focus border-start-0" 
+                   placeholder="Quick search by batch # or name..." />
+          </div>
         </div>
-        <a routerLink="/dashboard/medicine-batches/add" class="btn btn-mint-primary fw-semibold text-decoration-none d-flex align-items-center gap-2 shadow-sm">
-          <i class="bi bi-plus-circle-fill"></i>
-          <span>Add Batch</span>
+
+        <div class="list-group list-group-flush overflow-y-auto" style="max-height: 700px;">
+          <ng-container *ngFor="let item of masterDirectoryList">
+            <!-- Filter matching batch number or brand name -->
+            <a *ngIf="!sidebarFilter.value || item.batchNumber.toLowerCase().includes(sidebarFilter.value.toLowerCase()) || item.brandName.toLowerCase().includes(sidebarFilter.value.toLowerCase())"
+               [routerLink]="['/dashboard/medicine-batches/details', item.id]"
+               [class.active-batch]="item.id === batchId"
+               class="list-group-item list-group-item-action border-bottom p-3 d-flex flex-column gap-1 transition-all">
+              <div class="d-flex align-items-center justify-content-between">
+                <span class="fw-bold font-monospace text-xs text-teal bg-teal-light px-2.5 py-1 rounded">{{ item.batchNumber }}</span>
+                <span class="badge rounded-pill text-xs px-2 py-0.5" 
+                      [ngClass]="item.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                  {{ item.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </div>
+              <div class="fw-bold text-dark-teal mt-1 text-truncate" [title]="item.brandName">{{ item.brandName || 'N/A' }}</div>
+              <div class="d-flex justify-content-between text-muted text-xs mt-1">
+                <span>Exp: {{ item.expiryDate | date:'shortDate' }}</span>
+                <span class="fw-semibold text-success">${{ item.sellingPrice | number:'1.2-2' }}</span>
+              </div>
+            </a>
+          </ng-container>
+
+          <div *ngIf="masterDirectoryList.length === 0" class="text-center py-5 text-muted small">
+            <i class="bi bi-box-seam display-6 d-block mb-2 text-muted-teal"></i>
+            No batches found in system records.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Workspace Area: View Details / Edit Mode / Empty state -->
+    <div class="col-lg-8 col-md-7 col-sm-12">
+      <!-- Error Alerts inside workspace -->
+      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+      </div>
+
+      <!-- STATE 1: Empty Registry (No batch selected) -->
+      <div *ngIf="!batchDetails" class="card border-0 shadow-sm rounded-4 text-center py-5 px-4 h-100 d-flex flex-column align-items-center justify-content-center">
+        <div class="empty-state-icon mb-3">
+          <i class="bi bi-layers-half text-muted-teal display-3"></i>
+        </div>
+        <h5 class="fw-bold text-dark-teal mb-2">No Medicine Batch Selected</h5>
+        <p class="text-muted small mx-auto mb-4" style="max-width: 420px;">
+          Select a medicine batch from the directory list on the left to review its manufacture details, price structures, and active inventory levels.
+        </p>
+        <a routerLink="/dashboard/medicine-batches" class="btn btn-mint-primary px-4 fw-bold text-decoration-none shadow-sm">
+          <i class="bi bi-list-ul me-2"></i>Browse All Batches
         </a>
       </div>
-    </div>
 
-    <!-- Directory List Table -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
-      <div class="card-header bg-white border-bottom py-3 px-4">
-        <h5 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
-          <i class="bi ::bi-list-stars"></i>
-          <span>Select a Medicine Batch Profile</span>
-        </h5>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive" *ngIf="masterBatchList.length > 0; else emptyState">
-          <table class="table table-hover align-middle mb-0 custom-batch-table">
-            <thead class="table-light text-uppercase font-size-xs fw-bold text-muted">
-              <tr>
-                <th scope="col" class="ps-4">Batch Code</th>
-                <th scope="col">Medicine</th>
-                <th scope="col">Supplier</th>
-                <th scope="col">Expiry Date</th>
-                <th scope="col" class="text-center">Status</th>
-                <th scope="col" class="text-end pe-4">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <ng-container *ngFor="let b of masterBatchList">
-                <tr *ngIf="!filterInput.value || b.batchNumber.toLowerCase().includes(filterInput.value.toLowerCase()) || b.brandName.toLowerCase().includes(filterInput.value.toLowerCase())" class="batch-row">
-                  <td class="ps-4">
-                    <span class="badge bg-teal-light text-teal fw-bold font-monospace">{{ b.batchNumber }}</span>
-                  </td>
-                  <td>
-                    <div class="fw-bold text-dark-teal mb-0.5">{{ b.brandName }}</div>
-                  </td>
-                  <td>{{ b.supplierName || 'N/A' }}</td>
-                  <td>{{ b.expiryDate | date:'mediumDate' }}</td>
-                  <td class="text-center">
-                    <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
-                          [ngClass]="b.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
-                      {{ b.isActive ? 'Active' : 'Inactive' }}
-                    </span>
-                  </td>
-                  <td class="text-end pe-4">
-                    <button (click)="fetchTargetGranularDetails(b.id)" class="btn btn-sm btn-outline-mint">
-                      <i class="bi bi-folder-fill me-1"></i>Open File
-                    </button>
-                  </td>
-                </tr>
-              </ng-container>
-            </tbody>
-          </table>
-        </div>
-        <ng-template #emptyState>
-          <div class="text-center py-5 px-4">
-            <i class="bi bi-database-exclamation text-muted-teal display-4 mb-3 d-block"></i>
-            <h5 class="fw-bold text-dark-teal mb-1">No Batch Records Available</h5>
-            <p class="text-muted small mx-auto mb-4" style="max-width: 400px;">
-              Please populate the batch inventory to show lists here. Register a new batch to get started.
-            </p>
-            <a routerLink="/dashboard/medicine-batches/add" class="btn btn-mint-primary px-4 fw-bold text-decoration-none">
-              <i class="bi bi-plus-circle-fill me-2"></i>Register New Batch
-            </a>
-          </div>
-        </ng-template>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- STATE 2: READ-ONLY BATCH DETAILS DISPLAY PANEL (Matches Medicine Details) -->
-  <!-- ========================================================================= -->
-  <div class="animate-fade-in" *ngIf="batchDetails && !isEditMode">
-    <!-- Header Controls -->
-    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-      <div>
-        <h3 class="fw-bold text-dark-teal mb-1">Batch Profile Details</h3>
-        <p class="text-muted small mb-0">Full manufacturing details, pricing structures, and validity boundaries.</p>
-      </div>
-      <button (click)="batchDetails = null" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
-        <i class="bi bi-arrow-left"></i>
-        <span>Back to Directory</span>
-      </button>
-    </div>
-
-    <!-- Hero Card header details -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 medicine-hero-card">
-      <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
-        <div class="d-flex align-items-center gap-3">
-          <div class="medicine-avatar bg-light border rounded overflow-hidden d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 60px;">
-            <i class="bi bi-stack text-teal fs-3"></i>
-          </div>
-          <div>
-            <h4 class="mb-1 fw-bold text-dark-teal">{{ batchDetails.batchNumber }}</h4>
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-              <span class="badge bg-teal-light text-teal fw-bold font-monospace px-2.5 py-1 text-xs">#ID: {{ batchDetails.id }}</span>
-              <span class="badge bg-light text-dark text-xs">{{ batchDetails.brandName }}</span>
-              <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
-                    [ngClass]="batchDetails.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
-                {{ batchDetails.isActive ? 'Active' : 'Inactive' }}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div class="d-flex gap-2">
-          <button class="btn btn-outline-mint btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm" (click)="enableEditMode()">
-            <i class="bi bi-pencil-square"></i>
-            <span>Edit Profile</span>
-          </button>
-          <button class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm" (click)="deleteBatch(batchDetails.id)">
-            <i class="bi bi-trash-fill"></i>
-            <span>Delete</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Cards detail sections -->
-    <div class="row g-3">
-      <!-- Batch Product & Supplier Information -->
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
-          <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
-            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
-              <i class="bi bi-heart-pulse-fill"></i>
-              <span>Product & Supplier Registry</span>
-            </h6>
-          </div>
-          <div class="card-body px-4 py-3">
-            <div class="row g-3">
-              <div class="col-6">
-                <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Medicine Name</span>
-                <span class="text-dark fw-bold">{{ batchDetails.brandName }}</span>
+      <!-- STATE 2: Detailed Read-Only Card View -->
+      <div *ngIf="batchDetails && !isEditMode" class="animate-fade-in">
+        <!-- Hero Summary Panel -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
+          <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="batch-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-3 rounded-circle">
+                <i class="bi bi-stack"></i>
               </div>
-              <div class="col-6">
-                <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Medicine ID</span>
-                <span class="text-dark fw-bold font-monospace">{{ batchDetails.medicineId }}</span>
-              </div>
-              <div class="col-6">
-                <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Supplier Name</span>
-                <span class="text-dark fw-bold">{{ batchDetails.supplierName || 'N/A' }}</span>
-              </div>
-              <div class="col-6">
-                <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Supplier ID</span>
-                <span class="text-dark fw-bold font-monospace">{{ batchDetails.supplierId || 'N/A' }}</span>
+              <div>
+                <h4 class="mb-1 fw-bold text-dark-teal">Batch {{ batchDetails.batchNumber }}</h4>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <span class="badge bg-teal-light text-teal fw-bold font-monospace px-2.5 py-1 text-xs">ID: {{ batchDetails.id }}</span>
+                  <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
+                        [ngClass]="batchDetails.isActive ? 'bg-mint text-dark-teal' : 'bg-light-danger text-danger'">
+                    {{ batchDetails.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pricing & Validity timelines -->
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
-          <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
-            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
-              <i class="bi bi-cash-stack"></i>
-              <span>Pricing & Validity timelines</span>
-            </h6>
-          </div>
-          <div class="card-body px-4 py-3">
-            <div class="row g-3">
-              <div class="col-6">
-                <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Purchase Price</span>
-                <span class="text-dark fw-bold">${{ batchDetails.purchasePrice | number:'1.2-2' }}</span>
-              </div>
-              <div class="col-6">
-                <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Selling Price</span>
-                <span class="text-success fw-bold">${{ batchDetails.sellingPrice | number:'1.2-2' }}</span>
-              </div>
-              <div class="col-6">
-                <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Manufacture Date</span>
-                <span class="text-dark fw-bold">{{ batchDetails.manufactureDate | date:'mediumDate' }}</span>
-              </div>
-              <div class="col-6">
-                <span class="text-dark-teal text-xs d-block text-uppercase fw-semibold mb-1">Expiry Date</span>
-                <span class="text-danger fw-bold">{{ batchDetails.expiryDate | date:'mediumDate' }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- STATE 3: EDIT BATCH CONFIGURATION FORM PANEL -->
-  <!-- ========================================================================= -->
-  <div *ngIf="batchDetails && isEditMode" class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
-    <div class="card-header bg-white border-bottom py-3 px-4">
-      <h5 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
-        <i class="bi bi-pencil-square"></i>
-        <span>Modify Batch Profile Parameters</span>
-      </h5>
-    </div>
-    <div class="card-body p-4">
-      <form #batchForm="ngForm" (ngSubmit)="updateBatch()" novalidate>
-        
-        <!-- SECTION 1: Batch & Medicine Info -->
-        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Batch & Medicine Info</h6>
-        <div class="row g-3 mb-4">
-          <div class="col-md-4 col-sm-12">
-            <label for="editMedicineId" class="form-label fw-semibold">Associated Medicine <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-capsule"></i></span>
-              <select id="editMedicineId" 
-                      name="medicineId" 
-                      class="form-select bg-light-focus border-start-0" 
-                      [(ngModel)]="editData.medicineId" 
-                      #medicineIdInput="ngModel" 
-                      required 
-                      [class.is-invalid]="medicineIdInput.invalid && (medicineIdInput.dirty || medicineIdInput.touched || submitted)">
-                <option *ngFor="let m of medicines" [value]="m.id">{{ m.brandName }} ({{ m.medicineCode }})</option>
-              </select>
-              <div class="invalid-feedback">
-                Associated Medicine is required.
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-4 col-sm-12">
-            <label for="editBatchNumber" class="form-label fw-semibold">Batch Number <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-hash"></i></span>
-              <input type="text" 
-                     id="editBatchNumber" 
-                     name="batchNumber" 
-                     class="form-control bg-light-focus border-start-0" 
-                     [(ngModel)]="editData.batchNumber" 
-                     #batchNumberInput="ngModel" 
-                     required 
-                     [class.is-invalid]="batchNumberInput.invalid && (batchNumberInput.dirty || batchNumberInput.touched || submitted)" />
-              <div class="invalid-feedback">
-                Batch Number is required.
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-4 col-sm-12">
-            <label for="editSupplierId" class="form-label fw-semibold">Supplier Source</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-shop"></i></span>
-              <select id="editSupplierId" 
-                      name="supplierId" 
-                      class="form-select bg-light-focus border-start-0" 
-                      [(ngModel)]="editData.supplierId">
-                <option [ngValue]="undefined">-- Select Supplier (Optional) --</option>
-                <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</option>
-              </select>
+            <div class="d-flex gap-2">
+              <button (click)="enableEditMode()" class="btn btn-outline-mint btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm">
+                <i class="bi bi-pencil-square"></i>
+                <span>Edit Batch</span>
+              </button>
+              <a routerLink="/dashboard/medicine-batches" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-sm text-decoration-none">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back to Register</span>
+              </a>
             </div>
           </div>
         </div>
 
-        <hr class="border-light-teal my-4">
-
-        <!-- SECTION 2: Pricing & Timestamps -->
-        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Pricing & Dates Matrix</h6>
-        <div class="row g-3 mb-4">
-          <div class="col-md-3 col-sm-6">
-            <label for="editPurchasePrice" class="form-label fw-semibold">Purchase Price ($) <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-cash-coin"></i></span>
-              <input type="number" 
-                     id="editPurchasePrice" 
-                     name="purchasePrice" 
-                     step="0.01"
-                     class="form-control bg-light-focus border-start-0" 
-                     [(ngModel)]="editData.purchasePrice" 
-                     #purchasePriceInput="ngModel" 
-                     required 
-                     [class.is-invalid]="purchasePriceInput.invalid && (purchasePriceInput.dirty || purchasePriceInput.touched || submitted)" />
-              <div class="invalid-feedback">
-                Purchase Price is required.
+        <!-- Detail Cards -->
+        <div class="row g-3">
+          <!-- Medicine Catalog Mapping -->
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
+              <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
+                  <i class="bi bi-capsule"></i>
+                  <span>Medicine Catalog Association</span>
+                </h6>
               </div>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6">
-            <label for="editSellingPrice" class="form-label fw-semibold">Selling Price ($) <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-graph-up-arrow"></i></span>
-              <input type="number" 
-                     id="editSellingPrice" 
-                     name="sellingPrice" 
-                     step="0.01"
-                     class="form-control bg-light-focus border-start-0" 
-                     [(ngModel)]="editData.sellingPrice" 
-                     #sellingPriceInput="ngModel" 
-                     required 
-                     [class.is-invalid]="sellingPriceInput.invalid && (sellingPriceInput.dirty || sellingPriceInput.touched || submitted)" />
-              <div class="invalid-feedback">
-                Selling Price is required.
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6">
-            <label for="editManufactureDate" class="form-label fw-semibold">Manufacture Date</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
-              <input type="date" 
-                     id="editManufactureDate" 
-                     name="manufactureDate" 
-                     class="form-control bg-light-focus border-start-0" 
-                     [(ngModel)]="editData.manufactureDate" />
-            </div>
-          </div>
-
-          <div class="col-md-3 col-sm-6">
-            <label for="editExpiryDate" class="form-label fw-semibold">Expiry Date <span class="text-danger">*</span></label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-x"></i></span>
-              <input type="date" 
-                     id="editExpiryDate" 
-                     name="expiryDate" 
-                     class="form-control bg-light-focus border-start-0" 
-                     [(ngModel)]="editData.expiryDate" 
-                     #expiryDateInput="ngModel" 
-                     required 
-                     [class.is-invalid]="expiryDateInput.invalid && (expiryDateInput.dirty || expiryDateInput.touched || submitted)" />
-              <div class="invalid-feedback">
-                Expiry Date is required.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Checkbox settings row -->
-        <div class="row g-3 mb-4">
-          <div class="col-md-12">
-            <div class="form-check form-switch card p-3 border-0 shadow-xs bg-light">
-              <div class="d-flex align-items-center">
-                <input class="form-check-input me-3 ms-0 edit-switch-input" 
-                       type="checkbox" 
-                       id="editIsActive" 
-                       name="isActive" 
-                       [(ngModel)]="editData.isActive">
+              <div class="card-body px-4 py-3">
+                <div class="mb-3">
+                  <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Brand Name</span>
+                  <span class="text-dark fw-bold fs-5">{{ batchDetails.brandName || 'N/A' }}</span>
+                </div>
+                <div class="mb-3" *ngIf="batchDetails.genericName">
+                  <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Generic Formula</span>
+                  <span class="text-dark fw-medium">{{ batchDetails.genericName }}</span>
+                </div>
                 <div>
-                  <label class="form-check-label fw-bold text-dark-teal mb-0.5" for="editIsActive">Batch Profile Status (Active)</label>
-                  <span class="text-muted d-block small">Toggle to active or de-activate this batch layout manually.</span>
+                  <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Medicine Catalog ID</span>
+                  <span class="badge bg-light text-dark fw-semibold">#{{ batchDetails.medicineId }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Supplier & Delivery Details -->
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
+              <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
+                  <i class="bi bi-building"></i>
+                  <span>Supplier Association</span>
+                </h6>
+              </div>
+              <div class="card-body px-4 py-3">
+                <div class="mb-3">
+                  <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Supplier Name</span>
+                  <span class="text-dark fw-bold fs-5">{{ batchDetails.supplierName || 'N/A' }}</span>
+                </div>
+                <div>
+                  <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Supplier ID</span>
+                  <span class="badge bg-light text-dark fw-semibold">#{{ batchDetails.supplierId }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chronology & Dates -->
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
+              <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
+                  <i class="bi bi-calendar-range"></i>
+                  <span>Key Lifecycle Dates</span>
+                </h6>
+              </div>
+              <div class="card-body px-4 py-3">
+                <div class="mb-3">
+                  <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Manufacture Date</span>
+                  <span class="text-dark fw-semibold">
+                    <i class="bi bi-calendar-check text-muted me-1.5"></i>
+                    {{ batchDetails.manufactureDate ? (batchDetails.manufactureDate | date:'longDate') : 'Not Configured' }}
+                  </span>
+                </div>
+                <div>
+                  <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Expiry Date</span>
+                  <span class="text-dark fw-bold" [class.text-danger]="batchDetails.expiryDate && (batchDetails.expiryDate | date:'yyyy-MM-dd')! < '2026-07-16'">
+                    <i class="bi bi-calendar-x text-muted me-1.5"></i>
+                    {{ batchDetails.expiryDate ? (batchDetails.expiryDate | date:'longDate') : 'N/A' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pricing & Financial Metrics -->
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 detail-info-card">
+              <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
+                  <i class="bi bi-currency-dollar"></i>
+                  <span>Financial Configuration</span>
+                </h6>
+              </div>
+              <div class="card-body px-4 py-3">
+                <div class="mb-3">
+                  <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Unit Selling Price</span>
+                  <span class="text-success fw-bold fs-5">${{ batchDetails.sellingPrice | number:'1.2-2' }}</span>
+                </div>
+                <div>
+                  <span class="text-muted text-xs d-block text-uppercase fw-semibold mb-1">Unit Purchase Cost</span>
+                  <span class="text-dark fw-semibold">${{ batchDetails.purchasePrice | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stock Balance Dashboard -->
+          <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 detail-info-card">
+              <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+                <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0 d-flex align-items-center gap-2">
+                  <i class="bi bi-boxes"></i>
+                  <span>Inventory Status Summary</span>
+                </h6>
+              </div>
+              <div class="card-body px-4 py-3">
+                <div class="row g-3">
+                  <div class="col-sm-6 col-xs-12">
+                    <div class="p-3 rounded bg-teal-light text-teal d-flex align-items-center justify-content-between">
+                      <div>
+                        <span class="text-xs text-uppercase d-block fw-semibold mb-1 text-muted">Quantity on Hand</span>
+                        <h3 class="fw-bold mb-0 text-dark-teal">{{ batchDetails.quantityOnHand || 0 }}</h3>
+                      </div>
+                      <i class="bi bi-box-seam fs-3 opacity-50"></i>
+                    </div>
+                  </div>
+                  <div class="col-sm-6 col-xs-12">
+                    <div class="p-3 rounded bg-light text-dark d-flex align-items-center justify-content-between">
+                      <div>
+                        <span class="text-xs text-uppercase d-block fw-semibold mb-1 text-muted">Reserved/Allocated Stock</span>
+                        <h3 class="fw-bold mb-0">{{ batchDetails.quantityReserved || 0 }}</h3>
+                      </div>
+                      <i class="bi bi-bookmark-dash fs-3 opacity-50"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Logs Metadata -->
+          <div class="col-12" *ngIf="batchDetails.createdAt">
+            <div class="card border-0 shadow-sm rounded-4 detail-info-card py-2">
+              <div class="card-body px-4 py-2 d-flex align-items-center justify-content-between flex-wrap gap-2 text-muted small">
+                <div>
+                  <i class="bi bi-clock-history me-1.5"></i>
+                  <span>Registered: <strong>{{ batchDetails.createdAt | date:'medium' }}</strong></span>
+                </div>
+                <div *ngIf="batchDetails.createdBy">
+                  <i class="bi bi-person-circle me-1.5"></i>
+                  <span>Operator: <strong>{{ batchDetails.createdBy }}</strong></span>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Form Actions (Matches Medicine Details) -->
-        <div class="d-flex align-items-center justify-content-end gap-3 mt-4 pt-3 border-top border-light">
-          <button type="button" 
-                  class="btn btn-outline-secondary px-4 py-2.5 fw-semibold" 
-                  (click)="cancelEdit()">
-            Cancel
-          </button>
-          <button type="submit" 
-                  class="btn btn-mint-primary px-5 py-2.5 fw-bold shadow-sm d-flex align-items-center gap-2">
-            <i class="bi bi-check-circle-fill"></i>Update Batch
-          </button>
+      <!-- STATE 3: Interactive Edit Form Mode -->
+      <div *ngIf="batchDetails && isEditMode" class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5 animate-fade-in">
+        <div class="card-header bg-gradient-teal py-3 px-4 text-white d-flex align-items-center justify-content-between">
+          <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+            <i class="bi bi-pencil-square"></i>
+            <span>Modify Batch Configuration</span>
+          </h5>
+          <span class="badge bg-white text-teal font-monospace px-3 py-1.5 fs-6">ID: {{ editData.id }}</span>
         </div>
 
-      </form>
+        <div class="card-body p-4">
+          <form #batchForm="ngForm" (ngSubmit)="updateBatchConfigurations()" novalidate>
+            <!-- SECTION 1: Batch Identity -->
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Primary Batch Identity</h6>
+            <div class="row g-3 mb-4">
+              <!-- Batch Number -->
+              <div class="col-md-6 col-sm-12">
+                <label for="editBatchNumber" class="form-label fw-semibold">Batch Number <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-hash"></i></span>
+                  <input type="text" 
+                         id="editBatchNumber" 
+                         name="batchNumber" 
+                         class="form-control bg-light-focus border-start-0" 
+                         [(ngModel)]="editData.batchNumber" 
+                         #batchNumberInput="ngModel" 
+                         required 
+                         [class.is-invalid]="batchNumberInput.invalid && (batchNumberInput.dirty || batchNumberInput.touched || submitted)" />
+                  <div class="invalid-feedback">
+                    Batch Number is required.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Medicine Lookup -->
+              <div class="col-md-6 col-sm-12">
+                <label for="editMedicineId" class="form-label fw-semibold">Associated Medicine <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-capsule"></i></span>
+                  <select id="editMedicineId" 
+                          name="medicineId" 
+                          class="form-select bg-light-focus border-start-0" 
+                          [(ngModel)]="editData.medicineId" 
+                          #medicineIdInput="ngModel" 
+                          required 
+                          [class.is-invalid]="medicineIdInput.invalid && (medicineIdInput.dirty || medicineIdInput.touched || submitted)">
+                    <option *ngFor="let med of medicinesLookup" [value]="med.id">{{ med.brandName }} (ID: {{ med.id }})</option>
+                  </select>
+                  <div class="invalid-feedback">
+                    Please select an associated medicine.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Supplier Lookup -->
+              <div class="col-md-6 col-sm-12">
+                <label for="editSupplierId" class="form-label fw-semibold">Supplier</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-building"></i></span>
+                  <select id="editSupplierId" 
+                          name="supplierId" 
+                          class="form-select bg-light-focus border-start-0" 
+                          [(ngModel)]="editData.supplierId">
+                    <option [value]="undefined">No Supplier Selected</option>
+                    <option *ngFor="let sup of suppliersLookup" [value]="sup.id">{{ sup.name }} (ID: {{ sup.id }})</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <hr class="border-light-teal my-4">
+
+            <!-- SECTION 2: Dates & Financial Metrics -->
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Lifecycles & Pricing</h6>
+            <div class="row g-3 mb-4">
+              <!-- Manufacture Date -->
+              <div class="col-md-6 col-sm-12">
+                <label for="editManufactureDate" class="form-label fw-semibold">Manufacture Date</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+                  <input type="date" 
+                         id="editManufactureDate" 
+                         name="manufactureDate" 
+                         class="form-control bg-light-focus border-start-0" 
+                         [(ngModel)]="editData.manufactureDate" />
+                </div>
+              </div>
+
+              <!-- Expiry Date -->
+              <div class="col-md-6 col-sm-12">
+                <label for="editExpiryDate" class="form-label fw-semibold">Expiry Date <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-x"></i></span>
+                  <input type="date" 
+                         id="editExpiryDate" 
+                         name="expiryDate" 
+                         class="form-control bg-light-focus border-start-0" 
+                         [(ngModel)]="editData.expiryDate" 
+                         #expiryDateInput="ngModel" 
+                         required 
+                         [class.is-invalid]="expiryDateInput.invalid && (expiryDateInput.dirty || expiryDateInput.touched || submitted)" />
+                  <div class="invalid-feedback">
+                    Expiry Date is required.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Purchase Price -->
+              <div class="col-md-6 col-sm-12">
+                <label for="editPurchasePrice" class="form-label fw-semibold">Purchase Price ($) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-cash"></i></span>
+                  <input type="number" 
+                         step="0.01"
+                         id="editPurchasePrice" 
+                         name="purchasePrice" 
+                         class="form-control bg-light-focus border-start-0" 
+                         [(ngModel)]="editData.purchasePrice" 
+                         #purchasePriceInput="ngModel" 
+                         required 
+                         [class.is-invalid]="purchasePriceInput.invalid && (purchasePriceInput.dirty || purchasePriceInput.touched || submitted)" />
+                  <div class="invalid-feedback">
+                    Purchase price is required.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Selling Price -->
+              <div class="col-md-6 col-sm-12">
+                <label for="editSellingPrice" class="form-label fw-semibold">Selling Price ($) <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-cash-stack"></i></span>
+                  <input type="number" 
+                         step="0.01"
+                         id="editSellingPrice" 
+                         name="sellingPrice" 
+                         class="form-control bg-light-focus border-start-0" 
+                         [(ngModel)]="editData.sellingPrice" 
+                         #sellingPriceInput="ngModel" 
+                         required 
+                         [class.is-invalid]="sellingPriceInput.invalid && (sellingPriceInput.dirty || sellingPriceInput.touched || submitted)" />
+                  <div class="invalid-feedback">
+                    Selling price is required.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr class="border-light-teal my-4">
+
+            <!-- SECTION 3: Settings/Status -->
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <div class="form-check form-switch custom-switch">
+                <input class="form-check-input" 
+                       type="checkbox" 
+                       role="switch" 
+                       id="editIsActive" 
+                       name="isActive" 
+                       [(ngModel)]="editData.isActive" />
+                <label class="form-check-label fw-semibold cursor-pointer" for="editIsActive">Active Status</label>
+              </div>
+              <span class="badge" [ngClass]="editData.isActive ? 'bg-mint text-dark-teal' : 'bg-secondary text-light'">
+                {{ editData.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="d-flex align-items-center justify-content-end gap-3 mt-4 pt-3 border-top border-light">
+              <button type="button" 
+                      class="btn btn-outline-secondary px-4 py-2.5 fw-semibold" 
+                      (click)="cancelEdit()">
+                Cancel
+              </button>
+              <button type="submit" 
+                      class="btn btn-mint-primary px-5 py-2.5 fw-bold shadow-sm d-flex align-items-center gap-2">
+                <i class="bi bi-check-circle-fill"></i>Update Batch Metrics
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>

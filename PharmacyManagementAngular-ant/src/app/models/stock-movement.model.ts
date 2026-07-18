@@ -17,7 +17,7 @@ export enum StockMovementType {
 }
 
 // ==========================================
-// Stock Movement Request Model (Maps to RequestDto)
+// Stock Movement Request Model (Maps to Internal Signature)
 // ==========================================
 export interface StockMovementRequest extends BaseEntity {
   branchId: number;
@@ -26,6 +26,7 @@ export interface StockMovementRequest extends BaseEntity {
   quantity: number;
   referenceType?: string;
   referenceId?: number;
+  remarks?: string;
 }
 
 // ==========================================

@@ -9,44 +9,60 @@ import { StockMovementRequest, StockMovementResponse, StockMovementType } from '
 })
 export class StockMovementService {
   
-  // API endpoint matching backend mapping architecture
   private apiUrl = environment.apiUrl + 'stock-movements';
 
   constructor(private http: HttpClient) {}
 
-  // Fetch all historical ledger asset movement records
-  getAllStockMovements(): Observable<StockMovementResponse[]> {
+  // Fetch all system historical ledger assets records
+  getAllMovements(): Observable<StockMovementResponse[]> {
     return this.http.get<StockMovementResponse[]>(this.apiUrl);
   }
 
-  // Find single ledger allocation parameter matching its database ID
-  getStockMovementById(id: number): Observable<StockMovementResponse> {
+  // Find individual ledger identity parameter matching its primary key
+  getMovementById(id: number): Observable<StockMovementResponse> {
     return this.http.get<StockMovementResponse>(`${this.apiUrl}/${id}`);
   }
 
-  // Fetch audit trail allocations belonging to a specific branch context
-  getMovementsByBranchId(branchId: number): Observable<StockMovementResponse[]> {
+  // Fetch audit trails records matching specific branch contexts
+  getByBranch(branchId: number): Observable<StockMovementResponse[]> {
     return this.http.get<StockMovementResponse[]>(`${this.apiUrl}/branch/${branchId}`);
   }
 
-  // Retrieve batch transaction entries targeting individual medical products
-  getMovementsByBatchId(batchId: number): Observable<StockMovementResponse[]> {
+  // Retrieve ledger entries targeting individual medicine product batches
+  getByBatch(batchId: number): Observable<StockMovementResponse[]> {
     return this.http.get<StockMovementResponse[]>(`${this.apiUrl}/batch/${batchId}`);
   }
 
-  // Fetch operational tracks filtered by isolated branches and behavior parameters
-  getMovementsByBranchAndType(branchId: number, movementType: StockMovementType): Observable<StockMovementResponse[]> {
+  // Client-side mapping fallback helper filtering by core medicine references
+  getByMedicine(medicineId: number): Observable<StockMovementResponse[]> {
+    return this.http.get<StockMovementResponse[]>(`${this.apiUrl}?medicineId=${medicineId}`);
+  }
+
+  // Fetch operational logs matching distinct branch parameters and movement classes
+  getByMovementType(branchId: number, movementType: StockMovementType): Observable<StockMovementResponse[]> {
     return this.http.get<StockMovementResponse[]>(`${this.apiUrl}/branch/${branchId}/type/${movementType}`);
   }
 
-  // Track operational rows matching reference systems using parameters map interception
-  getMovementsByReference(type: string, id: number): Observable<StockMovementResponse[]> {
+  // Track transaction references parameters utilizing dynamic parameter intercepts maps
+  getByReference(type: string, id: number): Observable<StockMovementResponse[]> {
     const params = new HttpParams().set('type', type).set('id', id.toString());
     return this.http.get<StockMovementResponse[]>(`${this.apiUrl}/reference`, { params });
   }
 
-  // Create or commit a fresh batch stock transaction asset record
-  createStockMovement(dto: StockMovementRequest): Observable<StockMovementResponse> {
+  // Local date interception tracking allocation queries parameters
+  getByDate(dateStr: string): Observable<StockMovementResponse[]> {
+    const params = new HttpParams().set('date', dateStr);
+    return this.http.get<StockMovementResponse[]>(`${this.apiUrl}/date`, { params });
+  }
+
+  // Date range interval ledger tracking calculations logs
+  getByDateRange(startDate: string, endDate: string): Observable<StockMovementResponse[]> {
+    const params = new HttpParams().set('startDate', startDate).set('endDate', endDate);
+    return this.http.get<StockMovementResponse[]>(`${this.apiUrl}/range`, { params });
+  }
+
+  // Internal module routing endpoint used only for background engine injections simulation logs
+  createMovement(dto: StockMovementRequest): Observable<StockMovementResponse> {
     return this.http.post<StockMovementResponse>(this.apiUrl, dto);
   }
 }

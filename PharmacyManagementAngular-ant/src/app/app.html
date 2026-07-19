@@ -1,4 +1,4 @@
-@if (!isDashboardRoute()) {
+@if (showSiteLayout()) {
   <app-header></app-header>
   <app-navbar></app-navbar>
 }
@@ -7,7 +7,7 @@
   <router-outlet></router-outlet>
 </main>
 
-@if (!isDashboardRoute()) {
+@if (showSiteLayout()) {
   <app-footer></app-footer>
 }
 

@@ -1,35 +1,11 @@
-/* Verify Email Component Styles */
-
-.auth-wrapper {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #e2f1f0 0%, #f0fdfa 100%) !important;
-  width: 100%;
-}
-
-.verify-card {
-  width: 100%;
-  max-width: 440px;
-  border: 1px solid rgba(15, 168, 149, 0.08) !important;
-}
+/* User Add CSS Styles */
 
 .text-dark-teal {
-  color: #0a4f45;
+  color: #0a4f45 !important;
 }
 
-.text-teal {
-  color: #0fa895;
-}
-
-.bg-gradient-teal {
-  background: linear-gradient(135deg, #0fa895 0%, #0a4f45 100%) !important;
-}
-
-.bg-gradient-danger {
-  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
-}
-
-.bg-gradient-warning {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+.max-width-card {
+  max-width: 800px;
 }
 
 .btn-mint-primary {
@@ -38,6 +14,7 @@
   border: 1px solid #0fa895;
   border-radius: 8px;
   transition: all 0.25s ease;
+  font-weight: 600;
 }
 
 .btn-mint-primary:hover {
@@ -59,11 +36,15 @@
   color: #334155;
   background-color: #f8fafc;
   border-color: #64748b;
-  box-shadow: 0 2px 8px rgba(100, 116, 139, 0.1);
 }
 
-.leading-relaxed {
-  line-height: 1.6;
+.form-switch .form-check-input {
+  cursor: pointer;
+}
+
+.form-switch .form-check-input:checked {
+  background-color: #0fa895 !important;
+  border-color: #0fa895 !important;
 }
 
 /* Animations */

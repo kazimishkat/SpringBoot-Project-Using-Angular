@@ -516,52 +516,59 @@
         </div>
       </li>
 
-      <!-- Authentication Link with Dropdown -->
+      <!-- User Management Link with Dropdown -->
       <li class="nav-item">
-        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleAuthDropdown()"
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleUserDropdown()"
           style="cursor: pointer;">
           <div class="d-flex align-items-center gap-3">
-            <i class="bi bi-shield-lock-fill"></i>
-            <span>Authentication</span>
+            <i class="bi bi-people-fill"></i>
+            <span>User Management</span>
           </div>
-          <i class="bi" [class.bi-chevron-down]="!isAuthDropdownOpen" [class.bi-chevron-up]="isAuthDropdownOpen"
+          <i class="bi" [class.bi-chevron-down]="!isUserDropdownOpen" [class.bi-chevron-up]="isUserDropdownOpen"
             style="font-size: 0.75rem; transition: transform 0.2s;"></i>
         </div>
-        <div class="submenu-collapse" [class.show]="isAuthDropdownOpen">
+        <div class="submenu-collapse" [class.show]="isUserDropdownOpen">
           <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
             <li class="nav-item">
               <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
-                routerLink="/dashboard/forgot-password" routerLinkActive="active">
-                <i class="bi bi-question-circle"></i>
-                <span>Forgot Password</span>
+                routerLink="/dashboard/users" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>user-list</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
-                routerLink="/dashboard/login" routerLinkActive="active">
-                <i class="bi bi-box-arrow-in-right"></i>
-                <span>Login</span>
+                routerLink="/dashboard/users/add" routerLinkActive="active">
+                <i class="bi bi-person-plus-fill"></i>
+                <span>user-add</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
-                routerLink="/dashboard/reset-password" routerLinkActive="active">
-                <i class="bi bi-key"></i>
-                <span>Reset Password</span>
+                routerLink="/dashboard/users/edit/1" routerLinkActive="active">
+                <i class="bi bi-pencil-square"></i>
+                <span>user-edit</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
-                routerLink="/dashboard/unauthorized" routerLinkActive="active">
-                <i class="bi bi-slash-circle"></i>
-                <span>Unauthorized</span>
+                routerLink="/dashboard/users/1" routerLinkActive="active">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>user-details</span>
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
-                routerLink="/dashboard/verify-email" routerLinkActive="active">
-                <i class="bi bi-envelope-check"></i>
-                <span>Verify Email</span>
+                routerLink="/dashboard/profile" routerLinkActive="active">
+                <i class="bi bi-person-badge-fill"></i>
+                <span>profile</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/change-password" routerLinkActive="active">
+                <i class="bi bi-key-fill"></i>
+                <span>change-password</span>
               </a>
             </li>
           </ul>

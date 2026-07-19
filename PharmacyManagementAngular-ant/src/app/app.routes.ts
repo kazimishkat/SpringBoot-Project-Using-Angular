@@ -42,6 +42,12 @@ import { ForgotPasswordComponent } from './components/authentication/authFeature
 import { ResetPasswordComponent } from './components/authentication/authFeatures/reset-password/reset-password';
 import { VerifyEmailComponent } from './components/authentication/authFeatures/verify-email/verify-email';
 import { UnauthorizedComponent } from './components/authentication/authFeatures/unauthorized/unauthorized';
+import { UserList } from './components/features/user-management/user-list/user-list';
+import { UserAdd } from './components/features/user-management/user-add/user-add';
+import { UserEdit } from './components/features/user-management/user-edit/user-edit';
+import { UserDetails } from './components/features/user-management/user-details/user-details';
+import { Profile } from './components/features/user-management/profile/profile';
+import { ChangePassword } from './components/features/user-management/change-password/change-password';
 
 
 export const routes: Routes = [
@@ -55,11 +61,17 @@ export const routes: Routes = [
   { path: 'stock-transfers/approve/:id', redirectTo: 'dashboard/stock-transfers/approve/:id', pathMatch: 'full' },
   { path: 'stock-transfers/:id', redirectTo: 'dashboard/stock-transfers/:id', pathMatch: 'full' },
   { path: 'stock-transfers', redirectTo: 'dashboard/stock-transfers', pathMatch: 'full' },
-  { path: 'login', redirectTo: 'dashboard/login', pathMatch: 'full' },
-  { path: 'forgot-password', redirectTo: 'dashboard/forgot-password', pathMatch: 'full' },
-  { path: 'reset-password', redirectTo: 'dashboard/reset-password', pathMatch: 'full' },
-  { path: 'verify-email', redirectTo: 'dashboard/verify-email', pathMatch: 'full' },
-  { path: 'unauthorized', redirectTo: 'dashboard/unauthorized', pathMatch: 'full' },
+  { path: 'login', component: LoginComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'reset-password', component: ResetPasswordComponent },
+  { path: 'verify-email', component: VerifyEmailComponent },
+  { path: 'unauthorized', component: UnauthorizedComponent },
+  { path: 'users/add', redirectTo: 'dashboard/users/add', pathMatch: 'full' },
+  { path: 'users/edit/:id', redirectTo: 'dashboard/users/edit/:id', pathMatch: 'full' },
+  { path: 'users/:id', redirectTo: 'dashboard/users/:id', pathMatch: 'full' },
+  { path: 'users', redirectTo: 'dashboard/users', pathMatch: 'full' },
+  { path: 'profile', redirectTo: 'dashboard/profile', pathMatch: 'full' },
+  { path: 'change-password', redirectTo: 'dashboard/change-password', pathMatch: 'full' },
   {
     path: 'dashboard',
     component: Dashboard,
@@ -116,11 +128,12 @@ export const routes: Routes = [
       { path: 'stock-transfers/details', component: StockTransferDetailsComponent },
       { path: 'stock-transfers/details/:id', component: StockTransferDetailsComponent },
       { path: 'stock-transfers/:id', component: StockTransferDetailsComponent },
-      { path: 'login', component: LoginComponent },
-      { path: 'forgot-password', component: ForgotPasswordComponent },
-      { path: 'reset-password', component: ResetPasswordComponent },
-      { path: 'verify-email', component: VerifyEmailComponent },
-      { path: 'unauthorized', component: UnauthorizedComponent },
+      { path: 'users', component: UserList },
+      { path: 'users/add', component: UserAdd },
+      { path: 'users/edit/:id', component: UserEdit },
+      { path: 'users/:id', component: UserDetails },
+      { path: 'profile', component: Profile },
+      { path: 'change-password', component: ChangePassword },
     ]
   }
 ];

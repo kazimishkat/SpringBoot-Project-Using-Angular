@@ -7,19 +7,20 @@
       <h3 class="fw-bold mb-0 text-white">403 - Access Forbidden</h3>
     </div>
     <div class="card-body p-4 bg-white text-center">
+      <h4 class="fw-bold text-danger mb-2">Access Denied</h4>
       <p class="text-muted mb-4 fs-6 leading-relaxed">
         Your assigned system profile does not have the clearance tier permissions required to interact with this specific pharmacy workspace dashboard section.
       </p>
       
       <div class="d-flex flex-column gap-2.5">
-        <button (click)="goBack()" class="btn btn-mint-primary w-100 py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border-0">
+        <a routerLink="/dashboard" class="btn btn-mint-primary w-100 py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border-0 text-decoration-none">
           <i class="bi bi-house-door-fill"></i>
-          <span>Return to Dashboard</span>
-        </button>
-        <button (click)="logout()" class="btn btn-outline-secondary w-100 py-2.5 fw-bold d-flex align-items-center justify-content-center gap-2">
-          <i class="bi bi-box-arrow-right"></i>
-          <span>Sign Out</span>
-        </button>
+          <span>Back to Dashboard</span>
+        </a>
+        <a routerLink="/login" class="btn btn-outline-secondary w-100 py-2.5 fw-bold d-flex align-items-center justify-content-center gap-2 text-decoration-none">
+          <i class="bi bi-box-arrow-in-right"></i>
+          <span>Back to Login</span>
+        </a>
       </div>
     </div>
   </div>

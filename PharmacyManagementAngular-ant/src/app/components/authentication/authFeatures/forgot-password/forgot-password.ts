@@ -1,27 +1,35 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './forgot-password.html',
   styleUrl: './forgot-password.css'
 })
 export class ForgotPasswordComponent {
-  email = '';
+  forgotForm: FormGroup;
   loading = false;
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
+    this.forgotForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]]
+    });
+  }
 
   submit(): void {
-    if (!this.email) {
-      this.errorMessage = 'Please key in a valid notification email handle.';
+    if (this.forgotForm.invalid) {
+      this.forgotForm.markAllAsTouched();
       return;
     }
 
@@ -29,14 +37,19 @@ export class ForgotPasswordComponent {
     this.successMessage = null;
     this.errorMessage = null;
 
-    this.authService.forgotPassword({ email: this.email }).subscribe({
+    const emailVal = this.forgotForm.value.email;
+
+    this.authService.forgotPassword({ email: emailVal }).subscribe({
       next: () => {
         this.loading = false;
-        this.successMessage = `A password recovery system transmission was forwarded to ${this.email}. Check your inbox.`;
+        this.successMessage = `One-Time Password (OTP) has been dispatched to ${emailVal}. Redirecting to verification...`;
+        setTimeout(() => {
+          this.router.navigate(['/verify-email'], { queryParams: { email: emailVal } });
+        }, 2000);
       },
       error: () => {
         this.loading = false;
-        this.errorMessage = 'No active verification profile is associated with that email parameter.';
+        this.errorMessage = 'No registered pharmacy user profile is associated with this email.';
       }
     });
   }

@@ -1,0 +1,186 @@
+<div class="container-fluid py-4 animate-fade-in">
+  <!-- Page Header -->
+  <div class="mb-4">
+    <h2 class="fw-bold text-dark-teal">My Profile</h2>
+    <p class="text-muted">Manage your personal account parameters and settings.</p>
+  </div>
+
+  <!-- Error Notification Banner -->
+  <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-4 shadow-sm rounded-3">
+    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+    <span class="small">{{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="!profileDetails && !errorMessage" class="text-center py-5">
+    <div class="spinner-border text-teal mb-3" role="status">
+      <span class="visually-hidden">Loading details...</span>
+    </div>
+    <p class="text-muted">Loading your profile data...</p>
+  </div>
+
+  <!-- Main Profile Card Wrapper -->
+  <div class="card border-0 shadow-sm rounded-3 overflow-hidden max-width-card mx-auto" *ngIf="profileDetails">
+    <!-- Card header/banner background -->
+    <div class="bg-gradient-teal py-4 px-4 text-center text-white border-0">
+      <div class="avatar-circle-lg bg-white text-teal rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 shadow" style="width: 80px; height: 80px;">
+        <span class="fw-bold fs-2 text-dark-teal">{{ profileDetails.fullName.charAt(0).toUpperCase() }}</span>
+      </div>
+      <h3 class="fw-bold mb-1 text-white">{{ profileDetails.fullName }}</h3>
+      <p class="text-white-50 small mb-0">@{{ profileDetails.username }}</p>
+    </div>
+
+    <!-- Card body: Read Mode -->
+    <div class="card-body p-4 bg-white" *ngIf="!isEditMode">
+      <div class="row g-4">
+        <!-- Account information columns -->
+        <div class="col-md-6">
+          <div class="d-flex align-items-start gap-3">
+            <div class="detail-icon-circle bg-mint text-dark-teal">
+              <i class="bi bi-envelope-fill"></i>
+            </div>
+            <div>
+              <span class="text-muted d-block small mb-0.5">Email Address</span>
+              <strong class="text-dark-teal">{{ profileDetails.email }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="d-flex align-items-start gap-3">
+            <div class="detail-icon-circle bg-mint text-dark-teal">
+              <i class="bi bi-telephone-fill"></i>
+            </div>
+            <div>
+              <span class="text-muted d-block small mb-0.5">Phone Number</span>
+              <strong class="text-dark-teal">{{ profileDetails.phone || 'N/A' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="d-flex align-items-start gap-3">
+            <div class="detail-icon-circle bg-mint text-dark-teal">
+              <i class="bi bi-shield-lock-fill"></i>
+            </div>
+            <div>
+              <span class="text-muted d-block small mb-0.5">System Assigned Role</span>
+              <div>
+                <span class="badge bg-mint text-dark-teal fw-bold px-2.5 py-1.5 mt-0.5">
+                  {{ profileDetails.role }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="d-flex align-items-start gap-3">
+            <div class="detail-icon-circle bg-mint text-dark-teal">
+              <i class="bi bi-geo-alt-fill"></i>
+            </div>
+            <div>
+              <span class="text-muted d-block small mb-0.5">Branch Location Assignment</span>
+              <strong class="text-dark-teal">{{ profileDetails.branchName || 'Central Headquarter' }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="d-flex align-items-start gap-3">
+            <div class="detail-icon-circle bg-mint text-dark-teal">
+              <i class="bi bi-calendar-event-fill"></i>
+            </div>
+            <div>
+              <span class="text-muted d-block small mb-0.5">Registration Timestamp</span>
+              <strong class="text-dark-teal">{{ profileDetails.createdAt | date:'medium' }}</strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action buttons -->
+      <div class="d-flex justify-content-end gap-2.5 mt-4 pt-3 border-top">
+        <button (click)="enableEditMode()" class="btn btn-mint-primary px-4 py-2">
+          <i class="bi bi-pencil-square me-1.5"></i>
+          <span>Edit Profile</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Card body: Edit Mode -->
+    <div class="card-body p-4 bg-white" *ngIf="isEditMode && editRequest">
+      <form #profileForm="ngForm" (ngSubmit)="updateProfile()" novalidate>
+        <div class="row g-3">
+          
+          <!-- Full Name -->
+          <div class="col-md-6">
+            <label for="fullName" class="form-label small fw-bold text-dark-teal mb-1">Full Name</label>
+            <input type="text" 
+                   id="fullName" 
+                   name="fullName"
+                   class="form-control" 
+                   [(ngModel)]="editRequest.fullName" 
+                   required
+                   #fullNameField="ngModel"
+                   [class.is-invalid]="(fullNameField.invalid && (fullNameField.touched || submitted))" />
+            <div class="invalid-feedback">Full name is required.</div>
+          </div>
+
+          <!-- Username -->
+          <div class="col-md-6">
+            <label for="username" class="form-label small fw-bold text-dark-teal mb-1">Username</label>
+            <input type="text" 
+                   id="username" 
+                   name="username"
+                   class="form-control" 
+                   [(ngModel)]="editRequest.username" 
+                   required
+                   minlength="3"
+                   #usernameField="ngModel"
+                   [class.is-invalid]="(usernameField.invalid && (usernameField.touched || submitted))" />
+            <div class="invalid-feedback">Username is required (min 3 characters).</div>
+          </div>
+
+          <!-- Email Address -->
+          <div class="col-md-6">
+            <label for="email" class="form-label small fw-bold text-dark-teal mb-1">Email Address</label>
+            <input type="email" 
+                   id="email" 
+                   name="email"
+                   class="form-control" 
+                   [(ngModel)]="editRequest.email" 
+                   required
+                   email
+                   #emailField="ngModel"
+                   [class.is-invalid]="(emailField.invalid && (emailField.touched || submitted))" />
+            <div class="invalid-feedback">A valid email address is required.</div>
+          </div>
+
+          <!-- Phone Number -->
+          <div class="col-md-6">
+            <label for="phone" class="form-label small fw-bold text-dark-teal mb-1">Phone Number</label>
+            <input type="text" 
+                   id="phone" 
+                   name="phone"
+                   class="form-control" 
+                   [(ngModel)]="editRequest.phone" />
+          </div>
+
+        </div>
+
+        <!-- Form Actions buttons bar -->
+        <div class="d-flex justify-content-end gap-2.5 mt-4 pt-3 border-top">
+          <button type="button" (click)="cancelEdit()" class="btn btn-outline-secondary px-4 py-2">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-mint-primary px-4 py-2">
+            Save Updates
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>

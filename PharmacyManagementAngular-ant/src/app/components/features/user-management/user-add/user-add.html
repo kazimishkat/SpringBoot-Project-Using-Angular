@@ -1,0 +1,148 @@
+<div class="container-fluid py-4 animate-fade-in">
+  <!-- Page Header -->
+  <div class="mb-4">
+    <h2 class="fw-bold text-dark-teal">Add New User</h2>
+    <p class="text-muted">Register a new pharmacy worker account credential in the central system registry.</p>
+  </div>
+
+  <!-- Error Banner -->
+  <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-4 shadow-sm rounded-3">
+    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+    <span class="small">{{ errorMessage }}</span>
+  </div>
+
+  <!-- Main Card Form -->
+  <div class="card border-0 shadow-sm rounded-3 max-width-card mx-auto">
+    <div class="card-body p-4">
+      <form #userForm="ngForm" (ngSubmit)="saveUser()" novalidate>
+        <div class="row g-3">
+          
+          <!-- Full Name -->
+          <div class="col-md-6">
+            <label for="fullName" class="form-label small fw-bold text-dark-teal mb-1">Full Name</label>
+            <input type="text" 
+                   id="fullName" 
+                   name="fullName"
+                   class="form-control" 
+                   placeholder="e.g. John Doe"
+                   [(ngModel)]="userRequest.fullName" 
+                   required
+                   #fullNameField="ngModel"
+                   [class.is-invalid]="(fullNameField.invalid && (fullNameField.touched || submitted))" />
+            <div class="invalid-feedback">Full name is required.</div>
+          </div>
+
+          <!-- Username -->
+          <div class="col-md-6">
+            <label for="username" class="form-label small fw-bold text-dark-teal mb-1">Username</label>
+            <input type="text" 
+                   id="username" 
+                   name="username"
+                   class="form-control" 
+                   placeholder="e.g. johndoe"
+                   [(ngModel)]="userRequest.username" 
+                   required
+                   minlength="3"
+                   #usernameField="ngModel"
+                   [class.is-invalid]="(usernameField.invalid && (usernameField.touched || submitted))" />
+            <div class="invalid-feedback">Username is required (min 3 characters).</div>
+          </div>
+
+          <!-- Email Address -->
+          <div class="col-md-6">
+            <label for="email" class="form-label small fw-bold text-dark-teal mb-1">Email Address</label>
+            <input type="email" 
+                   id="email" 
+                   name="email"
+                   class="form-control" 
+                   placeholder="name@example.com"
+                   [(ngModel)]="userRequest.email" 
+                   required
+                   email
+                   #emailField="ngModel"
+                   [class.is-invalid]="(emailField.invalid && (emailField.touched || submitted))" />
+            <div class="invalid-feedback">A valid email address is required.</div>
+          </div>
+
+          <!-- Phone Number -->
+          <div class="col-md-6">
+            <label for="phone" class="form-label small fw-bold text-dark-teal mb-1">Phone Number</label>
+            <input type="text" 
+                   id="phone" 
+                   name="phone"
+                   class="form-control" 
+                   placeholder="e.g. +123456789"
+                   [(ngModel)]="userRequest.phone" />
+          </div>
+
+          <!-- Password -->
+          <div class="col-md-6">
+            <label for="password" class="form-label small fw-bold text-dark-teal mb-1">Password</label>
+            <input type="password" 
+                   id="password" 
+                   name="password"
+                   class="form-control" 
+                   placeholder="••••••••"
+                   [(ngModel)]="userRequest.password" 
+                   required
+                   minlength="4"
+                   #passwordField="ngModel"
+                   [class.is-invalid]="(passwordField.invalid && (passwordField.touched || submitted))" />
+            <div class="invalid-feedback">Password is required (min 4 characters).</div>
+          </div>
+
+          <!-- Role -->
+          <div class="col-md-6">
+            <label for="role" class="form-label small fw-bold text-dark-teal mb-1">System Role</label>
+            <select id="role" 
+                    name="role"
+                    class="form-select" 
+                    [(ngModel)]="userRequest.role"
+                    required>
+              <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+            </select>
+          </div>
+
+          <!-- Branch assignment -->
+          <div class="col-md-6">
+            <label for="branchId" class="form-label small fw-bold text-dark-teal mb-1">Assigned Branch Location</label>
+            <select id="branchId" 
+                    name="branchId"
+                    class="form-select" 
+                    [(ngModel)]="userRequest.branchId">
+              <option [value]="undefined">Central Headquarter / Global</option>
+              <option *ngFor="let branch of branches" [value]="branch.id">{{ branch.name }}</option>
+            </select>
+          </div>
+
+          <!-- Active state status switch -->
+          <div class="col-md-6 d-flex align-items-end pb-2">
+            <div class="form-check form-switch">
+              <input class="form-check-input switch-teal-cursor" 
+                     type="checkbox" 
+                     role="switch" 
+                     id="isActive" 
+                     name="isActive"
+                     [(ngModel)]="userRequest.isActive" />
+              <label class="form-check-label small text-muted ms-2" for="isActive">Enable Account Instantly</label>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Form Actions buttons bar -->
+        <div class="d-flex justify-content-end gap-2.5 mt-4 pt-3 border-top">
+          <button type="button" (click)="cancel()" class="btn btn-outline-secondary px-4 py-2">
+            Cancel
+          </button>
+          <button type="button" (click)="resetForm()" class="btn btn-light px-4 py-2 text-dark-teal fw-semibold">
+            Reset
+          </button>
+          <button type="submit" class="btn btn-mint-primary px-4 py-2">
+            Save User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

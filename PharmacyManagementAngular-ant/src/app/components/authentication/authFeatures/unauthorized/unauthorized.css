@@ -1,7 +1,9 @@
 /* Unauthorized Component Styles */
 
 .auth-wrapper {
-  min-height: 70vh;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e2f1f0 0%, #f0fdfa 100%) !important;
+  width: 100%;
 }
 
 .unauthorized-card {

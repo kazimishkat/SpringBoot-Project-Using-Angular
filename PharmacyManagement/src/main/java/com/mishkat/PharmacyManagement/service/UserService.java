@@ -1,6 +1,8 @@
 package com.mishkat.PharmacyManagement.service;
 
+import com.mishkat.PharmacyManagement.dto.requestDTO.ChangePasswordRequestDto;
 import com.mishkat.PharmacyManagement.dto.requestDTO.UserRequestDto;
+import com.mishkat.PharmacyManagement.dto.responseDTO.ChangePasswordResponseDto;
 import com.mishkat.PharmacyManagement.dto.responseDTO.UserResponseDto;
 
 import java.util.List;
@@ -14,4 +16,6 @@ public interface UserService {
 
     // 🟢 নতুন যুক্ত করা হলো: ইউজার সচল বা অচল (Block/Unblock) করার জন্য
     UserResponseDto toggleUserStatus(Long id, Boolean enabled);
+    ChangePasswordResponseDto changePassword(Long id, ChangePasswordRequestDto dto);
 }
+

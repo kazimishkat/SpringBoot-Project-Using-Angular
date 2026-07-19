@@ -1,6 +1,8 @@
 package com.mishkat.PharmacyManagement.controller;
 
+import com.mishkat.PharmacyManagement.dto.requestDTO.ChangePasswordRequestDto;
 import com.mishkat.PharmacyManagement.dto.requestDTO.UserRequestDto;
+import com.mishkat.PharmacyManagement.dto.responseDTO.ChangePasswordResponseDto;
 import com.mishkat.PharmacyManagement.dto.responseDTO.UserResponseDto;
 import com.mishkat.PharmacyManagement.service.UserService;
 import jakarta.validation.Valid;
@@ -18,7 +20,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponseDto> create(@Valid @RequestBody UserRequestDto dto) {
+    public ResponseEntity<UserResponseDto> create( @RequestBody UserRequestDto dto) {
         return new ResponseEntity<>(userService.createUser(dto), HttpStatus.CREATED);
     }
 
@@ -47,5 +49,14 @@ public class UserController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<UserResponseDto> changeStatus(@PathVariable Long id, @RequestParam Boolean enabled) {
         return ResponseEntity.ok(userService.toggleUserStatus(id, enabled));
+    }
+
+    // ── 🟢 নতুন যুক্ত করা হলো: PATCH /api/users/1/change-password ──
+    @PatchMapping("/{id}/change-password")
+    public ResponseEntity<ChangePasswordResponseDto> changePassword(
+            @PathVariable Long id,
+            @Valid @RequestBody ChangePasswordRequestDto dto) {
+        ChangePasswordResponseDto response = userService.changePassword(id, dto);
+        return response.isSuccess() ? ResponseEntity.ok(response) : ResponseEntity.badRequest().body(response);
     }
 }

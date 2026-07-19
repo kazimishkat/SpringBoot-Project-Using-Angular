@@ -18,5 +18,11 @@ export class App {
   isDashboardRoute(): boolean {
     return this.router.url.startsWith('/dashboard');
   }
+
+  showSiteLayout(): boolean {
+    const url = this.router.url.split('?')[0];
+    const authRoutes = ['/login', '/forgot-password', '/verify-email', '/reset-password', '/unauthorized'];
+    return !url.startsWith('/dashboard') && !authRoutes.includes(url);
+  }
 }
 

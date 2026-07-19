@@ -1,1 +1,162 @@
-<p>stock-adjustment-details works!</p>
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Stock Adjustment Details</h3>
+      <p class="text-muted small mb-0">Audit specific physical inventory adjustments, authorization logs, and item metrics.</p>
+    </div>
+    <div>
+      <button (click)="goBack()" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm transition-all border-1">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to Registry</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert Banner -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm rounded-4" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- STATE 1: No adjustment details loaded (Lookup input helper) -->
+  <div *ngIf="!adjDetails" class="card border-0 shadow-sm rounded-4 text-center py-5 px-4 bg-white">
+    <div class="empty-state-icon mb-3">
+      <i class="bi bi-receipt-cutoff text-muted-teal display-3"></i>
+    </div>
+    <h5 class="fw-bold text-dark-teal mb-2">No Stock Adjustment Selected</h5>
+    <p class="text-muted small mx-auto mb-4" style="max-width: 450px;">
+      Please select a stock adjustment transaction from the Registry ledger, or enter a valid Stock Adjustment ID below to view audit records.
+    </p>
+    <!-- Simple ID query lookup input -->
+    <div class="d-flex justify-content-center gap-2 mx-auto" style="max-width: 320px;">
+      <input #idInput type="number" class="form-control bg-light-focus" placeholder="Enter Adjustment ID (e.g. 1)" />
+      <a [routerLink]="['/dashboard/stock-adjustments', idInput.value]" class="btn btn-mint-primary fw-semibold px-4 text-decoration-none d-flex align-items-center justify-content-center">
+        Find
+      </a>
+    </div>
+  </div>
+
+  <!-- STATE 2: Adjustment details sheet -->
+  <div *ngIf="adjDetails" class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <!-- Card header banner with gradient -->
+    <div class="bg-gradient-teal p-4 text-white d-flex align-items-center justify-content-between flex-wrap gap-3 border-0">
+      <div class="d-flex align-items-center gap-3">
+        <div class="details-avatar d-flex align-items-center justify-content-center bg-white text-teal fw-bold fs-3 rounded-circle shadow" style="width: 48px; height: 48px;">
+          <i class="bi bi-sliders"></i>
+        </div>
+        <div>
+          <h4 class="mb-1 fw-bold text-white">Adjustment: {{ adjDetails.adjustmentNumber }}</h4>
+          <div class="d-flex align-items-center gap-2 flex-wrap text-white-50">
+            <span class="small font-monospace">Adjustment ID: #{{ adjDetails.id }}</span>
+            <span class="text-white-50">•</span>
+            <span class="small">Adjustment Date: {{ adjDetails.adjustmentDate | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="badge rounded-pill px-3 py-2 fw-semibold text-sm shadow-sm"
+              [ngClass]="{
+                'bg-mint text-dark-teal': adjDetails.status === 'APPROVED',
+                'bg-light-warning text-warning': adjDetails.status === 'PENDING',
+                'bg-light-danger text-danger': adjDetails.status === 'CANCELLED'
+              }">
+          <i class="bi me-1" 
+             [ngClass]="{
+               'bi-check-circle-fill': adjDetails.status === 'APPROVED',
+               'bi-clock-fill': adjDetails.status === 'PENDING',
+               'bi-x-circle-fill': adjDetails.status === 'CANCELLED'
+             }"></i>
+          {{ adjDetails.status || 'PENDING' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Details Body -->
+    <div class="card-body p-4 bg-white">
+      <!-- Section 1: Summary -->
+      <div class="row g-4 mb-4 border-bottom pb-4">
+        <div class="col-md-4 col-sm-6 border-end">
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Inventory Branch Location</h6>
+          <div class="fw-bold text-dark fs-5 mb-1">{{ adjDetails.branchName }}</div>
+          <div class="text-muted small">Branch ID: #{{ adjDetails.branchId }}</div>
+        </div>
+        <div class="col-md-4 col-sm-6 border-end">
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Authorization Signee</h6>
+          <div class="fw-bold text-dark fs-5 mb-1" *ngIf="adjDetails.approvedBy">{{ adjDetails.approvedBy }}</div>
+          <div class="fw-bold text-muted fs-5 mb-1" *ngIf="!adjDetails.approvedBy">Pending Authorization</div>
+          <div class="text-muted small">Supervisor Approver Tag</div>
+        </div>
+        <div class="col-md-4 col-sm-6">
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Stock Lines Count</h6>
+          <div class="fw-bold text-dark fs-5 mb-1">{{ adjDetails.items ? adjDetails.items.length : 0 }} lines</div>
+          <div class="text-muted small">Discrepancy Entry Count</div>
+        </div>
+      </div>
+
+      <!-- Section 2: Items Table -->
+      <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3" style="font-size: 0.8rem;">Verified Stock Adjustments</h6>
+      <div class="table-responsive border rounded-3 mb-4 overflow-hidden shadow-xs">
+        <table class="table align-middle mb-0 custom-ledger-table">
+          <thead class="table-light text-uppercase font-size-xs fw-bold text-muted border-bottom">
+            <tr>
+              <th scope="col" class="ps-3">Medicine Brand</th>
+              <th scope="col" class="text-center">Batch Number</th>
+              <th scope="col" class="text-center">Qty Before</th>
+              <th scope="col" class="text-center">Qty After</th>
+              <th scope="col" class="text-center">System Delta</th>
+              <th scope="col">Reason</th>
+              <th scope="col" class="pe-3">Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of adjDetails.items" class="ledger-row">
+              <td class="ps-3">
+                <div class="fw-bold text-dark">{{ item.medicineBrandName || ('Medicine #' + item.batchId) }}</div>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-teal-light text-teal fw-bold font-monospace py-1.5 px-2.5 rounded">#{{ item.batchNumber || item.batchId }}</span>
+              </td>
+              <td class="text-center text-dark font-monospace fw-medium">
+                {{ item.quantityBefore }}
+              </td>
+              <td class="text-center text-dark font-monospace fw-medium">
+                {{ item.quantityAfter }}
+              </td>
+              <td class="text-center font-monospace fw-bold"
+                  [ngClass]="{
+                    'text-success': (item.quantityAfter - item.quantityBefore) > 0,
+                    'text-danger': (item.quantityAfter - item.quantityBefore) < 0,
+                    'text-muted': (item.quantityAfter - item.quantityBefore) === 0
+                  }">
+                <span *ngIf="(item.quantityAfter - item.quantityBefore) > 0">+</span>
+                {{ item.quantityAfter - item.quantityBefore }}
+              </td>
+              <td>
+                <span class="badge bg-light-warning text-warning rounded-pill px-2.5 py-1 fw-semibold text-xs">
+                  {{ item.reason.replace('_', ' ') }}
+                </span>
+              </td>
+              <td class="pe-3 text-muted small">
+                {{ item.remarks || 'No remarks recorded' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex align-items-center justify-content-end mt-4 pt-3 border-top border-light gap-2" *ngIf="adjDetails.status === 'PENDING'">
+        <button type="button" class="btn btn-outline-danger px-4 py-2 fw-semibold transition-all shadow-xs border-1" (click)="cancelAdjustment()">
+          Cancel Requisition
+        </button>
+        <button type="button" class="btn btn-mint-primary px-4 py-2 fw-semibold transition-all shadow-sm border-0" (click)="approveAdjustment()">
+          Approve Adjustment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

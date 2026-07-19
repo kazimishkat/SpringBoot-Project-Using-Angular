@@ -402,6 +402,172 @@
         </div>
       </li>
 
+      <!-- Stock Movement Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleStockMovementDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-arrow-down-up"></i>
+            <span>Stock Movement</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isStockMovementDropdownOpen" [class.bi-chevron-up]="isStockMovementDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isStockMovementDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/stock-movements" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>Stock Movement History</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/stock-movements/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>Stock Movement Details</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Stock Adjustment Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleStockAdjustmentDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-sliders"></i>
+            <span>Stock Adjustment</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isStockAdjustmentDropdownOpen" [class.bi-chevron-up]="isStockAdjustmentDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isStockAdjustmentDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/stock-adjustments/create" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>Stock Adjustment</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/stock-adjustments/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>Stock Adjustment Details</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/stock-adjustments" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>Stock Adjustment List</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Stock Transfer Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleStockTransferDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-arrow-left-right"></i>
+            <span>Stock Transfer</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isStockTransferDropdownOpen" [class.bi-chevron-up]="isStockTransferDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isStockTransferDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/stock-transfers/create" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>Create Transfer</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/stock-transfers/approve" routerLinkActive="active">
+                <i class="bi bi-clipboard-check"></i>
+                <span>Approve Transfer</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/stock-transfers/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>Stock Transfer Details</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/stock-transfers" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>Stock Transfer List</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Authentication Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleAuthDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-shield-lock-fill"></i>
+            <span>Authentication</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isAuthDropdownOpen" [class.bi-chevron-up]="isAuthDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isAuthDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/forgot-password" routerLinkActive="active">
+                <i class="bi bi-question-circle"></i>
+                <span>Forgot Password</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/login" routerLinkActive="active">
+                <i class="bi bi-box-arrow-in-right"></i>
+                <span>Login</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/reset-password" routerLinkActive="active">
+                <i class="bi bi-key"></i>
+                <span>Reset Password</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/unauthorized" routerLinkActive="active">
+                <i class="bi bi-slash-circle"></i>
+                <span>Unauthorized</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/verify-email" routerLinkActive="active">
+                <i class="bi bi-envelope-check"></i>
+                <span>Verify Email</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
       <!-- Settings Link (Placeholder) -->
       <li class="nav-item">
         <a class="nav-link d-flex align-items-center gap-3 disabled-placeholder" routerLink="/dashboard/settings">

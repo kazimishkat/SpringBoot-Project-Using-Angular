@@ -1,1 +1,208 @@
-<p>stock-adjustment-list works!</p>
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Stock Adjustment Registry</h3>
+      <p class="text-muted small mb-0">Track and review physical inventory balance modifications, branch adjustments, and reason logs.</p>
+    </div>
+    <div>
+      <button (click)="createAdjustment()" class="btn btn-mint-primary d-flex align-items-center gap-2 px-4 py-2.5 fw-semibold shadow-sm transition-all border-0">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span>New Requisition</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm rounded-4" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Filters Card -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 filter-card">
+    <div class="card-header bg-gradient-teal py-3 px-4 text-white border-0">
+      <h6 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+        <i class="bi bi-funnel-fill"></i>
+        <span>Filter Adjustment Requisitions</span>
+      </h6>
+    </div>
+    <div class="card-body p-4 bg-white">
+      <div class="row g-3">
+        <!-- Search Keyword -->
+        <div class="col-md-3 col-sm-6">
+          <label for="searchQuery" class="form-label small fw-bold text-dark-teal mb-1">Adjustment Number</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" 
+                   id="searchQuery" 
+                   name="searchQuery" 
+                   class="form-control bg-light-focus border-start-0" 
+                   placeholder="e.g. ADJ-123456" 
+                   [(ngModel)]="searchQuery"
+                   (input)="searchAdjustment()" />
+          </div>
+        </div>
+
+        <!-- Reason -->
+        <div class="col-md-3 col-sm-6">
+          <label for="selectedReason" class="form-label small fw-bold text-dark-teal mb-1">Adjustment Reason</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-info-circle"></i></span>
+            <select id="selectedReason" 
+                    name="selectedReason" 
+                    class="form-select bg-light-focus border-start-0" 
+                    [(ngModel)]="selectedReason"
+                    (change)="filterByReason()">
+              <option value="">All Reasons</option>
+              <option *ngFor="let r of reasons" [value]="r">{{ r.replace('_', ' ') }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="col-md-3 col-sm-6">
+          <label for="selectedStatus" class="form-label small fw-bold text-dark-teal mb-1">Workflow Status</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-check-circle"></i></span>
+            <select id="selectedStatus" 
+                    name="selectedStatus" 
+                    class="form-select bg-light-focus border-start-0" 
+                    [(ngModel)]="selectedStatus"
+                    (change)="filterByStatus()">
+              <option value="">All Statuses</option>
+              <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Date -->
+        <div class="col-md-3 col-sm-6">
+          <label for="filterDate" class="form-label small fw-bold text-dark-teal mb-1">Adjustment Date</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+            <input type="date" 
+                   id="filterDate" 
+                   name="filterDate" 
+                   class="form-control bg-light-focus border-start-0" 
+                   [(ngModel)]="filterDate"
+                   (change)="filterByDate()" />
+          </div>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12 d-flex justify-content-end">
+          <button type="button" 
+                  class="btn btn-outline-secondary px-4 py-2 fw-semibold border-1" 
+                  (click)="refresh()">
+            Reset Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data List Card -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+      <h5 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
+        <i class="bi bi-journal-text"></i>
+        <span>Stock Adjustment Ledger</span>
+      </h5>
+      <span class="badge bg-mint text-dark-teal px-3 py-2 rounded-pill fw-bold">
+        Total: {{ adjustments.length }}
+      </span>
+    </div>
+
+    <div class="card-body p-0 bg-white">
+      <div class="table-responsive" *ngIf="adjustments.length > 0; else emptyState">
+        <table class="table table-hover align-middle mb-0 custom-adjustment-table">
+          <thead class="table-light text-uppercase font-size-xs fw-bold text-muted border-bottom">
+            <tr>
+              <th scope="col" class="ps-4">ID</th>
+              <th scope="col">Adjustment Ref</th>
+              <th scope="col">Branch Name</th>
+              <th scope="col">Adjustment Date</th>
+              <th scope="col" class="text-center">Items Count</th>
+              <th scope="col">Status</th>
+              <th scope="col">Approved By</th>
+              <th scope="col" class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of adjustments" class="adjustment-row">
+              <td class="ps-4">
+                <span class="badge bg-teal-light text-teal fw-bold font-monospace py-1.5 px-2.5 rounded">
+                  #{{ item.id }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark fw-bold">{{ item.adjustmentNumber }}</span>
+              </td>
+              <td>
+                <span class="text-dark fw-semibold">{{ item.branchName }}</span>
+                <span class="text-muted small d-block font-monospace">Branch ID: #{{ item.branchId }}</span>
+              </td>
+              <td>
+                <span class="text-dark">{{ item.adjustmentDate | date:'mediumDate' }}</span>
+              </td>
+              <td class="text-center fw-semibold text-dark">
+                {{ item.items ? item.items.length : 0 }}
+              </td>
+              <td>
+                <span class="badge rounded-pill px-3 py-1.5 fw-semibold text-xs transition-all shadow-xs"
+                      [ngClass]="{
+                        'bg-mint text-dark-teal': item.status === 'APPROVED',
+                        'bg-light-warning text-warning': item.status === 'PENDING',
+                        'bg-light-danger text-danger': item.status === 'CANCELLED'
+                      }">
+                  {{ item.status || 'PENDING' }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark" *ngIf="item.approvedBy">{{ item.approvedBy }}</span>
+                <span class="text-muted small" *ngIf="!item.approvedBy">N/A</span>
+              </td>
+              <td class="text-end pe-4">
+                <div class="d-flex justify-content-end gap-2">
+                  <button (click)="viewDetails(item.id)" 
+                          class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-xs border-1"
+                          title="View detailed report">
+                    <i class="bi bi-eye-fill"></i>
+                    <span>Details</span>
+                  </button>
+                  <button *ngIf="item.status === 'PENDING'" 
+                          (click)="cancelAdjustment(item.id)" 
+                          class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-xs border-1"
+                          title="Cancel requisition">
+                    <i class="bi bi-x-circle-fill"></i>
+                    <span>Cancel</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <ng-template #emptyState>
+        <div class="text-center py-5 px-4 bg-white">
+          <div class="empty-state-icon mb-3">
+            <i class="bi bi-sliders text-muted-teal display-3"></i>
+          </div>
+          <h5 class="fw-bold text-dark-teal mb-2">No Stock Adjustments Found</h5>
+          <p class="text-muted small mx-auto mb-4" style="max-width: 450px;">
+            There are no stock adjustment entries in the system. Create a new adjustment requisition to record inventory changes.
+          </p>
+          <button (click)="createAdjustment()" class="btn btn-mint-primary px-4 py-2.5 fw-bold shadow-sm border-0">
+            <i class="bi bi-plus-circle-fill me-2"></i>Create Stock Adjustment
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

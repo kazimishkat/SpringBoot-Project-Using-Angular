@@ -1,1 +1,234 @@
-<p>stock-movement-history works!</p>
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Stock Movement History</h3>
+      <p class="text-muted small mb-0">Monitor and audit all real-time inventory adjustments, sales, returns, and branch transfers.</p>
+    </div>
+    <div>
+      <button (click)="refresh()" class="btn btn-mint-primary d-flex align-items-center gap-2 px-4 py-2.5 fw-semibold shadow-sm transition-all text-decoration-none border-0">
+        <i class="bi bi-arrow-counterclockwise"></i>
+        <span>Refresh Ledger</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm rounded-4" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Advanced Search & Filter Controls -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 filter-card">
+    <div class="card-header bg-gradient-teal py-3 px-4 text-white border-0">
+      <h6 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+        <i class="bi bi-funnel-fill"></i>
+        <span>Filter Stock Movements</span>
+      </h6>
+    </div>
+    <div class="card-body p-4 bg-white">
+      <div class="row g-3">
+        <!-- Search query (Medicine Name, Batch, Ref) -->
+        <div class="col-md-4 col-sm-6">
+          <label for="searchQuery" class="form-label small fw-bold text-dark-teal mb-1">Search Keywords</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" 
+                   id="searchQuery" 
+                   name="searchQuery" 
+                   class="form-control bg-light-focus border-start-0" 
+                   placeholder="Medicine, batch, or ref..." 
+                   [(ngModel)]="searchQuery"
+                   (input)="searchMovement()" />
+          </div>
+        </div>
+
+        <!-- Branch ID Filter -->
+        <div class="col-md-4 col-sm-6">
+          <label for="branchIdFilter" class="form-label small fw-bold text-dark-teal mb-1">Branch ID</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-shop"></i></span>
+            <input type="number" 
+                   id="branchIdFilter" 
+                   name="branchIdFilter" 
+                   class="form-control bg-light-focus border-start-0" 
+                   placeholder="e.g. 1" 
+                   [(ngModel)]="branchIdFilter"
+                   (change)="filterByBranch()" />
+          </div>
+        </div>
+
+        <!-- Medicine Name/ID Filter -->
+        <div class="col-md-4 col-sm-6">
+          <label for="medicineIdFilter" class="form-label small fw-bold text-dark-teal mb-1">Medicine Name / ID</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-capsule"></i></span>
+            <input type="text" 
+                   id="medicineIdFilter" 
+                   name="medicineIdFilter" 
+                   class="form-control bg-light-focus border-start-0" 
+                   placeholder="e.g. Paracetamol" 
+                   [(ngModel)]="medicineIdFilter"
+                   (input)="filterByMedicine()" />
+          </div>
+        </div>
+
+        <!-- Batch ID Filter -->
+        <div class="col-md-4 col-sm-6">
+          <label for="batchIdFilter" class="form-label small fw-bold text-dark-teal mb-1">Batch ID</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-hash"></i></span>
+            <input type="number" 
+                   id="batchIdFilter" 
+                   name="batchIdFilter" 
+                   class="form-control bg-light-focus border-start-0" 
+                   placeholder="e.g. 10" 
+                   [(ngModel)]="batchIdFilter"
+                   (change)="filterByBatch()" />
+          </div>
+        </div>
+
+        <!-- Movement Type Filter -->
+        <div class="col-md-4 col-sm-6">
+          <label for="selectedTypeFilter" class="form-label small fw-bold text-dark-teal mb-1">Movement Type</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-activity"></i></span>
+            <select id="selectedTypeFilter" 
+                    name="selectedTypeFilter" 
+                    class="form-select bg-light-focus border-start-0" 
+                    [(ngModel)]="selectedTypeFilter"
+                    (change)="filterByMovementType()">
+              <option value="">All Types</option>
+              <option *ngFor="let type of movementTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Created Date Filter -->
+        <div class="col-md-4 col-sm-6">
+          <label for="filterDateStr" class="form-label small fw-bold text-dark-teal mb-1">Movement Date</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+            <input type="date" 
+                   id="filterDateStr" 
+                   name="filterDateStr" 
+                   class="form-control bg-light-focus border-start-0" 
+                   [(ngModel)]="filterDateStr"
+                   (change)="filterByDate()" />
+          </div>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-12 d-flex justify-content-end gap-2">
+          <button type="button" 
+                  class="btn btn-outline-secondary px-4 py-2 fw-semibold" 
+                  (click)="refresh()">
+            Reset Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+      <h5 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
+        <i class="bi bi-journal-text"></i>
+        <span>Movement Ledger Records</span>
+      </h5>
+      <span class="badge bg-mint text-dark-teal px-3 py-2 rounded-pill fw-bold">
+        Total: {{ movements.length }}
+      </span>
+    </div>
+
+    <div class="card-body p-0 bg-white">
+      <div class="table-responsive" *ngIf="movements.length > 0; else emptyState">
+        <table class="table table-hover align-middle mb-0 custom-movement-table">
+          <thead class="table-light text-uppercase font-size-xs fw-bold text-muted border-bottom">
+            <tr>
+              <th scope="col" class="ps-4">ID</th>
+              <th scope="col">Medicine & Batch</th>
+              <th scope="col">Branch</th>
+              <th scope="col">Movement Type</th>
+              <th scope="col" class="text-center">Quantity</th>
+              <th scope="col">Reference</th>
+              <th scope="col">Created Date</th>
+              <th scope="col" class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of movements" class="movement-row">
+              <td class="ps-4">
+                <span class="badge bg-teal-light text-teal fw-bold font-monospace py-1.5 px-2.5 rounded">
+                  #{{ m.id }}
+                </span>
+              </td>
+              <td>
+                <span class="text-dark fw-bold d-block">{{ m.medicineName }}</span>
+                <span class="text-muted small d-block font-monospace">Batch: {{ m.batchNumber }} (ID: {{ m.batchId }})</span>
+              </td>
+              <td>
+                <span class="text-dark fw-semibold">{{ m.branchName }}</span>
+                <span class="text-muted small d-block font-monospace">Branch ID: #{{ m.branchId }}</span>
+              </td>
+              <td>
+                <span class="badge rounded-pill px-3 py-1.5 fw-semibold text-xs transition-all shadow-xs"
+                      [ngClass]="{
+                        'bg-mint text-dark-teal': m.movementType === 'PURCHASE_RECEIVED' || m.movementType === 'TRANSFER_IN' || m.movementType === 'SALE_RETURN' || m.movementType === 'ADJUSTMENT_INCREASE',
+                        'bg-light-warning text-warning': m.movementType === 'TRANSFER_OUT',
+                        'bg-light-danger text-danger': m.movementType === 'SALE' || m.movementType === 'PURCHASE_RETURN' || m.movementType === 'ADJUSTMENT_DECREASE' || m.movementType === 'EXPIRED_WRITE_OFF' || m.movementType === 'DAMAGED_WRITE_OFF'
+                      }">
+                  {{ m.movementType.replace('_', ' ') }}
+                </span>
+              </td>
+              <td class="text-center fw-bold font-monospace fs-6"
+                  [ngClass]="{
+                    'text-success': m.movementType === 'PURCHASE_RECEIVED' || m.movementType === 'TRANSFER_IN' || m.movementType === 'SALE_RETURN' || m.movementType === 'ADJUSTMENT_INCREASE',
+                    'text-danger': m.movementType === 'SALE' || m.movementType === 'TRANSFER_OUT' || m.movementType === 'PURCHASE_RETURN' || m.movementType === 'ADJUSTMENT_DECREASE' || m.movementType === 'EXPIRED_WRITE_OFF' || m.movementType === 'DAMAGED_WRITE_OFF'
+                  }">
+                <span *ngIf="m.movementType === 'PURCHASE_RECEIVED' || m.movementType === 'TRANSFER_IN' || m.movementType === 'SALE_RETURN' || m.movementType === 'ADJUSTMENT_INCREASE'">+</span>
+                <span *ngIf="m.movementType === 'SALE' || m.movementType === 'TRANSFER_OUT' || m.movementType === 'PURCHASE_RETURN' || m.movementType === 'ADJUSTMENT_DECREASE' || m.movementType === 'EXPIRED_WRITE_OFF' || m.movementType === 'DAMAGED_WRITE_OFF'">-</span>
+                {{ m.quantity }}
+              </td>
+              <td>
+                <span class="text-dark d-block small" *ngIf="m.referenceType">{{ m.referenceType }}</span>
+                <span class="text-muted font-monospace small" *ngIf="m.referenceId">ID: #{{ m.referenceId }}</span>
+                <span class="text-muted small" *ngIf="!m.referenceType && !m.referenceId">N/A</span>
+              </td>
+              <td>
+                <span class="text-dark d-block">{{ m.createdAt | date:'medium' }}</span>
+                <span class="text-muted small d-block">By: {{ m.createdBy || 'System' }}</span>
+              </td>
+              <td class="text-end pe-4">
+                <button (click)="goToDetails(m.id)" 
+                        class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1.5 px-3 py-2 fw-semibold shadow-xs border-1"
+                        title="View detailed audit card">
+                  <i class="bi bi-eye-fill"></i>
+                  <span>Details</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State -->
+      <ng-template #emptyState>
+        <div class="text-center py-5 px-4 bg-white">
+          <div class="empty-state-icon mb-3">
+            <i class="bi bi-arrow-down-up text-muted-teal display-3"></i>
+          </div>
+          <h5 class="fw-bold text-dark-teal mb-2">No Stock Movements Found</h5>
+          <p class="text-muted small mx-auto mb-4" style="max-width: 450px;">
+            There are no stock movements recorded in the system. Use the filters above to adjust your search or input stock transactions to see live logs.
+          </p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

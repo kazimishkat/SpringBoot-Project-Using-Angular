@@ -1,1 +1,127 @@
-<p>stock-movement-details works!</p>
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Stock Movement Details</h3>
+      <p class="text-muted small mb-0">Audit specific inventory changes, branch tracking, and reference transactions.</p>
+    </div>
+    <div>
+      <button (click)="goBack()" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm transition-all border-1">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to History</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert Banner -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm rounded-4" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- STATE 1: No movement details loaded (Prompt or selection message) -->
+  <div *ngIf="!movementDetails" class="card border-0 shadow-sm rounded-4 text-center py-5 px-4 bg-white">
+    <div class="empty-state-icon mb-3">
+      <i class="bi bi-receipt-cutoff text-muted-teal display-3"></i>
+    </div>
+    <h5 class="fw-bold text-dark-teal mb-2">No Stock Movement Selected</h5>
+    <p class="text-muted small mx-auto mb-4" style="max-width: 450px;">
+      Please select a stock movement transaction from the History ledger, or enter a valid Stock Movement ID below to view audit records.
+    </p>
+    <!-- Simple ID query lookup input -->
+    <div class="d-flex justify-content-center gap-2 mx-auto" style="max-width: 320px;">
+      <input #idInput type="number" class="form-control bg-light-focus" placeholder="Enter Movement ID (e.g. 1)" />
+      <a [routerLink]="['/dashboard/stock-movements', idInput.value]" class="btn btn-mint-primary fw-semibold px-4 text-decoration-none d-flex align-items-center justify-content-center">
+        Find
+      </a>
+    </div>
+  </div>
+
+  <!-- STATE 2: Movement details sheet (Invoice style) -->
+  <div *ngIf="movementDetails" class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <!-- Card header banner with gradient -->
+    <div class="bg-gradient-teal p-4 text-white d-flex align-items-center justify-content-between flex-wrap gap-3 border-0">
+      <div class="d-flex align-items-center gap-3">
+        <div class="details-avatar d-flex align-items-center justify-content-center bg-white text-teal fw-bold fs-3 rounded-circle shadow" style="width: 48px; height: 48px;">
+          <i class="bi bi-arrow-down-up"></i>
+        </div>
+        <div>
+          <h4 class="mb-1 fw-bold text-white">Movement ID: #{{ movementDetails.id }}</h4>
+          <div class="d-flex align-items-center gap-2 flex-wrap text-white-50">
+            <span class="small font-monospace">Created Date: {{ movementDetails.createdAt | date:'medium' }}</span>
+            <span class="text-white-50">•</span>
+            <span class="small">By Operator: {{ movementDetails.createdBy || 'System' }}</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="badge rounded-pill px-3 py-2 fw-semibold text-sm shadow-sm"
+              [ngClass]="{
+                'bg-mint text-dark-teal': movementDetails.movementType === 'PURCHASE_RECEIVED' || movementDetails.movementType === 'TRANSFER_IN' || movementDetails.movementType === 'SALE_RETURN' || movementDetails.movementType === 'ADJUSTMENT_INCREASE',
+                'bg-light-warning text-warning': movementDetails.movementType === 'TRANSFER_OUT',
+                'bg-light-danger text-danger': movementDetails.movementType === 'SALE' || movementDetails.movementType === 'PURCHASE_RETURN' || movementDetails.movementType === 'ADJUSTMENT_DECREASE' || movementDetails.movementType === 'EXPIRED_WRITE_OFF' || movementDetails.movementType === 'DAMAGED_WRITE_OFF'
+              }">
+          {{ movementDetails.movementType.replace('_', ' ') }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Details Body -->
+    <div class="card-body p-4 bg-white">
+      <!-- Section 1: Quick details / metrics -->
+      <div class="row g-4 mb-4 border-bottom pb-4">
+        <div class="col-md-3 col-sm-6 border-end">
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Medicine Catalog Item</h6>
+          <div class="fw-bold text-dark fs-5 mb-1">{{ movementDetails.medicineName }}</div>
+          <div class="text-muted small">Batch ID: #{{ movementDetails.batchId }}</div>
+        </div>
+        <div class="col-md-3 col-sm-6 border-end">
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Batch Identification</h6>
+          <div class="fw-bold text-dark fs-5 mb-1 font-monospace">{{ movementDetails.batchNumber }}</div>
+          <div class="text-muted small">Allocation Stock ID</div>
+        </div>
+        <div class="col-md-3 col-sm-6 border-end">
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Location/Branch</h6>
+          <div class="fw-bold text-dark fs-5 mb-1">{{ movementDetails.branchName }}</div>
+          <div class="text-muted small">Branch ID: #{{ movementDetails.branchId }}</div>
+        </div>
+        <div class="col-md-3 col-sm-6 text-md-center">
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Quantity Impact</h6>
+          <div class="fw-bold fs-4 font-monospace"
+               [ngClass]="{
+                 'text-success': movementDetails.movementType === 'PURCHASE_RECEIVED' || movementDetails.movementType === 'TRANSFER_IN' || movementDetails.movementType === 'SALE_RETURN' || movementDetails.movementType === 'ADJUSTMENT_INCREASE',
+                 'text-danger': movementDetails.movementType === 'SALE' || movementDetails.movementType === 'TRANSFER_OUT' || movementDetails.movementType === 'PURCHASE_RETURN' || movementDetails.movementType === 'ADJUSTMENT_DECREASE' || movementDetails.movementType === 'EXPIRED_WRITE_OFF' || movementDetails.movementType === 'DAMAGED_WRITE_OFF'
+               }">
+            <span *ngIf="movementDetails.movementType === 'PURCHASE_RECEIVED' || movementDetails.movementType === 'TRANSFER_IN' || movementDetails.movementType === 'SALE_RETURN' || movementDetails.movementType === 'ADJUSTMENT_INCREASE'">+</span>
+            <span *ngIf="movementDetails.movementType === 'SALE' || movementDetails.movementType === 'TRANSFER_OUT' || movementDetails.movementType === 'PURCHASE_RETURN' || movementDetails.movementType === 'ADJUSTMENT_DECREASE' || movementDetails.movementType === 'EXPIRED_WRITE_OFF' || movementDetails.movementType === 'DAMAGED_WRITE_OFF'">-</span>
+            {{ movementDetails.quantity }}
+          </div>
+          <div class="text-muted small">Total Units Affected</div>
+        </div>
+      </div>
+
+      <!-- Section 2: Reference and Audit trails -->
+      <div class="mb-4">
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3" style="font-size: 0.8rem;">Audit Reference Links</h6>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="p-3 border rounded-3 bg-light shadow-xs h-100">
+              <div class="text-muted small fw-semibold">Reference Document Type</div>
+              <div class="fw-bold text-dark mt-1 fs-5">{{ movementDetails.referenceType || 'No Linked Reference Document' }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 border rounded-3 bg-light shadow-xs h-100">
+              <div class="text-muted small fw-semibold">Reference Document ID</div>
+              <div class="fw-bold font-monospace text-dark mt-1 fs-5" *ngIf="movementDetails.referenceId">#{{ movementDetails.referenceId }}</div>
+              <div class="fw-bold text-muted mt-1 fs-5" *ngIf="!movementDetails.referenceId">N/A</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

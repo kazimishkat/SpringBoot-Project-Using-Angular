@@ -88,7 +88,7 @@ export class BranchInventoryDetails implements OnInit {
   // =====================================================
   /** Fetch audit trail allocation lines using the centralized stock movement service API */
   private fetchBatchMovementHistory(batchId: number): void {
-    this.movementService.getMovementsByBatchId(batchId).subscribe({
+    this.movementService.getByBatch(batchId).subscribe({
       next: (logs) => {
         this.movementHistory = logs || [];
         this.cdr.markForCheck();

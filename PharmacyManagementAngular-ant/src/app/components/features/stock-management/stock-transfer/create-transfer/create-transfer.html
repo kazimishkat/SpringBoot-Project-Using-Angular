@@ -1,1 +1,189 @@
-<p>create-transfer works!</p>
+<div class="container-fluid p-0 animate-fade-in">
+  <form #transferForm="ngForm" (ngSubmit)="saveTransfer()" novalidate>
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">New Stock Transfer</h3>
+        <p class="text-muted small mb-0">Initiate internal stock relocation between active pharmacy branches.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" (click)="cancel()" class="btn btn-outline-secondary px-4 py-2.5 fw-semibold shadow-sm transition-all border-1">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-mint-primary px-4 py-2.5 fw-semibold shadow-sm transition-all border-0">
+          Save Transfer
+        </button>
+      </div>
+    </div>
+
+    <!-- Alert Panel -->
+    <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm rounded-4" role="alert">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+      <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+    </div>
+
+    <!-- Meta Details Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+      <div class="card-header bg-gradient-teal py-3 px-4 text-white border-0">
+        <h6 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+          <i class="bi bi-info-circle-fill"></i>
+          <span>Transfer Manifest Info</span>
+        </h6>
+      </div>
+      <div class="card-body p-4 bg-white">
+        <div class="row g-3">
+          <!-- Transfer Number -->
+          <div class="col-md-3">
+            <label for="transferNumber" class="form-label small fw-bold text-dark-teal mb-1">Transfer Number</label>
+            <input type="text" 
+                   id="transferNumber" 
+                   name="transferNumber" 
+                   class="form-control bg-light border-0 font-monospace" 
+                   [value]="transferRequest.transferNumber" 
+                   readonly />
+          </div>
+
+          <!-- Source Branch -->
+          <div class="col-md-3">
+            <label for="fromBranchId" class="form-label small fw-bold text-dark-teal mb-1">Source Branch (From)</label>
+            <select id="fromBranchId" 
+                    name="fromBranchId" 
+                    class="form-select bg-light-focus" 
+                    [(ngModel)]="transferRequest.fromBranchId" 
+                    required
+                    #fromBranchModel="ngModel"
+                    [class.is-invalid]="(submitted || fromBranchModel.touched) && fromBranchModel.invalid">
+              <option [value]="undefined" disabled selected>Select Source</option>
+              <option *ngFor="let b of branches" [value]="b.id">{{ b.name }} (ID: #{{ b.id }})</option>
+            </select>
+            <div class="invalid-feedback">Source Branch is required.</div>
+          </div>
+
+          <!-- Destination Branch -->
+          <div class="col-md-3">
+            <label for="toBranchId" class="form-label small fw-bold text-dark-teal mb-1">Destination Branch (To)</label>
+            <select id="toBranchId" 
+                    name="toBranchId" 
+                    class="form-select bg-light-focus" 
+                    [(ngModel)]="transferRequest.toBranchId" 
+                    required
+                    #toBranchModel="ngModel"
+                    [class.is-invalid]="(submitted || toBranchModel.touched) && toBranchModel.invalid">
+              <option [value]="undefined" disabled selected>Select Destination</option>
+              <option *ngFor="let b of branches" [value]="b.id">{{ b.name }} (ID: #{{ b.id }})</option>
+            </select>
+            <div class="invalid-feedback">Destination Branch is required.</div>
+          </div>
+
+          <!-- Date -->
+          <div class="col-md-3">
+            <label for="transferDate" class="form-label small fw-bold text-dark-teal mb-1">Transfer Date</label>
+            <input type="date" 
+                   id="transferDate" 
+                   name="transferDate" 
+                   class="form-control bg-light-focus" 
+                   [(ngModel)]="transferRequest.transferDate" 
+                   required
+                   #dateModel="ngModel"
+                   [class.is-invalid]="(submitted || dateModel.touched) && dateModel.invalid" />
+            <div class="invalid-feedback">Date is required.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items List Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+      <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+        <h5 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
+          <i class="bi bi-box-seam-fill"></i>
+          <span>Transfer Items Ledger</span>
+        </h5>
+        <button type="button" (click)="addItemRow()" class="btn btn-sm btn-outline-mint d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold border-1">
+          <i class="bi bi-plus-lg"></i>
+          <span>Add Line</span>
+        </button>
+      </div>
+
+      <div class="card-body p-0 bg-white">
+        <div class="table-responsive">
+          <table class="table align-middle mb-0 custom-transfer-table">
+            <thead class="table-light text-uppercase font-size-xs fw-bold text-muted border-bottom">
+              <tr>
+                <th scope="col" style="min-width: 250px;" class="ps-4">Medicine Name</th>
+                <th scope="col" style="min-width: 200px;">Batch ID</th>
+                <th scope="col" style="width: 150px;" class="text-center">Available Stock</th>
+                <th scope="col" style="width: 150px;" class="text-center">Transfer Qty</th>
+                <th scope="col" style="width: 60px;" class="text-end pe-4"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of transferRequest.items; let i = index" class="transfer-row">
+                <!-- Medicine Selection -->
+                <td class="ps-4">
+                  <select [name]="'medicineId_' + i" 
+                          class="form-select bg-light-focus" 
+                          ngModel 
+                          (ngModelChange)="onMedicineChange($event, i)"
+                          required
+                          #medSelect="ngModel"
+                          [class.is-invalid]="(submitted || medSelect.touched) && medSelect.invalid">
+                    <option [value]="undefined" disabled selected>Select Medicine</option>
+                    <option *ngFor="let m of medicines" [value]="m.id">{{ m.brandName }}</option>
+                  </select>
+                </td>
+
+                <!-- Batch Selection -->
+                <td>
+                  <select [name]="'batchId_' + i" 
+                          class="form-select bg-light-focus" 
+                          [(ngModel)]="item.batchId" 
+                          (ngModelChange)="checkStock($event, i)"
+                          required
+                          #batchSelect="ngModel"
+                          [class.is-invalid]="(submitted || batchSelect.touched) && batchSelect.invalid">
+                    <option [value]="undefined" disabled selected>Select Batch</option>
+                    <option *ngFor="let b of batchesMap[i]" [value]="b.id">#{{ b.batchNumber }} (Stock: {{ b.currentStock }})</option>
+                  </select>
+                </td>
+
+                <!-- Available Stock -->
+                <td class="text-center">
+                  <span class="badge bg-teal-light text-teal fw-bold font-monospace py-1.5 px-3 rounded fs-6">
+                    {{ stockCheckCache[i + '-' + item.batchId] !== undefined ? stockCheckCache[i + '-' + item.batchId] : '-' }}
+                  </span>
+                </td>
+
+                <!-- Transfer Qty -->
+                <td class="text-center">
+                  <input type="number" 
+                         [name]="'qty_' + i" 
+                         class="form-control text-center bg-light-focus" 
+                         [(ngModel)]="item.sentQuantity"
+                         (change)="checkStock(item.batchId, i)"
+                         min="1"
+                         required
+                         #qtySelect="ngModel"
+                         [class.is-invalid]="(submitted || qtySelect.touched) && qtySelect.invalid" />
+                </td>
+
+                <!-- Delete Action -->
+                <td class="text-end pe-4">
+                  <button type="button" 
+                          (click)="removeItemRow(i)" 
+                          class="btn btn-sm btn-link text-danger p-0"
+                          [disabled]="transferRequest.items.length === 1">
+                    <i class="bi bi-trash-fill fs-5"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

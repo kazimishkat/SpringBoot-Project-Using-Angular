@@ -19,6 +19,10 @@ export class Sidebar {
   isDeliveryCompanyDropdownOpen = false;
   isPurchaseOrderDropdownOpen = false;
   isGrnDropdownOpen = false;
+  isStockMovementDropdownOpen = false;
+  isStockAdjustmentDropdownOpen = false;
+  isStockTransferDropdownOpen = false;
+  isAuthDropdownOpen = false;
 
   toggleSupplierDropdown(): void {
     this.isSupplierDropdownOpen = !this.isSupplierDropdownOpen;
@@ -58,6 +62,22 @@ export class Sidebar {
 
   toggleGrnDropdown(): void {
     this.isGrnDropdownOpen = !this.isGrnDropdownOpen;
+  }
+
+  toggleStockMovementDropdown(): void {
+    this.isStockMovementDropdownOpen = !this.isStockMovementDropdownOpen;
+  }
+
+  toggleStockAdjustmentDropdown(): void {
+    this.isStockAdjustmentDropdownOpen = !this.isStockAdjustmentDropdownOpen;
+  }
+
+  toggleStockTransferDropdown(): void {
+    this.isStockTransferDropdownOpen = !this.isStockTransferDropdownOpen;
+  }
+
+  toggleAuthDropdown(): void {
+    this.isAuthDropdownOpen = !this.isAuthDropdownOpen;
   }
 }
 

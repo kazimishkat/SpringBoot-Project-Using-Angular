@@ -1,13 +1,13 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { ActivatedRoute} from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { StockTransferService } from '../../../../../services/stock-transfer.service';
 import { StockTransferResponse, StockTransferItemRequest, TransferStatus } from '../../../../../models/stock-transfer.model';
 
 @Component({
   selector: 'app-approve-transfer',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './approve-transfer.html',
   styleUrl: './approve-transfer.css'
 })

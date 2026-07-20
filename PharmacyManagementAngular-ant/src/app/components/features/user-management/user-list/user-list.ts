@@ -37,9 +37,9 @@ export class UserList implements OnInit {
       next: (data) => {
         this.masterLogs = data || [];
         this.users = [...this.masterLogs];
-        this.cdr.markForCheck(); // Recalculate component tree graphics
+        this.cdr.markForCheck();
       },
-      error: (err) => this.handleError('Failed to fetch personnel directory logs', err)
+      error: (err) => this.handleError('Failed to fetch user directory logs', err)
     });
   }
 
@@ -55,33 +55,33 @@ export class UserList implements OnInit {
     const nextStatus = !currentStatus;
     this.userService.toggleUserStatus(id, nextStatus).subscribe({
       next: () => {
-        alert(`Account state shifted successfully.`);
+        alert('User status toggled successfully.');
         this.loadUsers();
       },
-      error: (err) => this.handleError('Status alteration rejected', err)
+      error: (err) => this.handleError('Status change failed', err)
     });
   }
 
   addUser(): void {
-    this.router.navigate(['/users/add']);
+    this.router.navigate(['/dashboard/users/add']);
   }
 
   editUser(id: number): void {
-    this.router.navigate(['/users/edit', id]);
+    this.router.navigate(['/dashboard/users/edit', id]);
   }
 
   viewDetails(id: number): void {
-    this.router.navigate(['/users', id]);
+    this.router.navigate(['/dashboard/users', id]);
   }
 
   deleteUser(id: number): void {
-    if (confirm('Permanently wipe this user account credential ledger line?')) {
+    if (confirm('Permanently delete this user account?')) {
       this.userService.deleteUser(id).subscribe({
         next: () => {
-          alert('User records deleted from central schema.');
+          alert('User record deleted successfully.');
           this.loadUsers();
         },
-        error: (err) => this.handleError('Deletion procedure aborted by security rules', err)
+        error: (err) => this.handleError('Deletion procedure failed', err)
       });
     }
   }
@@ -98,9 +98,9 @@ export class UserList implements OnInit {
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.trim().toLowerCase();
       result = result.filter(x => 
-        x.fullName.toLowerCase().includes(q) || 
-        x.username.toLowerCase().includes(q) || 
-        x.email.toLowerCase().includes(q)
+        x.fullName?.toLowerCase().includes(q) || 
+        x.username?.toLowerCase().includes(q) || 
+        x.email?.toLowerCase().includes(q)
       );
     }
 

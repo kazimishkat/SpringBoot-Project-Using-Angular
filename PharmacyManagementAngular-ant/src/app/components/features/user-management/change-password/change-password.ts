@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule, Location } from '@angular/common';
 import { UserService } from '../../../../services/user.service';
+import { StorageService } from '../../../../services/storage.service';
 import { ChangePasswordRequest } from '../../../../models/user.model';
 
 @Component({
@@ -14,7 +15,7 @@ export class ChangePassword implements OnInit {
 
   @ViewChild('pwdForm') pwdForm!: NgForm;
 
-  activeSessionUserId = 1; // Simulated session index locator mapping
+  activeSessionUserId!: number;
   pwdRequest!: ChangePasswordRequest;
   
   submitted = false;
@@ -23,11 +24,18 @@ export class ChangePassword implements OnInit {
 
   constructor(
     private userService: UserService,
+    private storageService: StorageService,
     private location: Location,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    const user = this.storageService.getUser();
+    if (user && user.userId) {
+      this.activeSessionUserId = user.userId;
+    } else {
+      this.activeSessionUserId = 1; // Fallback ID
+    }
     this.resetForm();
   }
 
@@ -36,9 +44,8 @@ export class ChangePassword implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // Frontend pre-validation assertion checklist rule
     if (this.pwdRequest.newPassword !== this.pwdRequest.confirmPassword) {
-      this.errorMessage = 'New password and confirmation password tokens mismatch.';
+      this.errorMessage = 'New password and confirmation password mismatch.';
       return;
     }
 
@@ -48,19 +55,18 @@ export class ChangePassword implements OnInit {
 
     this.userService.changePassword(this.activeSessionUserId, this.pwdRequest).subscribe({
       next: (res) => {
-        // Evaluate dynamic status parameters mapped from Spring controller body return rules
         if (res.success) {
-          this.successMessage = res.message || 'Credential arrays modified successfully inside vault.';
+          this.successMessage = res.message || 'Password changed successfully.';
           alert(this.successMessage);
           this.resetForm();
         } else {
-          this.errorMessage = res.message || 'Validation rejected by crypt engine policies.';
+          this.errorMessage = res.message || 'Password change request rejected.';
           this.cdr.markForCheck();
         }
       },
       error: (err) => {
         console.error(err);
-        this.errorMessage = `Vault patch process failed: ${err.error?.message || err.error || err.message || 'Server Fault'}`;
+        this.errorMessage = `Password change failed: ${err.error?.message || err.error || err.message || 'Server Exception'}`;
         this.cdr.markForCheck();
       }
     });

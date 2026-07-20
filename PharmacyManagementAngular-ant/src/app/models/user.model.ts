@@ -19,12 +19,13 @@ export enum UserRole {
 // ==========================================
 export interface UserRequest extends BaseEntity {
   username: string;
-  password?: string; // Optional during specific profiles updates patches
+  password?: string; // Optional during specific profile update patches
   fullName: string;
   email: string;
   phone?: string;
   role: UserRole;
   branchId?: number;
+  image?: File | string; // Local image payload reference
 }
 
 // ==========================================
@@ -36,6 +37,7 @@ export interface UserResponse extends BaseEntity {
   fullName: string;
   email: string;
   phone: string;
+  image?: string; // 🟢 Backend-provided profile image path/filename
   role: UserRole;
   branchId: number;
   branchName: string;

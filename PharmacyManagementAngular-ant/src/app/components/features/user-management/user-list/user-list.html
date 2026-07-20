@@ -81,8 +81,11 @@
             <!-- User Profile (Avatar & Username) -->
             <td class="px-4 py-3">
               <div class="d-flex align-items-center gap-3">
-                <div class="avatar-circle bg-mint text-dark-teal fw-bold">
-                  {{ user.fullName.charAt(0).toUpperCase() }}
+                <div class="avatar-circle bg-mint text-dark-teal fw-bold overflow-hidden flex-shrink-0">
+                  <img *ngIf="user.image; else letterAvatar" [src]="user.image" alt="{{ user.fullName }}" class="w-100 h-100 object-fit-cover" />
+                  <ng-template #letterAvatar>
+                    <span>{{ user.fullName.charAt(0).toUpperCase() }}</span>
+                  </ng-template>
                 </div>
                 <div>
                   <h6 class="mb-0 fw-bold text-dark-teal">{{ user.fullName }}</h6>

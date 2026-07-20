@@ -32,7 +32,6 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
-    private final EmailService emailService;
     private final AuthService authService;
 
     @Value("${image.upload.dir}")
@@ -41,40 +40,64 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public CustomerResponseDto createCustomer(CustomerRequestDto dto, MultipartFile image) {
-        // ডুপ্লিকেট ফোন এবং ইমেইল চেক (আপনার আগের কোড)
+        // ডুপ্লিকেট ফোন এবং ইমেইল চেক
         if (customerRepository.findByPhone(dto.getPhone()).isPresent()) {
             throw new RuntimeException("Customer with this phone number already exists: " + dto.getPhone());
         }
-        if (dto.getEmail() != null && customerRepository.findByEmail(dto.getEmail()).isPresent()) {
+        if (dto.getEmail() != null && !dto.getEmail().isBlank() && customerRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new RuntimeException("Customer with this email already exists: " + dto.getEmail());
         }
 
-        // ১. ডিটিও থেকে এনটিটি তৈরি
+        // ১. DTO থেকে Customer Entity তৈরি
         Customer customer = CustomerMapper.toEntity(dto);
-        customer.setIsActive(false);
+        customer.setIsActive(true);
 
-        // ২. রাইডারের মতো ইউজার পাসওয়ার্ড এনক্রিপশন এবং সেভ লজিক
-        // (ধরে নেওয়া হয়েছে customer.getUser() আপনার ওয়ান-টু-ওয়ান ম্যাপিং হ্যান্ডেল করে, অথবা নতুন ইউজার তৈরি হচ্ছে)
-        User user = new User();
-        user.setFullName(dto.getName());
-        user.setUsername(dto.getPhone());
-        user.setEmail(dto.getEmail());
-        user.setPassword(encoder.encode(dto.getPassword()));
-        user.setRole(UserRole.CUSTOMER);
-        user.setEnabled(false); // অনলাইন অর্ডার চালু করার জন্য ট্রু রাখা হলো
-
-        User savedUser = userRepository.save(user);
-        customer.setUser(savedUser);
-        customer.setPassword(savedUser.getPassword());
-
-        // ৩. রাইডারের লজিক অনুযায়ী ইমেজ আপলোড প্রোসেস
+        // ২. ইমেজ আপলোড প্রসেস (যদি ইমেজ থাকে)
         if (image != null && !image.isEmpty()) {
             customer.setImage(uploadImage(image, dto.getName()));
         }
 
-        Customer savedCustomer = customerRepository.save(customer);
+        // 🟢 ৩. অ্যাকাউন্ট খোলার লজিক (Walk-in vs Online Customer Flow)
+        if (Boolean.TRUE.equals(dto.getCreateAccount())) {
 
-        authService.sendVerificationEmail(savedCustomer.getUser().getEmail()); //send verification mail while customer created
+            if (dto.getUsername() == null || dto.getUsername().isBlank()) {
+                throw new RuntimeException("Username is required to create a user account");
+            }
+            if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+                throw new RuntimeException("Password is required to create a user account");
+            }
+            if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+                throw new RuntimeException("Email is required for online account registration");
+            }
+            if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
+                throw new RuntimeException("Username already taken: " + dto.getUsername());
+            }
+
+            // User তৈরি
+            User user = new User();
+            user.setFullName(dto.getName());
+            user.setUsername(dto.getUsername());
+            user.setEmail(dto.getEmail());
+            user.setPhone(dto.getPhone());
+            user.setPassword(encoder.encode(dto.getPassword()));
+            user.setRole(UserRole.CUSTOMER);
+            user.setEnabled(false); // ইমেইল ভেরিফিকেশনের জন্য ডিফল্টভাবে False
+
+            if (customer.getImage() != null) {
+                user.setImage(customer.getImage());
+            }
+
+            User savedUser = userRepository.save(user);
+            customer.setUser(savedUser); // Customer - User লিংক তৈরি
+
+            // অ্যাকাউন্ট এক্টিভেশনের জন্য ইমেইল পাঠানো
+            authService.sendVerificationEmail(savedUser.getEmail());
+        } else {
+            // Walk-in Customer-এর ক্ষেত্রে User null থাকবে
+            customer.setUser(null);
+        }
+
+        Customer savedCustomer = customerRepository.save(customer);
         return CustomerMapper.toDTO(savedCustomer);
     }
 
@@ -138,7 +161,6 @@ public class CustomerServiceImpl implements CustomerService {
 
         CustomerMapper.updateEntity(customer, dto);
 
-        // আপডেটের সময় নতুন ছবি দিলে তা ফোল্ডারে রিপ্লেস করা হবে
         if (image != null && !image.isEmpty()) {
             customer.setImage(uploadImage(image, customer.getName()));
         }
@@ -155,79 +177,25 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.delete(customer);
     }
 
-    // ── রাইডারের কোড থেকে হুবহু কপি করা ইমেজ আপলোড প্রাইভেট হেল্পার মেথড ──
     private String uploadImage(MultipartFile file, String name) {
         try {
-            Path path = Paths.get(uploadDir, "customer"); // কাস্টমার ফোল্ডারে সেভ হবে
-
+            Path path = Paths.get(uploadDir, "customer");
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
             }
 
             String ext = "";
             String original = file.getOriginalFilename();
-
             if (original != null && original.contains(".")) {
                 ext = original.substring(original.lastIndexOf("."));
             }
 
-            String fileName = name.trim().replaceAll("\\s+", "_")
-                    + "_" + UUID.randomUUID()
-                    + ext;
-
+            String fileName = name.trim().replaceAll("\\s+", "_") + "_" + UUID.randomUUID() + ext;
             Files.copy(file.getInputStream(), path.resolve(fileName));
             return fileName;
 
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Customer image upload failed");
+            throw new RuntimeException("Customer image upload failed: " + e.getMessage());
         }
-    }
-
-//    send mail to customer
-    public  void sendMailToCustomer(Customer c){
-
-        String subject = "Welcome to Our Service – Confirm Your Registration";
-
-        String mailText = "<!DOCTYPE html>"
-                + "<html>"
-                + "<head>"
-                + "<style>"
-                + "  body { font-family: Arial, sans-serif; line-height: 1.6; }"
-                + "  .container { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; }"
-                + "  .header { background-color: #4CAF50; color: white; padding: 10px; text-align: center; border-radius: 10px 10px 0 0; }"
-                + "  .content { padding: 20px; }"
-                + "  .footer { font-size: 0.9em; color: #777; margin-top: 20px; text-align: center; }"
-                + "</style>"
-                + "</head>"
-                + "<body>"
-                + "  <div class='container'>"
-                + "    <div class='header'>"
-                + "      <h2>Welcome to Our Platform</h2>"
-                + "    </div>"
-                + "    <div class='content'>"
-                + "      <p>Dear " + c.getUser().getFullName() + ",</p>"
-                + "      <p>Thank you for registering with us. We are excited to have you on board!</p>"
-                + "      <p>Please confirm your email address to activate your account and get started.</p>"
-                + "      <p>If you have any questions or need help, feel free to reach out to our support team.</p>"
-                + "      <br>"
-                + "      <p>Best regards,<br>The Support Team</p>"
-                + "      <p>To Activate Your Account, please click the following link:</p>"
-                + "      <p><a href=\"" + "" + "\">Activate Account</a></p>"
-                + "    </div>"
-                + "    <div class='footer'>"
-                + "      &copy; " + java.time.Year.now() + " YourCompany. All rights reserved."
-                + "    </div>"
-                + "  </div>"
-                + "</body>"
-                + "</html>";
-
-        try {
-            emailService.sendSimpleMail(c.getUser().getEmail(), subject, mailText);
-        }  catch (MessagingException e) {
-            throw new RuntimeException(e);
-        }
-
-
     }
 }

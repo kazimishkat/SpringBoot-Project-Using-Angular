@@ -14,5 +14,10 @@ public class CustomerResponseDto {
     private AddressResponseDto address;
     private Integer loyaltyPoints;
     private Boolean isActive;
-    private String image; // 🟢 ফ্রন্ট-এন্ডে ছবি দেখানোর জন্য ফাইল নেম রেসপন্স
+    private String image;
+
+    // 🟢 অনলাইন কাস্টমারের জন্য ইউজার অ্যাকাউন্ট ট্র্যাকিং ফিল্ড
+    private Long userId;
+    private String username;
+    private Boolean accountCreated;
 }

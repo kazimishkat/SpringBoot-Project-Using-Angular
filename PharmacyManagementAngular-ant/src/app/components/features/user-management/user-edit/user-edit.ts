@@ -21,6 +21,10 @@ export class UserEdit implements OnInit {
   roles = Object.values(UserRole);
 
   userRequest!: UserRequest;
+  selectedFile?: File;
+  imagePreview: string | null = null;
+  existingImage: string | null = null;
+
   submitted = false;
   errorMessage = '';
 
@@ -44,7 +48,10 @@ export class UserEdit implements OnInit {
   }
 
   loadActiveBranchesLookups(): void {
-    this.branchService.getActiveBranches().subscribe(data => { this.branches = data || []; this.cdr.markForCheck(); });
+    this.branchService.getActiveBranches().subscribe(data => { 
+      this.branches = data || []; 
+      this.cdr.markForCheck(); 
+    });
   }
 
   loadUserRecord(): void {
@@ -60,10 +67,25 @@ export class UserEdit implements OnInit {
           branchId: res.branchId || undefined,
           isActive: res.enabled
         };
+        this.existingImage = res.image || null;
         this.cdr.markForCheck();
       },
-      error: (err) => this.handleError('Failed to parse targeting record metadata profiles', err)
+      error: (err) => this.handleError('Failed to parse user record metadata', err)
     });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result as string;
+        this.cdr.markForCheck();
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
   }
 
   updateUser(): void {
@@ -74,17 +96,17 @@ export class UserEdit implements OnInit {
       return;
     }
 
-    this.userService.updateUser(this.userId, this.userRequest).subscribe({
+    this.userService.updateUser(this.userId, this.userRequest, this.selectedFile).subscribe({
       next: () => {
-        alert('Personnel record matrix altered successfully via PUT schemas.');
-        this.router.navigate(['/users']);
+        alert('User details updated successfully.');
+        this.router.navigate(['/dashboard/users']);
       },
-      error: (err) => this.handleError('Modifications rejected by service endpoints rules', err)
+      error: (err) => this.handleError('Update rejected by server', err)
     });
   }
 
   cancel(): void {
-    this.router.navigate(['/users']);
+    this.router.navigate(['/dashboard/users']);
   }
 
   private handleError(context: string, error: any): void {

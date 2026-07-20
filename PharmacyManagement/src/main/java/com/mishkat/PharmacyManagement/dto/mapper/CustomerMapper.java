@@ -20,7 +20,16 @@ public class CustomerMapper {
         dto.setAge(customer.getAge());
         dto.setLoyaltyPoints(customer.getLoyaltyPoints());
         dto.setIsActive(customer.getIsActive());
-        dto.setImage(customer.getImage()); // 🟢 ইমেজ ফাইল নেম ম্যাপিং
+        dto.setImage(customer.getImage());
+
+        // 🟢 User Link Mapping (Null-safe for Walk-in Customer)
+        if (customer.getUser() != null) {
+            dto.setUserId(customer.getUser().getId());
+            dto.setUsername(customer.getUser().getUsername());
+            dto.setAccountCreated(true);
+        } else {
+            dto.setAccountCreated(false);
+        }
 
         if (customer.getAddress() != null) {
             AddressResponseDto addressDto = new AddressResponseDto();

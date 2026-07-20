@@ -9,6 +9,7 @@ import lombok.Data;
 
 @Data
 public class UserRequestDto {
+
     @NotBlank(message = "Username is required")
     @Size(max = 50)
     private String username;

@@ -43,7 +43,7 @@ public class EmailService {
     // ── Email verification ───────────────────────────────────────
     public void sendVerificationEmail(String to, String name, String token) throws MessagingException {
 
-        String link = frontendUrl + "/api/auth/verify-email?token=" + token;
+        String link = frontendUrl + "/verify-email?token=" + token;
 
         String body = """
                 <!DOCTYPE html>

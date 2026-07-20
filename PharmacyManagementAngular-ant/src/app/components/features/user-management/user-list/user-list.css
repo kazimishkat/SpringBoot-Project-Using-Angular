@@ -21,7 +21,13 @@
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
-  box-shadow: inset 0 0 0 2px rgba(15, 168, 149, 0.1);
+  box-shadow: inset 0 0 0 2px rgba(15, 168, 149, 0.15);
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.avatar-circle:hover {
+  transform: scale(1.08);
 }
 
 .btn-mint-primary {

@@ -25,8 +25,11 @@ public class CustomerRequestDto {
     @Valid
     private AddressRequestDto address;
 
-    // 🟢 রাইডারের মতো অনলাইন পাসওয়ার্ড রিসিভ করার ফিল্ড
-    @NotBlank(message = "Password is required for online registration")
+    // 🟢 Walk-in vs Online Customer স্বকীয়তার জন্য যুক্ত ফ্ল্যাগ
+    private Boolean createAccount = false;
+
+    private String username;
+
     @Size(min = 6, message = "Password must be at least 6 characters long")
     private String password;
 }

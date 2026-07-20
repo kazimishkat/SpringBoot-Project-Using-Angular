@@ -1,112 +1,63 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-verify-email',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, RouterLink],
   templateUrl: './verify-email.html',
   styleUrl: './verify-email.css'
 })
-export class VerifyEmailComponent implements OnInit, OnDestroy {
-  verifyForm: FormGroup;
-  email = '';
-  loading = false;
+export class VerifyEmailComponent implements OnInit {
+  loading = true;
   successMessage: string | null = null;
   errorMessage: string | null = null;
-  countdown = 60;
-  resendDisabled = true;
-  private timer: any;
+  token: string | null = null;
 
   constructor(
-    private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService
-  ) {
-    this.verifyForm = this.fb.group({
-      otp: ['', [Validators.required, Validators.pattern(/^\S+$/)]] // Accepts any valid OTP/Token code string without spaces
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
-    this.email = this.route.snapshot.queryParamMap.get('email') ?? '';
-    this.startTimer();
-  }
+    // Read the 'token' parameter attached to the email link URL
+    this.token = this.route.snapshot.queryParamMap.get('token');
 
-  startTimer(): void {
-    this.countdown = 60;
-    this.resendDisabled = true;
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
-    this.timer = setInterval(() => {
-      this.countdown--;
-      if (this.countdown <= 0) {
-        this.resendDisabled = false;
-        clearInterval(this.timer);
-      }
-    }, 1000);
-  }
-
-  verify(): void {
-    if (this.verifyForm.invalid) {
-      this.verifyForm.markAllAsTouched();
+    if (!this.token) {
+      this.loading = false;
+      this.errorMessage = 'Verification token is missing from the link. Please check your verification email.';
       return;
     }
 
+    // Automatically invoke verification call upon component initialization
+    this.executeEmailVerification(this.token);
+  }
+
+  executeEmailVerification(token: string): void {
     this.loading = true;
     this.errorMessage = null;
     this.successMessage = null;
 
-    const otpCode = this.verifyForm.value.otp;
-
-    this.authService.verifyEmail(otpCode).subscribe({
+    this.authService.verifyEmail(token).subscribe({
       next: () => {
         this.loading = false;
-        this.successMessage = 'OTP code verified successfully! Navigating to Password Reset...';
+        this.successMessage = 'Your email has been verified successfully! Redirecting to login...';
+        
+        // Redirect user to login page after successful activation
         setTimeout(() => {
-          this.router.navigate(['/reset-password'], { queryParams: { token: otpCode } });
-        }, 1500);
+          this.router.navigate(['/login']);
+        }, 2500);
       },
       error: (err) => {
         this.loading = false;
+        console.error(err);
         this.errorMessage = err.status === 400 || err.status === 409
-          ? 'Invalid or expired OTP token. Please enter the correct verification code.'
-          : 'An error occurred during verification. Please request a new OTP code.';
+          ? 'Invalid, expired, or already processed verification token.'
+          : 'An error occurred while activating your account. Please try again or contact support.';
       }
     });
-  }
-
-  resendOTP(): void {
-    if (!this.email) {
-      this.errorMessage = 'Missing email reference for resending OTP.';
-      return;
-    }
-
-    this.loading = true;
-    this.errorMessage = null;
-    this.successMessage = null;
-
-    this.authService.forgotPassword({ email: this.email }).subscribe({
-      next: () => {
-        this.loading = false;
-        this.successMessage = `A fresh OTP code has been sent to ${this.email}`;
-        this.startTimer();
-      },
-      error: () => {
-        this.loading = false;
-        this.errorMessage = 'Failed to dispatch a new OTP verification token. Try again later.';
-      }
-    });
-  }
-
-  ngOnDestroy(): void {
-    if (this.timer) {
-      clearInterval(this.timer);
-    }
   }
 }

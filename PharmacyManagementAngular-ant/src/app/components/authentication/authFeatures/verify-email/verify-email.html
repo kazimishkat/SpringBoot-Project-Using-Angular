@@ -1,73 +1,53 @@
 <div class="auth-wrapper d-flex align-items-center justify-content-center animate-fade-in">
   <div class="card border-0 shadow-lg rounded-4 overflow-hidden verify-card">
+    
+    <!-- Header Section -->
     <div class="bg-gradient-teal py-4 px-4 text-center text-white border-0">
       <div class="verify-icon-container bg-white text-teal rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 shadow" style="width: 60px; height: 60px;">
-        <i class="bi bi-shield-lock-fill" style="font-size: 1.8rem; color: #0fa895;"></i>
+        <i class="bi bi-patch-check-fill" style="font-size: 1.8rem; color: #0fa895;"></i>
       </div>
       <h3 class="fw-bold mb-1 text-white">Email Verification</h3>
-      <p class="text-white-50 small mb-0">Enter the verification code sent to your email</p>
+      <p class="text-white-50 small mb-0">Activating your account credentials</p>
     </div>
     
-    <div class="card-body p-4 bg-white">
-      <!-- Success/Error Banners -->
-      <div *ngIf="successMessage" class="alert alert-success d-flex align-items-center gap-2 mb-3 shadow-sm rounded-3">
-        <i class="bi bi-check-circle-fill fs-5"></i>
-        <span class="small">{{ successMessage }}</span>
+    <!-- Body Section -->
+    <div class="card-body p-4 bg-white text-center">
+
+      <!-- State 1: Loading Indicator -->
+      <div *ngIf="loading" class="py-4">
+        <div class="spinner-border text-teal mb-3" style="width: 3rem; height: 3rem;" role="status">
+          <span class="visually-hidden">Verifying...</span>
+        </div>
+        <h5 class="fw-bold text-dark-teal mb-2">Verifying Your Account</h5>
+        <p class="text-muted small mb-0">Please wait while we validate your verification token...</p>
+      </div>
+
+      <!-- State 2: Success Message Banner -->
+      <div *ngIf="!loading && successMessage" class="py-3">
+        <div class="alert alert-success d-flex flex-column align-items-center gap-2 mb-4 p-3 shadow-sm rounded-3 border-0 bg-light-success">
+          <i class="bi bi-check-circle-fill text-success fs-1"></i>
+          <h5 class="fw-bold text-success mb-0">Verified Successfully!</h5>
+          <span class="small text-muted leading-relaxed">{{ successMessage }}</span>
+        </div>
       </div>
       
-      <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-3 shadow-sm rounded-3">
-        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
-        <span class="small">{{ errorMessage }}</span>
+      <!-- State 3: Error Message Banner -->
+      <div *ngIf="!loading && errorMessage" class="py-3">
+        <div class="alert alert-danger d-flex flex-column align-items-center gap-2 mb-4 p-3 shadow-sm rounded-3 border-0 bg-light-danger">
+          <i class="bi bi-exclamation-triangle-fill text-danger fs-1"></i>
+          <h5 class="fw-bold text-danger mb-0">Verification Failed</h5>
+          <span class="small text-muted leading-relaxed">{{ errorMessage }}</span>
+        </div>
       </div>
 
-      <!-- Verification Form -->
-      <form [formGroup]="verifyForm" (ngSubmit)="verify()">
-        <div class="mb-4 text-center">
-          <label for="otp" class="form-label small fw-bold text-dark-teal mb-2 d-block">OTP Code</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-key-fill"></i></span>
-            <input type="text" 
-                   id="otp" 
-                   formControlName="otp" 
-                   class="form-control bg-light-focus border-start-0 text-center fw-bold fs-5 tracking-wide" 
-                   placeholder="Enter OTP Code" 
-                   [class.is-invalid]="verifyForm.get('otp')?.invalid && verifyForm.get('otp')?.touched" />
-          </div>
-          <div *ngIf="verifyForm.get('otp')?.invalid && verifyForm.get('otp')?.touched" class="text-danger small mt-1">
-            <span *ngIf="verifyForm.get('otp')?.errors?.['required']">OTP code is required.</span>
-            <span *ngIf="verifyForm.get('otp')?.errors?.['pattern']">OTP must not contain any spaces.</span>
-          </div>
-        </div>
-
-        <button type="submit" 
-                class="btn btn-mint-primary w-100 py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border-0 mb-3"
-                [disabled]="loading || verifyForm.invalid">
-          <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          <span>Verify OTP</span>
-        </button>
-      </form>
-
-      <!-- Resend and Timer Actions -->
-      <div class="d-flex flex-column align-items-center mt-4 gap-2">
-        <div class="small text-muted" *ngIf="resendDisabled">
-          Resend code available in <strong class="text-teal">{{ countdown }}s</strong>
-        </div>
-        <button type="button" 
-                class="btn btn-outline-secondary btn-sm py-2 px-3 fw-bold d-flex align-items-center gap-1.5"
-                [disabled]="resendDisabled || loading"
-                (click)="resendOTP()">
-          <i class="bi bi-arrow-clockwise"></i>
-          <span>Resend OTP Code</span>
-        </button>
-      </div>
-
-      <!-- Footer navigation -->
-      <div class="text-center mt-4 border-top pt-3">
-        <a routerLink="/login" class="text-teal fw-bold small text-decoration-none d-inline-flex align-items-center gap-1.5 hover-link">
-          <i class="bi bi-arrow-left"></i>
-          <span>Back to Sign In</span>
+      <!-- Navigation Actions -->
+      <div class="mt-3 border-top pt-3">
+        <a routerLink="/login" class="btn btn-mint-primary w-100 py-2.5 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 border-0">
+          <i class="bi bi-box-arrow-in-right fs-5"></i>
+          <span>Proceed to Sign In</span>
         </a>
       </div>
+
     </div>
   </div>
 </div>

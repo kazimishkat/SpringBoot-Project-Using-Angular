@@ -47,6 +47,19 @@
   border-color: #0fa895 !important;
 }
 
+.bg-mint {
+  background-color: #e2f1f0 !important;
+}
+
+.avatar-preview-box {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.avatar-preview-box:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 12px rgba(15, 168, 149, 0.2) !important;
+}
+
 /* Animations */
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;

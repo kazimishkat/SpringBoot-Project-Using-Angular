@@ -12,6 +12,7 @@ public class UserResponseDto {
     private String fullName;
     private String email;
     private String phone;
+    private String image; // 🟢 প্রোফাইল পিকচারের রেসপন্স ফিল্ড
     private UserRole role;
     private Long branchId;
     private String branchName;

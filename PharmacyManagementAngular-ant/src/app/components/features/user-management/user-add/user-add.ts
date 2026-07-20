@@ -20,6 +20,9 @@ export class UserAdd implements OnInit {
   roles = Object.values(UserRole);
 
   userRequest!: UserRequest;
+  selectedFile?: File;
+  imagePreview: string | null = null;
+
   submitted = false;
   errorMessage = '';
 
@@ -36,7 +39,24 @@ export class UserAdd implements OnInit {
   }
 
   loadActiveBranchesLookups(): void {
-    this.branchService.getActiveBranches().subscribe(data => { this.branches = data || []; this.cdr.markForCheck(); });
+    this.branchService.getActiveBranches().subscribe(data => { 
+      this.branches = data || []; 
+      this.cdr.markForCheck(); 
+    });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile = input.files[0];
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.imagePreview = reader.result as string;
+        this.cdr.markForCheck();
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
   }
 
   saveUser(): void {
@@ -47,14 +67,15 @@ export class UserAdd implements OnInit {
       return;
     }
 
-    this.userService.createUser(this.userRequest).subscribe({
+    // Pass both DTO and image file to UserService
+    this.userService.createUser(this.userRequest, this.selectedFile).subscribe({
       next: () => {
-        alert('Fresh account parameters committed and securely hashed.');
-        this.router.navigate(['/users']);
+        alert('User created successfully. Activation email dispatched.');
+        this.router.navigate(['/dashboard/users']);
       },
       error: (err) => {
         console.error(err);
-        this.errorMessage = `Creation rejected: ${err.error || err.message || 'Server Validation Failure'}`;
+        this.errorMessage = `Creation failed: ${err.error || err.message || 'Server Validation Failure'}`;
         this.cdr.markForCheck();
       }
     });
@@ -71,8 +92,11 @@ export class UserAdd implements OnInit {
       branchId: undefined,
       isActive: true
     };
+    this.selectedFile = undefined;
+    this.imagePreview = null;
     this.submitted = false;
     this.errorMessage = '';
+
     if (this.userForm) {
       this.userForm.resetForm({ role: UserRole.SALESMAN });
     }
@@ -80,6 +104,6 @@ export class UserAdd implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/users']);
+    this.router.navigate(['/dashboard/users']);
   }
 }

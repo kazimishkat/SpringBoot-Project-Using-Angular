@@ -8,8 +8,10 @@ import com.mishkat.PharmacyManagement.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -19,9 +21,12 @@ import java.util.List;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<UserResponseDto> create( @RequestBody UserRequestDto dto) {
-        return new ResponseEntity<>(userService.createUser(dto), HttpStatus.CREATED);
+    // 🟢 POST /api/users (Multipart support for user profile image)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponseDto> create(
+            @RequestPart("user") @Valid UserRequestDto dto,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        return new ResponseEntity<>(userService.createUser(dto, image), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -35,9 +40,13 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> update(@PathVariable Long id, @Valid @RequestBody UserRequestDto dto) {
-        return ResponseEntity.ok(userService.updateUser(id, dto));
+    // 🟢 PUT /api/users/1 (Multipart update for profile image)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponseDto> update(
+            @PathVariable Long id,
+            @RequestPart("user") @Valid UserRequestDto dto,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        return ResponseEntity.ok(userService.updateUser(id, dto, image));
     }
 
     @DeleteMapping("/{id}")
@@ -51,7 +60,6 @@ public class UserController {
         return ResponseEntity.ok(userService.toggleUserStatus(id, enabled));
     }
 
-    // ── 🟢 নতুন যুক্ত করা হলো: PATCH /api/users/1/change-password ──
     @PatchMapping("/{id}/change-password")
     public ResponseEntity<ChangePasswordResponseDto> changePassword(
             @PathVariable Long id,

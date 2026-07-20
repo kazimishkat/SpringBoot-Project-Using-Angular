@@ -9,7 +9,7 @@ import { UserRequest, UserResponse, ChangePasswordRequest, ChangePasswordRespons
 })
 export class UserService {
   
-  // API base route targeting spring boot controller paths
+  // API base route targeting Spring Boot controller paths
   private apiUrl = environment.apiUrl + 'users';
 
   constructor(private http: HttpClient) {}
@@ -22,12 +22,38 @@ export class UserService {
     return this.http.get<UserResponse>(`${this.apiUrl}/${id}`);
   }
 
-  createUser(dto: UserRequest): Observable<UserResponse> {
-    return this.http.post<UserResponse>(this.apiUrl, dto);
+  /**
+   * Creates a new user with optional multipart profile image upload.
+   * Matches Spring Boot: @RequestPart("user") and @RequestPart("image")
+   */
+  createUser(dto: UserRequest, imageFile?: File): Observable<UserResponse> {
+    const formData = new FormData();
+    
+    // Append JSON payload as Blob to match Spring Boot @RequestPart("user")
+    formData.append('user', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
+    
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    return this.http.post<UserResponse>(this.apiUrl, formData);
   }
 
-  updateUser(id: number, dto: UserRequest): Observable<UserResponse> {
-    return this.http.put<UserResponse>(`${this.apiUrl}/${id}`, dto);
+  /**
+   * Updates existing user with optional multipart profile image upload.
+   * Matches Spring Boot: @RequestPart("user") and @RequestPart("image")
+   */
+  updateUser(id: number, dto: UserRequest, imageFile?: File): Observable<UserResponse> {
+    const formData = new FormData();
+    
+    // Append JSON payload as Blob to match Spring Boot @RequestPart("user")
+    formData.append('user', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
+    
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    return this.http.put<UserResponse>(`${this.apiUrl}/${id}`, formData);
   }
 
   deleteUser(id: number): Observable<string> {
@@ -39,13 +65,13 @@ export class UserService {
     return this.http.patch<UserResponse>(`${this.apiUrl}/${id}/status`, {}, { params });
   }
 
-  // ── Profile Mappings Fallbacks (Leverages target ID resolutions) ──
+  // ── Profile Mappings Fallbacks ──
   getProfile(id: number): Observable<UserResponse> {
     return this.getUserById(id);
   }
 
-  updateProfile(id: number, dto: UserRequest): Observable<UserResponse> {
-    return this.updateUser(id, dto);
+  updateProfile(id: number, dto: UserRequest, imageFile?: File): Observable<UserResponse> {
+    return this.updateUser(id, dto, imageFile);
   }
 
   // Maps backend PATCH /api/users/{id}/change-password route exactly

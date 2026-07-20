@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { ActivatedRoute, RouterLink, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { UserService } from '../../../../services/user.service';
 import { UserResponse } from '../../../../models/user.model';
 
@@ -42,7 +42,7 @@ export class UserDetails implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.errorMessage = `Failed to process individual parameter sheets cards: ${err.error || err.message || 'Server Exception'}`;
+        this.errorMessage = `Failed to fetch user details: ${err.error || err.message || 'Server Exception'}`;
         this.cdr.markForCheck();
       }
     });

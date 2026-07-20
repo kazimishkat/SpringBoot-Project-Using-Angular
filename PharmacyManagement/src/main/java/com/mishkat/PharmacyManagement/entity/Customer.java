@@ -36,20 +36,13 @@ public class Customer extends BaseEntity{
     @Embedded
     private Address address;
 
-
-
     private String image;
-
-    @Column(nullable = false)
-    private String password;
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    // 🟢 Walk-in কাস্টমারের জন্য user_id NULL গ্রহণযোগ্য
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
-
-//    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private List<OnlineOrder> onlineOrders = new ArrayList<>();
 }

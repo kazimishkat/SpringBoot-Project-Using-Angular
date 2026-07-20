@@ -19,7 +19,7 @@ import java.util.List;
 public class CustomerController {
     private final CustomerService customerService;
 
-    // 🟢 POST /api/customers (রাইডারের মতো মাল্টিপার্ট ফর্ম কনজিউম করবে)
+    // 🟢 POST /api/customers (Walk-in & Online Multipart support)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponseDto> create(
             @RequestPart("customer") @Valid CustomerRequestDto dto,
@@ -27,7 +27,6 @@ public class CustomerController {
         return new ResponseEntity<>(customerService.createCustomer(dto, image), HttpStatus.CREATED);
     }
 
-    // GET /api/customers
     @GetMapping
     public ResponseEntity<List<CustomerResponseDto>> getAll() {
         List<CustomerResponseDto> list = customerService.getAllCustomers();
@@ -36,7 +35,6 @@ public class CustomerController {
                 : ResponseEntity.ok(list);
     }
 
-    // GET /api/customers/active
     @GetMapping("/active")
     public ResponseEntity<List<CustomerResponseDto>> getActiveCustomers() {
         List<CustomerResponseDto> list = customerService.getActiveCustomers();
@@ -45,34 +43,29 @@ public class CustomerController {
                 : ResponseEntity.ok(list);
     }
 
-    // GET /api/customers/1
     @GetMapping("/{id}")
-    public CustomerResponseDto getById(@PathVariable Long id) {
-        return customerService.getCustomerById(id);
+    public ResponseEntity<CustomerResponseDto> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(customerService.getCustomerById(id));
     }
 
-    // GET /api/customers/phone/017XXXXXXXX
     @GetMapping("/phone/{phone}")
-    public CustomerResponseDto getByPhone(@PathVariable String phone) {
-        return customerService.getCustomerByPhone(phone);
+    public ResponseEntity<CustomerResponseDto> getByPhone(@PathVariable String phone) {
+        return ResponseEntity.ok(customerService.getCustomerByPhone(phone));
     }
 
-    // GET /api/customers/email/test@test.com
     @GetMapping("/email/{email}")
-    public CustomerResponseDto getByEmail(@PathVariable String email) {
-        return customerService.getCustomerByEmail(email);
+    public ResponseEntity<CustomerResponseDto> getByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(customerService.getCustomerByEmail(email));
     }
 
-    // 🟢 PUT /api/customers/1 (আপডেটের সময় ছবি পরিবর্তনের অপশন সহ)
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CustomerResponseDto update(
+    public ResponseEntity<CustomerResponseDto> update(
             @PathVariable Long id,
             @RequestPart("customer") @Valid CustomerRequestDto dto,
             @RequestPart(value = "image", required = false) MultipartFile image) {
-        return customerService.updateCustomer(id, dto, image);
+        return ResponseEntity.ok(customerService.updateCustomer(id, dto, image));
     }
 
-    // DELETE /api/customers/1
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         customerService.deleteCustomer(id);

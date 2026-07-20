@@ -23,8 +23,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User extends BaseEntity implements UserDetails {
-//    @Column(nullable = false, length = 50)
-    private String username;
+private String username;
 
     @Column(nullable = false)
     private String password;
@@ -36,6 +35,8 @@ public class User extends BaseEntity implements UserDetails {
     private String email;
 
     private String phone;
+
+    private String image; // 🟢 যেকোনো ইউজারের প্রোফাইল পিকচার ব্যবহারের জন্য যুক্ত করা হলো
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
@@ -52,13 +53,11 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // রোল যদি "ADMIN" হয়, তবে স্প্রিং সিকিউরিটির জন্য "ROLE_ADMIN" ফরম্যাটে রিটার্ন করবে
         return List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
     @Override
     public String getUsername() {
-        // এখানে আমরা username ফিল্ডটি রিটার্ন করছি (আপনি চাইলে email-ও দিতে পারেন)
         return this.username;
     }
 
@@ -69,7 +68,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return this.enabled; // অ্যাকাউন্ট একটিভ না থাকলে লকড দেখাবে
+        return this.enabled;
     }
 
     @Override

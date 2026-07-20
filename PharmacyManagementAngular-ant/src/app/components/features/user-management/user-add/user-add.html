@@ -115,6 +115,28 @@
             </select>
           </div>
 
+          <!-- Profile Photo Upload -->
+          <div class="col-12 mb-2">
+            <label for="profilePhoto" class="form-label small fw-bold text-dark-teal mb-1">Profile Photo <span class="text-muted fw-normal">(Optional)</span></label>
+            <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border">
+              <div class="avatar-preview-box rounded-circle bg-mint text-dark-teal d-flex align-items-center justify-content-center overflow-hidden shadow-sm flex-shrink-0" style="width: 64px; height: 64px; border: 2px solid #0fa895;">
+                <img *ngIf="imagePreview; else defaultAvatar" [src]="imagePreview" alt="Profile Preview" class="w-100 h-100 object-fit-cover" />
+                <ng-template #defaultAvatar>
+                  <i class="bi bi-person-fill fs-2"></i>
+                </ng-template>
+              </div>
+              <div class="flex-grow-1">
+                <input type="file" 
+                       id="profilePhoto" 
+                       name="profilePhoto" 
+                       class="form-control form-control-sm mb-1 bg-white" 
+                       accept="image/*" 
+                       (change)="onFileSelected($event)" />
+                <span class="form-text text-muted small">Select an image file (JPEG, PNG, WEBP). Will sync as MultipartFile on save.</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Active state status switch -->
           <div class="col-md-6 d-flex align-items-end pb-2">
             <div class="form-check form-switch">

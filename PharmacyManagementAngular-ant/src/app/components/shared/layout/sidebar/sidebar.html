@@ -575,6 +575,51 @@
         </div>
       </li>
 
+      <!-- Customer Management Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleCustomerDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-person-hearts"></i>
+            <span>Customer Management</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isCustomerDropdownOpen" [class.bi-chevron-up]="isCustomerDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isCustomerDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/customers/add" routerLinkActive="active">
+                <i class="bi bi-person-plus-fill"></i>
+                <span>customer-add</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/customers/details" routerLinkActive="active">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>customer-details</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/customers/edit" routerLinkActive="active">
+                <i class="bi bi-pencil-square"></i>
+                <span>customer-edit</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/customers" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>customer-list</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
       <!-- Settings Link (Placeholder) -->
       <li class="nav-item">
         <a class="nav-link d-flex align-items-center gap-3 disabled-placeholder" routerLink="/dashboard/settings">

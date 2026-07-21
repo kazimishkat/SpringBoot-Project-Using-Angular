@@ -1,0 +1,78 @@
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.text-dark-teal {
+  color: #0f4c5c;
+}
+
+.bg-mint {
+  background-color: #e0f2fe;
+}
+
+.table-light-teal {
+  background-color: #f0f9ff;
+}
+
+.btn-mint-primary {
+  background-color: #0f4c5c;
+  color: #ffffff;
+  border: none;
+}
+
+.btn-mint-primary:hover {
+  background-color: #0b3945;
+  color: #ffffff;
+}
+
+.avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-only {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.btn-icon-only:hover {
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.text-teal {
+  color: #0f4c5c;
+}
+
+.text-warning-teal {
+  color: #d97706;
+}
+
+.text-danger-red {
+  color: #dc2626;
+}
+
+.text-muted-opacity {
+  opacity: 0.6;
+}
+
+.customer-row-hover:hover {
+  background-color: #f8fafc;
+}

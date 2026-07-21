@@ -1,1 +1,205 @@
-<p>customer-details works!</p>
+<div class="container-fluid py-4 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h2 class="fw-bold text-dark-teal mb-1">Customer Profile Details</h2>
+      <p class="text-muted mb-0">Detailed view of registered customer records, address metadata, and online portal status.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button (click)="goBack()" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back</span>
+      </button>
+      <a *ngIf="customerDetails" [routerLink]="['/dashboard/customers/edit', customerDetails.id]" class="btn btn-mint-primary d-flex align-items-center gap-2">
+        <i class="bi bi-pencil"></i>
+        <span>Edit Customer</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Error Notification Banner -->
+  <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-4 shadow-sm rounded-3">
+    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+    <span class="small">{{ errorMessage }}</span>
+  </div>
+
+  <!-- Details Card Container -->
+  <div *ngIf="customerDetails; else noCustomerSelected">
+    <div class="row g-4">
+      
+      <!-- Left Sidebar Profile Card -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-3 text-center p-4">
+          <div class="avatar-large-container mx-auto mb-3 position-relative">
+            <img *ngIf="customerDetails.image; else defaultAvatar" [src]="customerDetails.image" alt="{{ customerDetails.name }}" class="w-100 h-100 object-fit-cover rounded-circle shadow-sm" />
+            <ng-template #defaultAvatar>
+              <div class="default-avatar-placeholder d-flex align-items-center justify-content-center rounded-circle bg-mint text-dark-teal fw-bold fs-1">
+                <span>{{ customerDetails.name.charAt(0).toUpperCase() }}</span>
+              </div>
+            </ng-template>
+          </div>
+
+          <h4 class="fw-bold text-dark-teal mb-1">{{ customerDetails.name }}</h4>
+          <p class="text-muted mb-3">Customer ID: #{{ customerDetails.id }}</p>
+
+          <div class="d-flex justify-content-center gap-2 mb-4 flex-wrap">
+            <span class="badge" [ngClass]="customerDetails.isActive ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+              <i class="bi bi-circle-fill me-1 small"></i>{{ customerDetails.isActive ? 'Active' : 'Inactive' }}
+            </span>
+            <span class="badge" [ngClass]="customerDetails.accountCreated ? 'bg-primary-subtle text-primary' : 'bg-warning-subtle text-warning'">
+              <i class="bi" [ngClass]="customerDetails.accountCreated ? 'bi-shield-check' : 'bi-person-badge'"></i>
+              {{ customerDetails.accountCreated ? 'Online Account' : 'Walk-in Customer' }}
+            </span>
+          </div>
+
+          <div class="border-top pt-3 text-start">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted small">Loyalty Points</span>
+              <span class="fw-bold text-dark-teal"><i class="bi bi-star-fill text-warning me-1"></i>{{ customerDetails.loyaltyPoints || 0 }} pts</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center" *ngIf="customerDetails.username">
+              <span class="text-muted small">Portal Username</span>
+              <span class="fw-semibold text-dark-teal">@{{ customerDetails.username }}</span>
+            </div>
+          </div>
+
+          <!-- Convert to Online Account Action Button if walk-in customer -->
+          <button *ngIf="!customerDetails.accountCreated" (click)="openAccountModal()" class="btn btn-outline-primary w-100 mt-4 d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-person-plus-fill"></i>
+            <span>Create Online Account</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Info & Address Details -->
+      <div class="col-lg-8">
+        
+        <!-- Contact & Demographics Card -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+          <div class="card-header bg-transparent border-bottom py-3">
+            <h5 class="fw-bold text-dark-teal mb-0">
+              <i class="bi bi-card-heading me-2"></i>Contact Information
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <span class="text-muted d-block small">Phone Number</span>
+                <span class="fw-semibold text-dark-teal fs-6"><i class="bi bi-telephone text-muted me-1.5"></i>{{ customerDetails.phone || 'N/A' }}</span>
+              </div>
+              <div class="col-md-6">
+                <span class="text-muted d-block small">Email Address</span>
+                <span class="fw-semibold text-dark-teal fs-6"><i class="bi bi-envelope text-muted me-1.5"></i>{{ customerDetails.email || 'N/A' }}</span>
+              </div>
+              <div class="col-md-6">
+                <span class="text-muted d-block small">Gender</span>
+                <span class="fw-semibold text-dark-teal fs-6">{{ customerDetails.gender || 'Not Specified' }}</span>
+              </div>
+              <div class="col-md-6">
+                <span class="text-muted d-block small">Age</span>
+                <span class="fw-semibold text-dark-teal fs-6">{{ customerDetails.age ? customerDetails.age + ' Years' : 'Not Specified' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address Card -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+          <div class="card-header bg-transparent border-bottom py-3">
+            <h5 class="fw-bold text-dark-teal mb-0">
+              <i class="bi bi-geo-alt-fill me-2"></i>Registered Address
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            <div *ngIf="customerDetails.address; else noAddress">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <span class="text-muted d-block small">Street Address</span>
+                  <span class="fw-semibold text-dark-teal">{{ customerDetails.address.addressLine1 || 'N/A' }}</span>
+                  <div *ngIf="customerDetails.address.addressLine2" class="small text-muted">{{ customerDetails.address.addressLine2 }}</div>
+                </div>
+                <div class="col-md-6">
+                  <span class="text-muted d-block small">City</span>
+                  <span class="fw-semibold text-dark-teal">{{ customerDetails.address.city || 'N/A' }}</span>
+                </div>
+                <div class="col-md-4">
+                  <span class="text-muted d-block small">State / Province</span>
+                  <span class="fw-semibold text-dark-teal">{{ customerDetails.address.state || 'N/A' }}</span>
+                </div>
+                <div class="col-md-4">
+                  <span class="text-muted d-block small">Postal Code</span>
+                  <span class="fw-semibold text-dark-teal">{{ customerDetails.address.postalCode || 'N/A' }}</span>
+                </div>
+                <div class="col-md-4">
+                  <span class="text-muted d-block small">Country</span>
+                  <span class="fw-semibold text-dark-teal">{{ customerDetails.address.country || 'N/A' }}</span>
+                </div>
+              </div>
+            </div>
+            <ng-template #noAddress>
+              <p class="text-muted mb-0 italic">No specific address information has been registered for this customer.</p>
+            </ng-template>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Empty state if no customer is selected or found -->
+  <ng-template #noCustomerSelected>
+    <div class="card border-0 shadow-sm rounded-3 py-5 text-center">
+      <div class="card-body">
+        <i class="bi bi-person-bounding-box fs-1 text-muted mb-3 d-block"></i>
+        <h5 class="fw-bold text-dark-teal">No Customer Selected</h5>
+        <p class="text-muted">Please select a valid customer from the directory to inspect detailed information.</p>
+        <a routerLink="/dashboard/customers" class="btn btn-mint-primary">
+          <i class="bi bi-list-ul me-1"></i> View Customer Directory
+        </a>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Create Account Modal for existing customer -->
+  <div class="modal-backdrop fade show" *ngIf="showAccountModal"></div>
+  <div class="modal fade show d-block" tabindex="-1" *ngIf="showAccountModal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg rounded-3">
+        <div class="modal-header bg-transparent border-bottom">
+          <h5 class="modal-title fw-bold text-dark-teal">Create Portal Account</h5>
+          <button type="button" class="btn-close" (click)="closeAccountModal()"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div *ngIf="accountModalError" class="alert alert-danger small mb-3">
+            {{ accountModalError }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark-teal">Username</label>
+            <input type="text" class="form-control" [(ngModel)]="accountData.username" placeholder="Username" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark-teal">Email</label>
+            <input type="email" class="form-control" [(ngModel)]="accountData.email" placeholder="Email" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark-teal">Password</label>
+            <input type="password" class="form-control" [(ngModel)]="accountData.password" placeholder="Password" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark-teal">Confirm Password</label>
+            <input type="password" class="form-control" [(ngModel)]="accountData.confirmPassword" placeholder="Confirm Password" />
+          </div>
+        </div>
+        <div class="modal-footer bg-transparent border-top">
+          <button type="button" class="btn btn-light" (click)="closeAccountModal()">Cancel</button>
+          <button type="button" class="btn btn-mint-primary" (click)="createAccountForExistingCustomer()" [disabled]="isAccountSubmitting">
+            <span *ngIf="!isAccountSubmitting">Create Account</span>
+            <span *ngIf="isAccountSubmitting">Submitting...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

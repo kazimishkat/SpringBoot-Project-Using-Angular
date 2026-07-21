@@ -20,17 +20,18 @@
   </div>
 
   <!-- Main Profile Card Wrapper -->
-  <div class="card border-0 shadow-sm rounded-3 overflow-hidden max-width-card mx-auto" *ngIf="profileDetails">
+  <div class="card border-0 shadow-sm rounded-3 overflow-hidden max-width-card mx-auto" *ngIf="profileDetails as profile">
+    
     <!-- Card header/banner background -->
     <div class="bg-gradient-teal py-4 px-4 text-center text-white border-0">
       <div class="avatar-circle-lg bg-white text-teal rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 shadow overflow-hidden" style="width: 86px; height: 86px; border: 3px solid rgba(255, 255, 255, 0.9);">
-        <img *ngIf="profileDetails.image; else initialAvatar" [src]="profileDetails.image" alt="{{ profileDetails.fullName }}" class="w-100 h-100 object-fit-cover" />
+        <img *ngIf="profile.image; else initialAvatar" [src]="profile.image" alt="{{ profile.fullName }}" class="w-100 h-100 object-fit-cover" />
         <ng-template #initialAvatar>
-          <span class="fw-bold fs-2 text-dark-teal">{{ profileDetails.fullName.charAt(0).toUpperCase() }}</span>
+          <span class="fw-bold fs-2 text-dark-teal">{{ profile.fullName ? profile.fullName.charAt(0).toUpperCase() : 'U' }}</span>
         </ng-template>
       </div>
-      <h3 class="fw-bold mb-1 text-white">{{ profileDetails.fullName }}</h3>
-      <p class="text-white-50 small mb-0">@{{ profileDetails.username }}</p>
+      <h3 class="fw-bold mb-1 text-white">{{ profile.fullName }}</h3>
+      <p class="text-white-50 small mb-0">@{{ profile.username }}</p>
     </div>
 
     <!-- Card body: Read Mode -->
@@ -44,7 +45,7 @@
             </div>
             <div>
               <span class="text-muted d-block small mb-0.5">Email Address</span>
-              <strong class="text-dark-teal">{{ profileDetails.email }}</strong>
+              <strong class="text-dark-teal">{{ profile.email }}</strong>
             </div>
           </div>
         </div>
@@ -56,7 +57,7 @@
             </div>
             <div>
               <span class="text-muted d-block small mb-0.5">Phone Number</span>
-              <strong class="text-dark-teal">{{ profileDetails.phone || 'N/A' }}</strong>
+              <strong class="text-dark-teal">{{ profile.phone || 'N/A' }}</strong>
             </div>
           </div>
         </div>
@@ -70,7 +71,7 @@
               <span class="text-muted d-block small mb-0.5">System Assigned Role</span>
               <div>
                 <span class="badge bg-mint text-dark-teal fw-bold px-2.5 py-1.5 mt-0.5">
-                  {{ profileDetails.role }}
+                  {{ profile.role }}
                 </span>
               </div>
             </div>
@@ -84,7 +85,7 @@
             </div>
             <div>
               <span class="text-muted d-block small mb-0.5">Branch Location Assignment</span>
-              <strong class="text-dark-teal">{{ profileDetails.branchName || 'Central Headquarter' }}</strong>
+              <strong class="text-dark-teal">{{ profile.branchName || 'Central Headquarter' }}</strong>
             </div>
           </div>
         </div>
@@ -96,7 +97,7 @@
             </div>
             <div>
               <span class="text-muted d-block small mb-0.5">Registration Timestamp</span>
-              <strong class="text-dark-teal">{{ profileDetails.createdAt | date:'medium' }}</strong>
+              <strong class="text-dark-teal">{{ profile.createdAt | date:'medium' }}</strong>
             </div>
           </div>
         </div>
@@ -176,13 +177,18 @@
             <label for="profilePhoto" class="form-label small fw-bold text-dark-teal mb-1">Update Profile Photo</label>
             <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border">
               <div class="avatar-preview-box rounded-circle bg-mint text-dark-teal d-flex align-items-center justify-content-center overflow-hidden shadow-sm flex-shrink-0" style="width: 64px; height: 64px; border: 2px solid #0fa895;">
+                
+                <!-- Preview image or original image check -->
                 <img *ngIf="imagePreview; else checkProfileImg" [src]="imagePreview" alt="Profile Preview" class="w-100 h-100 object-fit-cover" />
+                
                 <ng-template #checkProfileImg>
-                  <img *ngIf="profileDetails?.image; else defaultProfileAvatar" [src]="profileDetails?.image" alt="Profile Photo" class="w-100 h-100 object-fit-cover" />
+                  <img *ngIf="profile.image; else defaultProfileAvatar" [src]="profile.image" alt="Profile Photo" class="w-100 h-100 object-fit-cover" />
                 </ng-template>
+
                 <ng-template #defaultProfileAvatar>
                   <span class="fw-bold fs-2 text-dark-teal">{{ editRequest.fullName ? editRequest.fullName.charAt(0).toUpperCase() : 'U' }}</span>
                 </ng-template>
+
               </div>
               <div class="flex-grow-1">
                 <input type="file" 

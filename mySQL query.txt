@@ -1,0 +1,190 @@
+jodi foreign ki thake tahole data fele deyar jonno
+1.MySQL-এ কোনো টেবিল যখন অন্য কোনো টেবিলের Foreign Key হিসেবে রেফারেন্স করা থাকে (যেমন: goods_received_note_items), তখন সরাসরি TRUNCATE TABLE চালানো যায় না।
+
+এর সহজ সমাধান হলো Foreign Key Check সাময়িকভাবে নিষ্ক্রিয় (Disable) করে TRUNCATE চালানো।
+
+🛠️ সমাধান: নিচের কোয়েরিটি এক সাথে সিলেক্ট করে রান করুন
+
+
+USE pharmacy;
+       -- ১. ফরেন কি চেক এবং সেফ আপডেট বন্ধ করা
+     SET FOREIGN_KEY_CHECKS = 0;
+     SET SQL_SAFE_UPDATES = 0;
+
+       -- ২. Medicines টেবিল খালি করা এবং ID ১-এ রিসেট করা
+    TRUNCATE TABLE medicines;
+
+       -- ৩. ফরেন কি চেক এবং সেফ আপডেট পুনরায় চালু করা
+    SET FOREIGN_KEY_CHECKS = 1;
+    SET SQL_SAFE_UPDATES = 1;
+
+
+foerign key na thakle data felar jonno
+2.
+USE pharmacy;
+TRUNCATE TABLE medicines;
+
+data push with table tranket 
+3.
+USE pharmacy;
+
+-- ১. ফরেন কি চেক এবং সেফ আপডেট বন্ধ করা
+SET FOREIGN_KEY_CHECKS = 0;
+SET SQL_SAFE_UPDATES = 0;
+
+-- ২. পুরোনো ডেটা পুরোপুরি মুছে ফেলা এবং AUTO_INCREMENT আইডি ১-এ রিসেট করা
+TRUNCATE TABLE goods_received_note_items;
+TRUNCATE TABLE goods_received_notes;
+
+-- ৩. Goods Received Notes Table (GRN) - ২০টি রেকর্ড ইনসার্ট
+INSERT INTO goods_received_notes (
+    grn_number, 
+    purchase_order_id, 
+    received_date, 
+    received_by, 
+    approval_status, 
+    is_active, 
+    created_by, 
+    updated_by, 
+    created_at, 
+    updated_at
+) VALUES 
+('GRN-2026-0001', 1, '2026-06-03', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0002', 2, '2026-06-06', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0003', 3, '2026-06-08', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0004', 4, '2026-06-12', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0005', 5, '2026-06-15', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0006', 6, '2026-06-18', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0007', 7, '2026-06-22', NULL, 'PENDING', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0008', 8, '2026-06-25', NULL, 'PENDING', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0009', 9, '2026-06-28', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0010', 10, '2026-07-03', NULL, 'PENDING', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0011', 11, '2026-07-05', NULL, 'REJECTED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0012', 12, '2026-07-08', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0013', 13, '2026-07-10', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0014', 14, '2026-07-12', NULL, 'PENDING', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0015', 15, '2026-07-14', NULL, 'REJECTED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0016', 16, '2026-07-16', NULL, 'PENDING', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0017', 17, '2026-07-18', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0018', 18, '2026-07-19', NULL, 'PENDING', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0019', 19, '2026-07-20', NULL, 'PENDING', true, NULL, NULL, NOW(), NOW()),
+('GRN-2026-0020', 20, '2026-07-21', NULL, 'APPROVED', true, NULL, NULL, NOW(), NOW());
+
+-- ৪. Goods Received Note Items Table (GRN Items) - ইনসার্ট
+INSERT INTO goods_received_note_items (
+    grn_id, 
+    medicine_id, 
+    batch_number, 
+    manufacture_date, 
+    expiry_date, 
+    received_quantity, 
+    purchase_price, 
+    selling_price, 
+    is_active, 
+    created_by, 
+    updated_by, 
+    created_at, 
+    updated_at
+) VALUES 
+-- Items for GRN #1
+(1, 1, 'BATCH-SQ-202601', '2026-01-10', '2028-01-09', 500, 12.50, 15.00, true, NULL, NULL, NOW(), NOW()),
+(1, 2, 'BATCH-SQ-202602', '2026-01-15', '2027-07-14', 300, 45.00, 52.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #2
+(2, 3, 'BATCH-INC-202601', '2026-02-01', '2028-01-31', 1000, 8.00, 10.00, true, NULL, NULL, NOW(), NOW()),
+(2, 4, 'BATCH-INC-202602', '2026-02-05', '2027-08-04', 250, 120.00, 140.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #3
+(3, 5, 'BATCH-BEX-202601', '2026-02-10', '2028-02-09', 400, 22.00, 26.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #4
+(4, 6, 'BATCH-REN-202601', '2026-03-01', '2028-02-28', 600, 15.00, 18.00, true, NULL, NULL, NOW(), NOW()),
+(4, 7, 'BATCH-REN-202602', '2026-03-05', '2027-09-04', 150, 85.00, 100.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #5
+(5, 8, 'BATCH-HPL-202601', '2026-03-10', '2028-03-09', 800, 18.50, 22.00, true, NULL, NULL, NOW(), NOW()),
+(5, 9, 'BATCH-HPL-202602', '2026-03-12', '2027-09-11', 300, 65.00, 75.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #6
+(6, 10, 'BATCH-ACI-202601', '2026-04-01', '2028-03-31', 500, 30.00, 35.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #7
+(7, 11, 'BATCH-ARI-202601', '2026-04-10', '2028-04-09', 1000, 5.50, 7.00, true, NULL, NULL, NOW(), NOW()),
+(7, 12, 'BATCH-ARI-202602', '2026-04-15', '2027-10-14', 200, 150.00, 175.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #8
+(8, 13, 'BATCH-SKF-202601', '2026-05-01', '2028-04-30', 450, 40.00, 48.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #9
+(9, 14, 'BATCH-ACM-202601', '2026-05-10', '2028-05-09', 700, 11.00, 13.50, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #10
+(10, 15, 'BATCH-DIL-202601', '2026-05-15', '2027-11-14', 350, 95.00, 110.00, true, NULL, NULL, NOW(), NOW()),
+(10, 16, 'BATCH-DIL-202602', '2026-05-20', '2028-05-19', 500, 25.00, 30.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #11
+(11, 17, 'BATCH-OPS-202601', '2026-06-01', '2028-05-31', 600, 14.00, 17.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #12
+(12, 18, 'BATCH-POP-202601', '2026-06-05', '2027-12-04', 200, 210.00, 240.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #13
+(13, 19, 'BATCH-RAD-202601', '2026-06-10', '2028-06-09', 800, 9.50, 12.00, true, NULL, NULL, NOW(), NOW()),
+(13, 20, 'BATCH-RAD-202602', '2026-06-12', '2027-12-11', 100, 350.00, 400.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #14
+(14, 1, 'BATCH-SQ-202603', '2026-06-15', '2028-06-14', 400, 12.50, 15.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #15
+(15, 3, 'BATCH-INC-202603', '2026-06-18', '2028-06-17', 500, 8.00, 10.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #16
+(16, 5, 'BATCH-BEX-202602', '2026-06-20', '2028-06-19', 300, 22.00, 26.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #17
+(17, 7, 'BATCH-REN-202603', '2026-06-22', '2027-12-21', 250, 85.00, 100.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #18
+(18, 9, 'BATCH-HPL-202603', '2026-06-25', '2028-06-24', 400, 65.00, 75.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #19
+(19, 11, 'BATCH-ARI-202603', '2026-06-28', '2028-06-27', 1200, 5.50, 7.00, true, NULL, NULL, NOW(), NOW()),
+
+-- Items for GRN #20
+(20, 13, 'BATCH-SKF-202602', '2026-07-01', '2028-06-30', 300, 40.00, 48.00, true, NULL, NULL, NOW(), NOW());
+
+-- ৫. ফরেন কি চেক এবং সেফ আপডেট সেটিং পুনরায় চালু করা
+SET FOREIGN_KEY_CHECKS = 1;
+SET SQL_SAFE_UPDATES = 1;
+
+data push 
+4.
+USE pharmacy;
+
+INSERT INTO medicines (
+    medicine_code,
+    brand_name,
+    generic_medicine_id,
+    manufacturer,
+    dosage_form,
+    strength,
+    unit_of_measure,
+    units_per_pack,
+    drug_schedule,
+    storage_condition,
+    reorder_level,
+    reorder_quantity,
+    default_purchase_price,
+    default_selling_price,
+    vat_percentage,
+    description,
+    image,
+    is_active,
+    created_at,
+    updated_at,
+    created_by,
+    updated_by
+) VALUES 
+('MED-001', 'Napa Extra', 1, 'Square Pharmaceuticals', 'TABLET', '500mg+65mg', 'STRIP', 10, 'OTC', 'ROOM_TEMPERATURE', 100, 500, 2.00, 2.50, 5.00, 'Used for fever and pain relief.', NULL, true, NOW(), NOW(), 'SYSTEM', 'SYSTEM'),
+('MED-002', 'Seclo 20', 2, 'Square Pharmaceuticals', 'CAPSULE', '20mg', 'BOX', 60, 'PRESCRIPTION_REQUIRED', 'ROOM_TEMPERATURE', 50, 200, 4.50, 6.00, 5.00, 'Proton pump inhibitor for hyperacidity.', NULL, true, NOW(), NOW(), 'SYSTEM', 'SYSTEM')
+COMMIT;

@@ -4,5 +4,5 @@ export interface BaseEntity {
   updatedAt?: Date | string; // Maps to LocalDateTime
   createdBy?: string;
   updatedBy?: string;
-  isActive: boolean; // Maps to Boolean (defaults to true in Java)
+  isActive?: boolean; // Maps to Boolean (defaults to true in Java)
 }

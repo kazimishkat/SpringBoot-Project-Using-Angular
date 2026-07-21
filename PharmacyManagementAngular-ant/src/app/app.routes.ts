@@ -48,10 +48,20 @@ import { UserEdit } from './components/features/user-management/user-edit/user-e
 import { UserDetails } from './components/features/user-management/user-details/user-details';
 import { Profile } from './components/features/user-management/profile/profile';
 import { ChangePassword } from './components/features/user-management/change-password/change-password';
+import { CustomerAdd } from './components/features/customer-management/customer-add/customer-add';
+import { CustomerDetails } from './components/features/customer-management/customer-details/customer-details';
+import { CustomerEdit } from './components/features/customer-management/customer-edit/customer-edit';
+import { CustomerListComponent } from './components/features/customer-management/customer-list/customer-list';
 
 
 export const routes: Routes = [
   { path: '', component: Home },
+  { path: 'customers/add', redirectTo: 'dashboard/customers/add', pathMatch: 'full' },
+  { path: 'customers/edit/:id', redirectTo: 'dashboard/customers/edit/:id', pathMatch: 'full' },
+  { path: 'customers/edit', redirectTo: 'dashboard/customers/edit', pathMatch: 'full' },
+  { path: 'customers/details', redirectTo: 'dashboard/customers/details', pathMatch: 'full' },
+  { path: 'customers/:id', redirectTo: 'dashboard/customers/:id', pathMatch: 'full' },
+  { path: 'customers', redirectTo: 'dashboard/customers', pathMatch: 'full' },
   { path: 'stock-movements/:id', redirectTo: 'dashboard/stock-movements/:id', pathMatch: 'full' },
   { path: 'stock-movements', redirectTo: 'dashboard/stock-movements', pathMatch: 'full' },
   { path: 'stock-adjustments/:id', redirectTo: 'dashboard/stock-adjustments/:id', pathMatch: 'full' },
@@ -134,6 +144,13 @@ export const routes: Routes = [
       { path: 'users/:id', component: UserDetails },
       { path: 'profile', component: Profile },
       { path: 'change-password', component: ChangePassword },
+      { path: 'customers', component: CustomerListComponent },
+      { path: 'customers/add', component: CustomerAdd },
+      { path: 'customers/details', component: CustomerDetails },
+      { path: 'customers/details/:id', component: CustomerDetails },
+      { path: 'customers/edit', component: CustomerEdit },
+      { path: 'customers/edit/:id', component: CustomerEdit },
+      { path: 'customers/:id', component: CustomerDetails },
     ]
   }
 ];

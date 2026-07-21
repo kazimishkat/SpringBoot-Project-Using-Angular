@@ -23,6 +23,7 @@ export class Sidebar {
   isStockAdjustmentDropdownOpen = false;
   isStockTransferDropdownOpen = false;
   isUserDropdownOpen = false;
+  isCustomerDropdownOpen = false;
 
   toggleSupplierDropdown(): void {
     this.isSupplierDropdownOpen = !this.isSupplierDropdownOpen;
@@ -78,6 +79,10 @@ export class Sidebar {
 
   toggleUserDropdown(): void {
     this.isUserDropdownOpen = !this.isUserDropdownOpen;
+  }
+
+  toggleCustomerDropdown(): void {
+    this.isCustomerDropdownOpen = !this.isCustomerDropdownOpen;
   }
 }
 

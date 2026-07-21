@@ -1,1 +1,263 @@
-<p>customer-edit works!</p>
+<div class="container-fluid py-4 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h2 class="fw-bold text-dark-teal mb-1">Edit Customer Profile</h2>
+      <p class="text-muted mb-0">Modify customer contact info, demographic profile, and address information.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button type="button" (click)="cancel()" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+        <i class="bi bi-x-circle"></i>
+        <span>Cancel</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Notification Banner -->
+  <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-4 shadow-sm rounded-3">
+    <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+    <span class="small">{{ errorMessage }}</span>
+  </div>
+
+  <!-- Customer Form Container -->
+  <form *ngIf="customerRequest; else noRecord" #customerForm="ngForm" (ngSubmit)="updateCustomer()" novalidate>
+    <div class="row g-4">
+
+      <!-- Left Column: Personal Info & Address -->
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-3 mb-4">
+          <div class="card-header bg-transparent border-bottom py-3">
+            <h5 class="fw-bold text-dark-teal mb-0">
+              <i class="bi bi-person-gear me-2"></i>Customer Information
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+
+              <!-- Full Name -->
+              <div class="col-md-6">
+                <label for="name" class="form-label fw-semibold text-dark-teal">Full Name <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                  <input type="text" 
+                         id="name" 
+                         name="name" 
+                         class="form-control" 
+                         placeholder="Enter customer full name" 
+                         [(ngModel)]="customerRequest.name" 
+                         #name="ngModel" 
+                         required 
+                         [class.is-invalid]="(name.invalid && (name.touched || submitted))" />
+                </div>
+                <div *ngIf="name.invalid && (name.touched || submitted)" class="invalid-feedback d-block">
+                  Full name is required.
+                </div>
+              </div>
+
+              <!-- Phone Number -->
+              <div class="col-md-6">
+                <label for="phone" class="form-label fw-semibold text-dark-teal">Phone Number <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
+                  <input type="tel" 
+                         id="phone" 
+                         name="phone" 
+                         class="form-control" 
+                         placeholder="Phone number" 
+                         [(ngModel)]="customerRequest.phone" 
+                         #phone="ngModel" 
+                         required 
+                         [class.is-invalid]="(phone.invalid && (phone.touched || submitted))" />
+                </div>
+                <div *ngIf="phone.invalid && (phone.touched || submitted)" class="invalid-feedback d-block">
+                  Phone number is required.
+                </div>
+              </div>
+
+              <!-- Email Address -->
+              <div class="col-md-6">
+                <label for="email" class="form-label fw-semibold text-dark-teal">Email Address</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                  <input type="email" 
+                         id="email" 
+                         name="email" 
+                         class="form-control" 
+                         placeholder="Email address" 
+                         [(ngModel)]="customerRequest.email" />
+                </div>
+              </div>
+
+              <!-- Gender -->
+              <div class="col-md-3">
+                <label for="gender" class="form-label fw-semibold text-dark-teal">Gender</label>
+                <select id="gender" name="gender" class="form-select" [(ngModel)]="customerRequest.gender">
+                  <option [ngValue]="undefined">Select Gender</option>
+                  <option *ngFor="let g of genders" [value]="g">{{ g }}</option>
+                </select>
+              </div>
+
+              <!-- Age -->
+              <div class="col-md-3">
+                <label for="age" class="form-label fw-semibold text-dark-teal">Age</label>
+                <input type="number" 
+                       id="age" 
+                       name="age" 
+                       class="form-control" 
+                       placeholder="Age in years" 
+                       min="1" 
+                       max="120" 
+                       [(ngModel)]="customerRequest.age" />
+              </div>
+
+              <!-- Status Switch -->
+              <div class="col-12 mt-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" 
+                         type="checkbox" 
+                         id="isActive" 
+                         name="isActive" 
+                         [(ngModel)]="customerRequest.isActive" />
+                  <label class="form-check-label fw-semibold text-dark-teal" for="isActive">
+                    Profile Active Status
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Address Card -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4" *ngIf="customerRequest.address">
+          <div class="card-header bg-transparent border-bottom py-3">
+            <h5 class="fw-bold text-dark-teal mb-0">
+              <i class="bi bi-geo-alt-fill me-2"></i>Address Details
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="addressLine1" class="form-label fw-semibold text-dark-teal">Address Line 1</label>
+                <input type="text" 
+                       id="addressLine1" 
+                       name="addressLine1" 
+                       class="form-control" 
+                       placeholder="Street address or P.O. Box" 
+                       [(ngModel)]="customerRequest.address.addressLine1" />
+              </div>
+
+              <div class="col-md-6">
+                <label for="addressLine2" class="form-label fw-semibold text-dark-teal">Address Line 2</label>
+                <input type="text" 
+                       id="addressLine2" 
+                       name="addressLine2" 
+                       class="form-control" 
+                       placeholder="Apartment, suite, unit, etc." 
+                       [(ngModel)]="customerRequest.address.addressLine2" />
+              </div>
+
+              <div class="col-md-4">
+                <label for="city" class="form-label fw-semibold text-dark-teal">City</label>
+                <input type="text" 
+                       id="city" 
+                       name="city" 
+                       class="form-control" 
+                       placeholder="City" 
+                       [(ngModel)]="customerRequest.address.city" />
+              </div>
+
+              <div class="col-md-4">
+                <label for="state" class="form-label fw-semibold text-dark-teal">State / Province</label>
+                <input type="text" 
+                       id="state" 
+                       name="state" 
+                       class="form-control" 
+                       placeholder="State" 
+                       [(ngModel)]="customerRequest.address.state" />
+              </div>
+
+              <div class="col-md-4">
+                <label for="postalCode" class="form-label fw-semibold text-dark-teal">Postal Code</label>
+                <input type="text" 
+                       id="postalCode" 
+                       name="postalCode" 
+                       class="form-control" 
+                       placeholder="Zip/Postal code" 
+                       [(ngModel)]="customerRequest.address.postalCode" />
+              </div>
+
+              <div class="col-md-6">
+                <label for="country" class="form-label fw-semibold text-dark-teal">Country</label>
+                <input type="text" 
+                       id="country" 
+                       name="country" 
+                       class="form-control" 
+                       placeholder="Country" 
+                       [(ngModel)]="customerRequest.address.country" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Profile Picture & Actions -->
+      <div class="col-lg-4">
+        <!-- Photo Upload Card -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4 text-center">
+          <div class="card-header bg-transparent border-bottom py-3 text-start">
+            <h5 class="fw-bold text-dark-teal mb-0">
+              <i class="bi bi-image me-2"></i>Profile Image
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="avatar-preview-container mx-auto mb-3">
+              <img *ngIf="imagePreview || existingImage; else defaultAvatar" 
+                   [src]="imagePreview || existingImage" 
+                   alt="Customer Preview" 
+                   class="w-100 h-100 object-fit-cover rounded-circle shadow-sm" />
+              <ng-template #defaultAvatar>
+                <div class="default-avatar-placeholder d-flex align-items-center justify-content-center rounded-circle bg-mint text-dark-teal fw-bold fs-1">
+                  <i class="bi bi-person-fill"></i>
+                </div>
+              </ng-template>
+            </div>
+            <label class="btn btn-outline-primary btn-sm rounded-pill px-3 cursor-pointer">
+              <i class="bi bi-upload me-1"></i> Replace Photo
+              <input type="file" (change)="onFileSelected($event)" accept="image/*" class="d-none" />
+            </label>
+            <p class="text-muted extra-small mt-2 mb-0">Supported formats: JPG, PNG. Max size 2MB.</p>
+          </div>
+        </div>
+
+        <!-- Submit Controls Card -->
+        <div class="card border-0 shadow-sm rounded-3 p-4">
+          <button type="submit" class="btn btn-mint-primary w-100 py-2.5 mb-2 d-flex align-items-center justify-content-center gap-2 fw-semibold">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Save Changes</span>
+          </button>
+          <button type="button" (click)="cancel()" class="btn btn-light text-muted w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+            <i class="bi bi-arrow-left"></i>
+            <span>Cancel</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+  <!-- Empty state if no record loaded -->
+  <ng-template #noRecord>
+    <div class="card border-0 shadow-sm rounded-3 py-5 text-center">
+      <div class="card-body">
+        <i class="bi bi-exclamation-circle fs-1 text-muted mb-3 d-block"></i>
+        <h5 class="fw-bold text-dark-teal">No Customer Loaded</h5>
+        <p class="text-muted">Select a customer record from the list to edit details.</p>
+        <button (click)="cancel()" class="btn btn-mint-primary">
+          <i class="bi bi-list-ul me-1"></i> Return to Customer List
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</div>

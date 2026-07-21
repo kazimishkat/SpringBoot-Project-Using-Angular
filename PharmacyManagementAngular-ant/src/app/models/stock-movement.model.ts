@@ -43,6 +43,8 @@ export interface StockMovementResponse extends BaseEntity {
   quantity: number;
   referenceType: string;
   referenceId: number;
+  movementDate?: Date | string;
+  remarks?: string;
   createdAt: Date | string;
   createdBy: string;
 }

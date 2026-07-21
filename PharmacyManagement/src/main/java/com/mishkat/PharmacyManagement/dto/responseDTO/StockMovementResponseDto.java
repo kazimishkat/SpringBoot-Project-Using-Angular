@@ -16,6 +16,8 @@ public class StockMovementResponseDto {
     private Integer quantity;
     private String referenceType;
     private Long referenceId;
+    private LocalDateTime movementDate;
+    private String remarks;
     private LocalDateTime createdAt;
     private String createdBy;
 }

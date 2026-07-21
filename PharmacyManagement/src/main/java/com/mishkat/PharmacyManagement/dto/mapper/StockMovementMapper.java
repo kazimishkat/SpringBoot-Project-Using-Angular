@@ -16,8 +16,10 @@ public class StockMovementMapper {
 
         // BaseEntity থেকে অডিট ট্র্যাকিং ফিল্ড ম্যাপিং
         dto.setId(movement.getId());
-        dto.setCreatedAt(movement.getCreatedAt());
-        dto.setCreatedBy(movement.getCreatedBy());
+        dto.setCreatedAt(movement.getCreatedAt() != null ? movement.getCreatedAt() : movement.getMovementDate());
+        dto.setCreatedBy(movement.getCreatedBy() != null ? movement.getCreatedBy() : "System");
+        dto.setMovementDate(movement.getMovementDate());
+        dto.setRemarks(movement.getRemarks());
 
         // সাধারণ ট্রনজেকশন ডেটা ম্যাপিং
         dto.setMovementType(movement.getMovementType());

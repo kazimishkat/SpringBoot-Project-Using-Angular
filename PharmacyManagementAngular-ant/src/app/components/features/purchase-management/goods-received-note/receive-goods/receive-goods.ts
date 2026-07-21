@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { GoodsReceivedNoteService } from '../../../../../services/goods-received-note.service';
 import { PurchaseOrderService } from '../../../../../services/purchase-order.service';
 import { GoodsReceivedNoteRequest, GoodsReceivedNoteItemRequest, ApprovalStatus } from '../../../../../models/goods-received-note.model';
@@ -22,6 +23,8 @@ export class ReceiveGoods implements OnInit {
   purchaseOrders: PurchaseOrderResponse[] = [];
   selectedOrderDetails: PurchaseOrderResponse | null = null;
   
+  statuses = [ApprovalStatus.APPROVED, ApprovalStatus.PENDING];
+
   grnRequest!: GoodsReceivedNoteRequest;
   submitted = false;
   errorMessage = '';
@@ -29,6 +32,7 @@ export class ReceiveGoods implements OnInit {
   constructor(
     private grnService: GoodsReceivedNoteService,
     private poService: PurchaseOrderService,
+    private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -42,6 +46,15 @@ export class ReceiveGoods implements OnInit {
     this.poService.getAllPurchaseOrders().subscribe({
       next: (data) => {
         this.purchaseOrders = data ? data.filter(x => x.status.toString() === 'APPROVED') : [];
+        
+        // Auto-select purchase order if poId query parameter is present in URL
+        const poIdParam = this.route.snapshot.queryParamMap.get('poId');
+        if (poIdParam) {
+          const poId = Number(poIdParam);
+          this.grnRequest.purchaseOrderId = poId;
+          this.onPurchaseOrderSelectionChange(poId);
+        }
+
         this.cdr.markForCheck();
       }
     });
@@ -99,7 +112,7 @@ export class ReceiveGoods implements OnInit {
 
     this.grnService.receiveGoods(this.grnRequest).subscribe({
       next: (res) => {
-        alert('Goods Received Note Document Logged Into Stock Engine Successfully');
+        alert('Goods Received Note Document Logged Into Stock Engine Successfully! Inventory stock updated.');
         this.resetFormStructure();
         this.loadApprovedPurchaseOrders(); 
       },
@@ -120,7 +133,7 @@ export class ReceiveGoods implements OnInit {
       purchaseOrderId: undefined as any,
       receivedDate: new Date().toISOString().split('T')[0],
       receivedById: 1, 
-      approvalStatus: ApprovalStatus.PENDING,
+      approvalStatus: ApprovalStatus.APPROVED,
       items: [],
       isActive: true
     };
@@ -133,7 +146,7 @@ export class ReceiveGoods implements OnInit {
       this.grnForm.resetForm({
         grnNumber: this.grnRequest.grnNumber,
         receivedDate: this.grnRequest.receivedDate,
-        approvalStatus: ApprovalStatus.PENDING
+        approvalStatus: ApprovalStatus.APPROVED
       });
     }
     this.cdr.markForCheck();

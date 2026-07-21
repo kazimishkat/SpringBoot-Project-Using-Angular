@@ -201,7 +201,7 @@
                 <span class="text-muted small" *ngIf="!m.referenceType && !m.referenceId">N/A</span>
               </td>
               <td>
-                <span class="text-dark d-block">{{ m.createdAt | date:'medium' }}</span>
+                <span class="text-dark d-block">{{ (m.createdAt || m.movementDate) | date:'medium' }}</span>
                 <span class="text-muted small d-block">By: {{ m.createdBy || 'System' }}</span>
               </td>
               <td class="text-end pe-4">

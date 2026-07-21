@@ -89,12 +89,12 @@ export class PurchaseOrderDetailsComponent implements OnInit {
   // =====================================================
   /** Approves the active focused document parameters tracking state */
   approveOrder(): void {
-    if (!confirm('Approve this purchase order layout configuration?')) return;
+    if (!confirm('Approve this Purchase Order?')) return;
     
     this.errorMessage = '';
     this.poService.approvePurchaseOrder(this.poId).subscribe({
       next: (res) => {
-        alert('Purchase order approved configuration updated');
+        alert('Purchase Order APPROVED successfully!');
         this.loadMasterCatalogIndexes();
         this.fetchGranularDetailsPanel(this.poId);
       },
@@ -125,31 +125,9 @@ export class PurchaseOrderDetailsComponent implements OnInit {
     window.print();
   }
 
-  /** 
-   * Transition order to RECEIVED state, automatically writing audit ledger 
-   * entries via internal state transitions.
-   */
-  generateGoodReceivedNote(): void {
-    if (!this.poDetails) return;
-    
-    if (this.poDetails.status !== PurchaseOrderStatus.APPROVED) {
-      alert('GRN generation requires an APPROVED purchase order state sequence status first');
-      return;
-    }
-
-    if (!confirm('Generate GRN? This action updates system stock balances instantly via backend services.')) {
-      return;
-    }
-
-    this.errorMessage = '';
-    this.poService.updatePurchaseOrderStatus(this.poId, PurchaseOrderStatus.RECEIVED).subscribe({
-      next: (res) => {
-        alert('GRN Processed: Inward stocks ledger allocations injected successfully');
-        this.loadMasterCatalogIndexes();
-        this.fetchGranularDetailsPanel(this.poId);
-      },
-      error: (err) => this.interceptError('Fulfillment operations failed at backend level', err)
-    });
+  /** Navigates directly to Receive Goods (Create GRN) page for this Approved PO */
+  navigateToReceiveGoods(): void {
+    this.router.navigate(['/dashboard/grns/receive'], { queryParams: { poId: this.poId } });
   }
 
   // =====================================================

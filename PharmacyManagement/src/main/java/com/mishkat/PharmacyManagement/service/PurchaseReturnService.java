@@ -19,4 +19,5 @@ public interface PurchaseReturnService {
     PurchaseReturnResponseDto updatePurchaseReturn(Long id, PurchaseReturnRequestDto dto);
 
     void deletePurchaseReturn(Long id);
+    PurchaseReturnResponseDto approvePurchaseReturn(Long id);
 }

@@ -1,0 +1,254 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Alert Banner -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- STATE 1: Browse Purchase Returns (Default Card Grid View) -->
+  <div *ngIf="!returnDetails">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Purchase Return Directory</h3>
+        <p class="text-muted small mb-0">Browse returned item quantities, status logs, and credit validations.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <!-- Search Input in Header -->
+        <div class="input-group" style="max-width: 300px;">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input #filterInput 
+                 (input)="0" 
+                 type="text" 
+                 class="form-control bg-light-focus border-start-0" 
+                 placeholder="Search Return Number or Supplier..." />
+        </div>
+        <a routerLink="/dashboard/purchase-returns/create" class="btn btn-mint-primary fw-semibold text-decoration-none d-flex align-items-center gap-2 shadow-sm">
+          <i class="bi bi-plus-circle-fill"></i>
+          <span>Create Return</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- PO Card Grid -->
+    <div class="row g-3" *ngIf="masterReturnList.length > 0; else emptyRegistry">
+      <ng-container *ngFor="let item of masterReturnList">
+        <!-- Template Filter matching Return number or supplier name -->
+        <div class="col-lg-4 col-md-6 col-sm-12 animate-fade-in" 
+             *ngIf="!filterInput.value || item.returnNumber.toLowerCase().includes(filterInput.value.toLowerCase()) || item.supplierName.toLowerCase().includes(filterInput.value.toLowerCase())">
+          <div class="card border-0 shadow-sm rounded-4 h-100 po-overview-card d-flex flex-column" style="transition: all 0.3s ease;">
+            <!-- Card Body -->
+            <div class="card-body p-4 flex-grow-1">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="po-avatar d-flex align-items-center justify-content-center bg-teal text-white fw-bold fs-4 rounded-circle flex-shrink-0" style="width: 48px; height: 48px; background-color: #0fa895 !important;">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                </div>
+                <div class="overflow-hidden">
+                  <h5 class="mb-0 fw-bold text-dark-teal text-truncate" title="{{ item.returnNumber }}">{{ item.returnNumber }}</h5>
+                  <span class="badge bg-teal-light text-teal fw-bold font-monospace mt-1">{{ item.supplierName }}</span>
+                </div>
+              </div>
+
+              <!-- Quick Info -->
+              <div class="po-quick-details small mt-3 text-muted">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-shop-window text-teal"></i>
+                  <span class="text-dark fw-medium text-truncate">Branch: {{ item.branchName }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-calendar-event text-teal"></i>
+                  <span class="text-dark">Return Date: {{ item.returnDate | date:'mediumDate' }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-cart-check text-teal"></i>
+                  <span class="text-dark">Items Count: {{ item.items ? item.items.length : 0 }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="card-footer bg-light border-0 py-3 px-4 d-flex align-items-center justify-content-between rounded-bottom-4 mt-auto">
+              <span class="badge rounded-pill px-2.5 py-1 fw-semibold text-xs" 
+                    [ngClass]="{
+                      'bg-mint text-dark-teal': item.approvalStatus === 'APPROVED',
+                      'bg-light-warning text-warning': !item.approvalStatus || item.approvalStatus === 'PENDING',
+                      'bg-light-danger text-danger': item.approvalStatus === 'REJECTED' || item.approvalStatus === 'CANCELLED'
+                    }">
+                {{ item.approvalStatus || 'PENDING' }}
+              </span>
+              <button (click)="loadReturn(item.id)" 
+                      class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1.5 px-2.5 py-1.5 font-size-xs fw-semibold" 
+                      title="View Details">
+                <i class="bi bi-eye-fill"></i>
+                <span>Details</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- Empty Registry Layout -->
+    <ng-template #emptyRegistry>
+      <div class="card border-0 shadow-sm rounded-4 text-center py-5 px-4">
+        <div class="empty-state-icon mb-3">
+          <i class="bi bi-file-earmark-medical text-muted-teal display-4"></i>
+        </div>
+        <h5 class="fw-semibold text-dark-teal">No returns found</h5>
+        <p class="text-muted small px-3">There are no purchase return logs registered in the database.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- STATE 2: Detailed Requisition Context -->
+  <div *ngIf="returnDetails">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Purchase Return Details</h3>
+        <p class="text-muted small mb-0">Detailed summary, validation, and action logs for Purchase Return record.</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button (click)="returnDetails = null" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+          <i class="bi bi-arrow-left"></i>
+          <span>Back to Catalog</span>
+        </button>
+        <button (click)="printReturn()" class="btn btn-outline-mint d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+          <i class="bi bi-printer"></i>
+          <span>Print Receipt</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+      <!-- Left Column: Return Info Overview -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+          <div class="card-header bg-gradient-teal py-3 px-4 text-white">
+            <h5 class="mb-0 fw-semibold">Return Summary</h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="text-center mb-4">
+              <div class="badge bg-mint text-dark-teal fs-6 fw-bold px-3 py-2 rounded-pill font-monospace mb-2">
+                {{ returnDetails.returnNumber }}
+              </div>
+              <h5 class="text-muted small mb-0">Status</h5>
+              <div class="mt-2">
+                <span class="badge px-3 py-2 rounded-pill fw-bold text-uppercase"
+                      [ngClass]="{
+                        'bg-light-warning text-warning': !returnDetails.approvalStatus || returnDetails.approvalStatus === 'PENDING',
+                        'bg-mint text-dark-teal': returnDetails.approvalStatus === 'APPROVED',
+                        'bg-light-danger text-danger': returnDetails.approvalStatus === 'REJECTED' || returnDetails.approvalStatus === 'CANCELLED'
+                      }">
+                  {{ returnDetails.approvalStatus || 'PENDING' }}
+                </span>
+              </div>
+            </div>
+
+            <hr class="border-light-teal">
+
+            <div class="d-flex flex-column gap-3">
+              <div>
+                <label class="text-muted font-size-xs fw-bold text-uppercase mb-1">Supplier</label>
+                <div class="fw-bold text-dark-teal">
+                  <i class="bi bi-building me-2"></i>{{ returnDetails.supplierName }}
+                </div>
+              </div>
+              <div>
+                <label class="text-muted font-size-xs fw-bold text-uppercase mb-1">Source Branch</label>
+                <div class="fw-bold text-dark-teal">
+                  <i class="bi bi-shop me-2"></i>{{ returnDetails.branchName }}
+                </div>
+              </div>
+              <div>
+                <label class="text-muted font-size-xs fw-bold text-uppercase mb-1">Return Date</label>
+                <div class="fw-bold text-dark-teal">
+                  <i class="bi bi-calendar-event me-2"></i>{{ returnDetails.returnDate | date:'fullDate' }}
+                </div>
+              </div>
+              <div>
+                <label class="text-muted font-size-xs fw-bold text-uppercase mb-1">Created By</label>
+                <div class="fw-bold text-dark-teal">
+                  <i class="bi bi-person-badge me-2"></i>{{ returnDetails.createdBy || 'System User' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-4 pt-4 border-top d-grid gap-2" *ngIf="!returnDetails.approvalStatus || returnDetails.approvalStatus === 'PENDING'">
+              <button (click)="approveReturn()" class="btn btn-mint-primary w-100 py-2.5 fw-semibold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Approve & Debit Inventory</span>
+              </button>
+              <button (click)="cancelReturn()" class="btn btn-outline-danger w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-trash"></i>
+                <span>Cancel Return Record</span>
+              </button>
+            </div>
+            
+            <div class="mt-4 pt-4 border-top d-grid gap-2" *ngIf="returnDetails.approvalStatus && returnDetails.approvalStatus !== 'PENDING'">
+              <button (click)="cancelReturn()" class="btn btn-outline-danger w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-trash"></i>
+                <span>Remove / Rollback Record</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Return Items Table -->
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+          <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+            <h5 class="mb-0 fw-bold text-dark-teal d-flex align-items-center gap-2">
+              <i class="bi bi-list-ul"></i>
+              <span>Returned Items Ledger</span>
+            </h5>
+            <span class="badge bg-mint text-dark-teal px-3 py-2 rounded-pill fw-bold">
+              Items count: {{ returnDetails.items.length || 0 }}
+            </span>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-uppercase font-size-xs fw-bold text-muted">
+                  <tr>
+                    <th scope="col" class="ps-4">Batch Code</th>
+                    <th scope="col">Medicine Brand</th>
+                    <th scope="col" class="text-center">Quantity</th>
+                    <th scope="col">Reason</th>
+                    <th scope="col" class="text-end pe-4">Credit Price ($)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of returnDetails.items" class="hover-row">
+                    <td class="ps-4">
+                      <span class="badge bg-teal-light text-teal fw-bold font-monospace">{{ item.batchNumber }}</span>
+                    </td>
+                    <td>
+                      <div class="fw-bold text-dark-teal">{{ item.medicineBrandName }}</div>
+                    </td>
+                    <td class="text-center">
+                      <span class="fw-semibold">{{ item.quantity }}</span>
+                    </td>
+                    <td>
+                      <span class="badge bg-light text-dark text-wrap text-start border py-1.5 px-2.5">
+                        {{ item.reason }}
+                      </span>
+                    </td>
+                    <td class="text-end pe-4 font-monospace fw-bold text-teal">
+                      ${{ item.creditAmount | number:'1.2-2' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

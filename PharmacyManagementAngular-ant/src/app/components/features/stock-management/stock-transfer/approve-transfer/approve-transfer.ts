@@ -58,13 +58,33 @@ export class ApproveTransferComponent implements OnInit {
     });
   }
 
+  /** Gets active receiver user ID dynamically (supports both User 1 and User 2) */
+  private getActiveReceiverId(): number {
+    try {
+      const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+      if (storedUser) {
+        const userObj = JSON.parse(storedUser);
+        if (userObj && userObj.id) {
+          return Number(userObj.id);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not parse user from storage, falling back to default receiver ID.');
+    }
+    
+    // 💡 ফলব্যাক হিসেবে ১ রিটার্ন করবে (যদি ২ নম্বর ইউজার ডাটাবেজে না থাকে তবে এটি সেফ রিড করবে)
+    return 1; 
+  }
+
   /** Confirms reception matching user physical entries counts inputs via backend PUT verification rules */
   approve(): void {
     if (!this.transferDetails) return;
     if (!confirm('Confirm and log received physical units into destination branch stock inventory ledger?')) return;
 
     this.errorMessage = '';
-    const currentReceiverId = 2; // Simulated active localized verifying receiver account ID
+    
+    // 🌟 ডাইনামিকালি লগইন থাকা ইউজার আইডি ফেচ করা হচ্ছে (User ID 1 & 2 Both Supported)
+    const currentReceiverId = this.getActiveReceiverId();
     
     // Map internal local UI quantities grids array parameters directly down to request payloads configurations
     const itemUpdates: StockTransferItemRequest[] = this.transferDetails.items.map(item => {
@@ -81,7 +101,7 @@ export class ApproveTransferComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.errorMessage = `Fulfillment transaction rejected by server constraints: ${err.error || err.message || 'Server Exception'}`;
+        this.errorMessage = `Fulfillment transaction rejected by server constraints: ${err.error?.message || err.error || err.message || 'Server Exception'}`;
         this.cdr.markForCheck();
       }
     });
@@ -99,7 +119,7 @@ export class ApproveTransferComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.errorMessage = `Rejection process halted by system core structures: ${err.error || err.message || 'Server Exception'}`;
+        this.errorMessage = `Rejection process halted by system core structures: ${err.error?.message || err.error || err.message || 'Server Exception'}`;
         this.cdr.markForCheck();
       }
     });

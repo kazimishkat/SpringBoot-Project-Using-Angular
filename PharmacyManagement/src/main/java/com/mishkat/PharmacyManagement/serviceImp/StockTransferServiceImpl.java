@@ -8,6 +8,7 @@ import com.mishkat.PharmacyManagement.entity.*;
 import com.mishkat.PharmacyManagement.enums.StockMovementType;
 import com.mishkat.PharmacyManagement.enums.TransferStatus;
 import com.mishkat.PharmacyManagement.repository.*;
+import com.mishkat.PharmacyManagement.service.BranchInventoryService;
 import com.mishkat.PharmacyManagement.service.StockMovementService;
 import com.mishkat.PharmacyManagement.service.StockTransferService;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,9 @@ public class StockTransferServiceImpl implements StockTransferService {
     private final MedicineBatchRepository medicineBatchRepository;
     private final RequisitionRepository requisitionRepository;
 
-    // Injecting Internal Stock Ledger Engine
+    // Injecting Internal Stock Ledger Engine & Branch Inventory Management
     private final StockMovementService stockMovementService;
+    private final BranchInventoryService branchInventoryService; // 🌟 1. Added BranchInventoryService
 
     private final StockTransferMapper stockTransferMapper = new StockTransferMapper();
 
@@ -149,6 +151,9 @@ public class StockTransferServiceImpl implements StockTransferService {
             logTransferOutMovements(saved);
         } else if (status == TransferStatus.RECEIVED && oldStatus != TransferStatus.RECEIVED) {
             logTransferInMovements(saved);
+        } else if (status == TransferStatus.CANCELLED && oldStatus == TransferStatus.DISPATCHED) {
+            // 🌟 2. Dispatched হওয়া ট্রান্সফার বাতিল হলে সোর্স ব্র্যাঞ্চে স্টক ফেরত দেওয়া
+            reverseTransferOutMovements(saved);
         }
 
         return stockTransferMapper.toResponseDto(saved);
@@ -190,6 +195,14 @@ public class StockTransferServiceImpl implements StockTransferService {
     private void logTransferOutMovements(StockTransfer transfer) {
         if (transfer.getItems() != null) {
             for (StockTransferItem item : transfer.getItems()) {
+                // 🌟 3. সোর্স ব্র্যাঞ্চ থেকে আসল স্টক কমানো (BranchInventory)
+                branchInventoryService.deductStock(
+                        transfer.getFromBranch().getId(),
+                        item.getBatch().getId(),
+                        item.getSentQuantity()
+                );
+
+                // Audit trail Movement log
                 stockMovementService.recordMovement(
                         transfer.getFromBranch().getId(),
                         item.getBatch().getId(),
@@ -207,6 +220,15 @@ public class StockTransferServiceImpl implements StockTransferService {
         if (transfer.getItems() != null) {
             for (StockTransferItem item : transfer.getItems()) {
                 int finalReceived = item.getReceivedQuantity() != null ? item.getReceivedQuantity() : item.getSentQuantity();
+
+                // 🌟 4. গন্তব্য ব্র্যাঞ্চে আসল স্টক যোগ করা (BranchInventory)
+                branchInventoryService.addStock(
+                        transfer.getToBranch().getId(),
+                        item.getBatch().getId(),
+                        finalReceived
+                );
+
+                // Audit trail Movement log
                 stockMovementService.recordMovement(
                         transfer.getToBranch().getId(),
                         item.getBatch().getId(),
@@ -215,6 +237,30 @@ public class StockTransferServiceImpl implements StockTransferService {
                         "STOCK_TRANSFER",
                         transfer.getId(),
                         "Stock added upon inward branch transfer reception: " + transfer.getTransferNumber()
+                );
+            }
+        }
+    }
+
+    private void reverseTransferOutMovements(StockTransfer transfer) {
+        if (transfer.getItems() != null) {
+            for (StockTransferItem item : transfer.getItems()) {
+                // 🌟 5. ট্রান্সফার বাতিল হলে সোর্স ব্র্যাঞ্চে স্টক পুনরায় ফিরিয়ে দেওয়া
+                branchInventoryService.addStock(
+                        transfer.getFromBranch().getId(),
+                        item.getBatch().getId(),
+                        item.getSentQuantity()
+                );
+
+                // Audit trail Movement log
+                stockMovementService.recordMovement(
+                        transfer.getFromBranch().getId(),
+                        item.getBatch().getId(),
+                        StockMovementType.TRANSFER_IN,
+                        item.getSentQuantity(),
+                        "STOCK_TRANSFER",
+                        transfer.getId(),
+                        "Stock returned due to cancelled transfer: " + transfer.getTransferNumber()
                 );
             }
         }

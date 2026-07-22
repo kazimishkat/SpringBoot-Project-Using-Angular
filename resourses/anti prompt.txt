@@ -34,7 +34,7 @@ create menu first then inside
 menu named Delivery Companies,by click this menu showing drop down menu and these menu names company-list,company-add,company-details.company-list,company-add,company-details code write only their html and css under component folder,
 also work only sidebar for add menues,dont go and change any other folder ,work route page in app.route.ts.
 or any others code in this project,dont add any dummy data for showing 
-data base section,i want to input these data,keep my code clean
+data base section,i want to input these data,keep my code clean and ask permission for permanent code changes
 
 create menu to menu inside
 3.generate branch-inventory-list,branch-inventory-details UI inside dashborad,in sidebar section 

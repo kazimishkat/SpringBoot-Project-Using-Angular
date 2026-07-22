@@ -1,18 +1,4 @@
 <div class="container-fluid p-0 animate-fade-in">
-  <!-- Page Header -->
-  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
-    <div>
-      <h3 class="fw-bold text-dark-teal mb-1">Stock Transfer Details</h3>
-      <p class="text-muted small mb-0">Review transit logs, branch endpoints, and batch transfer numbers.</p>
-    </div>
-    <div>
-      <button (click)="goBack()" class="btn btn-outline-secondary d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm transition-all border-1">
-        <i class="bi bi-arrow-left"></i>
-        <span>Back</span>
-      </button>
-    </div>
-  </div>
-
   <!-- Alert Banner -->
   <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm rounded-4" role="alert">
     <div class="d-flex align-items-center gap-2">
@@ -22,121 +8,290 @@
     <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
   </div>
 
-  <!-- STATE 1: No details loaded (Lookup search input helper) -->
-  <div *ngIf="!transferDetails" class="card border-0 shadow-sm rounded-4 text-center py-5 px-4 bg-white">
-    <div class="empty-state-icon mb-3">
-      <i class="bi bi-receipt text-muted-teal display-3"></i>
-    </div>
-    <h5 class="fw-bold text-dark-teal mb-2">No Stock Transfer Selected</h5>
-    <p class="text-muted small mx-auto mb-4" style="max-width: 450px;">
-      Please select a stock transfer transaction from the registry ledger, or enter a valid Stock Transfer ID below to view audit records.
-    </p>
-    <div class="d-flex justify-content-center gap-2 mx-auto" style="max-width: 320px;">
-      <input #idInput type="number" class="form-control bg-light-focus" placeholder="Enter Transfer ID (e.g. 1)" />
-      <a [routerLink]="['/dashboard/stock-transfers/details', idInput.value]" class="btn btn-mint-primary fw-semibold px-4 text-decoration-none d-flex align-items-center justify-content-center">
-        Find
-      </a>
-    </div>
-  </div>
-
-  <!-- STATE 2: Transfer Details Loaded -->
-  <div *ngIf="transferDetails" class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
-    <!-- Header with transfer status information -->
-    <div class="bg-gradient-teal p-4 text-white d-flex align-items-center justify-content-between flex-wrap gap-3 border-0">
-      <div class="d-flex align-items-center gap-3">
-        <div class="details-avatar d-flex align-items-center justify-content-center bg-white text-teal fw-bold fs-3 rounded-circle shadow" style="width: 48px; height: 48px;">
-          <i class="bi bi-arrow-left-right"></i>
+  <!-- STATE 1: Browse Stock Transfers (Directory Grid View) -->
+  <div *ngIf="!transferDetails && !isLoading">
+    <!-- Header Controls -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+      <div>
+        <h3 class="fw-bold text-dark-teal mb-1">Stock Transfer Directory</h3>
+        <p class="text-muted small mb-0">Browse transit logs, branch endpoints, and batch transfer numbers.</p>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <!-- Search Input in Header -->
+        <div class="input-group input-group-sm" style="max-width: 300px;">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input #filterInput 
+                 (input)="0" 
+                 type="text" 
+                 class="form-control bg-light-focus border-start-0" 
+                 placeholder="Search Transfer Number or Branch..." />
         </div>
-        <div>
-          <h4 class="mb-1 fw-bold text-white">Transfer Manifest: {{ transferDetails.transferNumber }}</h4>
-          <div class="d-flex align-items-center gap-2 flex-wrap text-white-50">
-            <span class="small font-monospace">Transfer ID: #{{ transferDetails.id }}</span>
-            <span class="text-white-50">•</span>
-            <span class="small">Date: {{ transferDetails.transferDate | date:'mediumDate' }}</span>
+        <a routerLink="/dashboard/stock-transfers/create" class="btn btn-sm btn-mint-primary fw-semibold text-decoration-none d-flex align-items-center gap-1.5 shadow-sm px-3 py-2">
+          <i class="bi bi-plus-circle-fill"></i>
+          <span>New Transfer</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Stock Transfer Cards Grid -->
+    <div class="row g-3" *ngIf="transfersList.length > 0; else emptyRegistry">
+      <ng-container *ngFor="let item of transfersList">
+        <!-- Template Filter matching transfer number, status, or branch names -->
+        <div class="col-lg-4 col-md-6 col-sm-12 animate-fade-in" 
+             *ngIf="!filterInput.value || item.transferNumber.toLowerCase().includes(filterInput.value.toLowerCase()) || item.fromBranchName.toLowerCase().includes(filterInput.value.toLowerCase()) || item.toBranchName.toLowerCase().includes(filterInput.value.toLowerCase()) || item.status.toLowerCase().includes(filterInput.value.toLowerCase())">
+          <div class="card border-0 shadow-sm rounded-4 h-100 transfer-overview-card d-flex flex-column">
+            <!-- Card Body -->
+            <div class="card-body p-4 flex-grow-1">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="transfer-avatar d-flex align-items-center justify-content-center fw-bold fs-5 rounded-circle flex-shrink-0">
+                  <i class="bi bi-arrow-left-right"></i>
+                </div>
+                <div class="overflow-hidden">
+                  <h5 class="mb-0 fw-bold text-dark-teal text-truncate" title="{{ item.transferNumber }}">{{ item.transferNumber }}</h5>
+                  <span class="small text-muted">ID: #{{ item.id }} • {{ item.transferDate | date:'mediumDate' }}</span>
+                </div>
+              </div>
+
+              <!-- Quick Info -->
+              <div class="small mt-3 text-muted">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-box-arrow-up text-teal"></i>
+                  <span class="text-dark fw-medium text-truncate">From: {{ item.fromBranchName }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <i class="bi bi-box-arrow-in-down text-teal"></i>
+                  <span class="text-dark fw-medium text-truncate">To: {{ item.toBranchName }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-tag text-teal"></i>
+                  <span class="text-dark">Items: {{ item.items ? item.items.length : 0 }} item(s)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="card-footer bg-light border-0 py-3 px-4 d-flex align-items-center justify-content-between rounded-bottom-4 mt-auto">
+              <span class="badge rounded-pill px-2.5 py-1.5 fw-semibold text-xs" 
+                    [ngClass]="{
+                      'bg-mint text-dark-teal': item.status === 'RECEIVED',
+                      'bg-light-warning text-warning': item.status === 'PENDING',
+                      'bg-info text-white': item.status === 'DISPATCHED',
+                      'bg-light-danger text-danger': item.status === 'CANCELLED'
+                    }">
+                {{ item.status || 'PENDING' }}
+              </span>
+              <button (click)="fetchTransferDetails(item.id)" 
+                      class="btn btn-sm btn-outline-mint d-inline-flex align-items-center gap-1.5 px-3 py-1.5 font-size-xs fw-semibold" 
+                      title="View Details">
+                <i class="bi bi-eye-fill"></i>
+                <span>Details</span>
+              </button>
+            </div>
           </div>
         </div>
+      </ng-container>
+    </div>
+
+    <!-- Empty Registry Layout -->
+    <ng-template #emptyRegistry>
+      <div class="card border-0 shadow-sm rounded-4 text-center py-5 px-4 bg-white">
+        <div class="empty-state-icon mb-3">
+          <i class="bi bi-arrow-left-right text-muted-teal display-4"></i>
+        </div>
+        <h5 class="fw-bold text-dark-teal mb-2">No Stock Transfers Registered</h5>
+        <p class="text-muted small mx-auto mb-4" style="max-width: 400px;">
+          No stock transfer records were found. Create a new transfer requisition to move batch items between branch locations.
+        </p>
+        <a routerLink="/dashboard/stock-transfers/create" class="btn btn-mint-primary px-4 py-2 fw-bold text-decoration-none">
+          <i class="bi bi-plus-circle-fill me-2"></i>Create Stock Transfer
+        </a>
       </div>
-      <div>
-        <span class="badge rounded-pill px-3 py-2 fw-semibold text-sm shadow-sm"
-              [ngClass]="{
-                'bg-mint text-dark-teal': transferDetails.status === 'RECEIVED',
-                'bg-light-warning text-warning': transferDetails.status === 'PENDING' || transferDetails.status === 'DISPATCHED',
-                'bg-light-danger text-danger': transferDetails.status === 'CANCELLED'
-              }">
-          <i class="bi me-1" 
-             [ngClass]="{
-               'bi-check-circle-fill': transferDetails.status === 'RECEIVED',
-               'bi-clock-fill': transferDetails.status === 'PENDING' || transferDetails.status === 'DISPATCHED',
-               'bi-x-circle-fill': transferDetails.status === 'CANCELLED'
-             }"></i>
-          {{ transferDetails.status || 'PENDING' }}
-        </span>
+    </ng-template>
+  </div>
+
+  <!-- STATE 2: Loading Spinner -->
+  <div *ngIf="isLoading" class="card border-0 shadow-sm rounded-4 text-center py-5 bg-white">
+    <div class="spinner-border text-teal mx-auto mb-3" role="status" style="width: 3rem; height: 3rem;">
+      <span class="visually-hidden">Loading transfer details...</span>
+    </div>
+    <p class="text-muted fw-semibold mb-0">Retrieving stock transfer details...</p>
+  </div>
+
+  <!-- STATE 3: Transfer Details Loaded -->
+  <div *ngIf="transferDetails && !isLoading" class="animate-fade-in">
+    <!-- Header Selection Controls & Back to Directory -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white p-3">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <h4 class="fw-bold text-dark-teal mb-0">Stock Transfer Manifest</h4>
+        </div>
+        <div class="d-flex align-items-center flex-wrap gap-2">
+          <!-- Select Dropdown for quick toggle -->
+          <div class="input-group input-group-sm" style="min-width: 250px; max-width: 320px;">
+            <span class="input-group-text bg-light text-muted border-end-0">
+              <i class="bi bi-list-nested"></i>
+            </span>
+            <select 
+              class="form-select form-select-sm bg-light border-start-0 fw-semibold text-dark"
+              [ngModel]="transferId"
+              (ngModelChange)="fetchTransferDetails($event)">
+              <option *ngFor="let t of transfersList" [value]="t.id">
+                {{ t.transferNumber }} ({{ t.fromBranchName }} → {{ t.toBranchName }})
+              </option>
+            </select>
+          </div>
+          <button (click)="printManifest()" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold transition-all">
+            <i class="bi bi-printer"></i>
+            <span>Print</span>
+          </button>
+          <button (click)="clearSelection()" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1.5 px-3 py-2 fw-semibold transition-all">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Directory</span>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Details Body -->
-    <div class="card-body p-4 bg-white">
-      <!-- Section 1: Summary -->
-      <div class="row g-4 mb-4 border-bottom pb-4">
-        <div class="col-md-3 col-sm-6 border-end">
-          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Source Branch (Sender)</h6>
-          <div class="fw-bold text-dark fs-5 mb-1">{{ transferDetails.fromBranchName }}</div>
-          <div class="text-muted small">Branch ID: #{{ transferDetails.fromBranchId }}</div>
+    <!-- Detailed Invoice/Manifest Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+      <!-- Header with status -->
+      <div class="bg-gradient-teal p-4 text-white d-flex align-items-center justify-content-between flex-wrap gap-3 border-0">
+        <div class="d-flex align-items-center gap-3">
+          <div class="details-avatar d-flex align-items-center justify-content-center bg-white text-teal fw-bold fs-3 rounded-circle shadow" style="width: 52px; height: 52px;">
+            <i class="bi bi-arrow-left-right"></i>
+          </div>
+          <div>
+            <h4 class="mb-1 fw-bold text-white">Transfer Manifest: {{ transferDetails.transferNumber }}</h4>
+            <div class="d-flex align-items-center gap-2 flex-wrap text-white-50">
+              <span class="small font-monospace">Transfer ID: #{{ transferDetails.id }}</span>
+              <span class="text-white-50">•</span>
+              <span class="small">Date: {{ transferDetails.transferDate | date:'mediumDate' }}</span>
+            </div>
+          </div>
         </div>
-        <div class="col-md-3 col-sm-6 border-end">
-          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Destination Branch (Receiver)</h6>
-          <div class="fw-bold text-dark fs-5 mb-1">{{ transferDetails.toBranchName }}</div>
-          <div class="text-muted small">Branch ID: #{{ transferDetails.toBranchId }}</div>
-        </div>
-        <div class="col-md-3 col-sm-6 border-end">
-          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Dispatched By</h6>
-          <div class="fw-bold text-dark fs-5 mb-1" *ngIf="transferDetails.dispatchedBy">{{ transferDetails.dispatchedBy }}</div>
-          <div class="fw-bold text-muted fs-5 mb-1" *ngIf="!transferDetails.dispatchedBy">System Core</div>
-          <div class="text-muted small">Dispatcher Signee</div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Requisition Ref</h6>
-          <div class="fw-bold text-dark fs-5 mb-1" *ngIf="transferDetails.requisitionNumber">{{ transferDetails.requisitionNumber }}</div>
-          <div class="fw-bold text-muted fs-5 mb-1" *ngIf="!transferDetails.requisitionNumber">Direct Transfer</div>
-          <div class="text-muted small">Requisition ID: #{{ transferDetails.requisitionId || 'N/A' }}</div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge rounded-pill px-3 py-2 fw-semibold text-sm shadow-sm"
+                [ngClass]="{
+                  'bg-mint text-dark-teal': transferDetails.status === 'RECEIVED',
+                  'bg-light-warning text-warning': transferDetails.status === 'PENDING',
+                  'bg-info text-white': transferDetails.status === 'DISPATCHED',
+                  'bg-light-danger text-danger': transferDetails.status === 'CANCELLED'
+                }">
+            <i class="bi me-1" 
+               [ngClass]="{
+                 'bi-check-circle-fill': transferDetails.status === 'RECEIVED',
+                 'bi-clock-fill': transferDetails.status === 'PENDING',
+                 'bi-truck': transferDetails.status === 'DISPATCHED',
+                 'bi-x-circle-fill': transferDetails.status === 'CANCELLED'
+               }"></i>
+            {{ transferDetails.status || 'PENDING' }}
+          </span>
         </div>
       </div>
 
-      <!-- Section 2: Items Table -->
-      <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3" style="font-size: 0.8rem;">Manifest Items Ledger</h6>
-      <div class="table-responsive border rounded-3 mb-4 overflow-hidden shadow-xs">
-        <table class="table align-middle mb-0 custom-ledger-table">
-          <thead class="table-light text-uppercase font-size-xs fw-bold text-muted border-bottom">
-            <tr>
-              <th scope="col" class="ps-3">Medicine Brand</th>
-              <th scope="col" class="text-center">Batch Number</th>
-              <th scope="col" class="text-center">Sent Quantity</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let item of transferDetails.items" class="ledger-row">
-              <td class="ps-3">
-                <div class="fw-bold text-dark">{{ item.medicineBrandName || ('Medicine #' + item.batchId) }}</div>
-              </td>
-              <td class="text-center">
-                <span class="badge bg-teal-light text-teal fw-bold font-monospace py-1.5 px-2.5 rounded">#{{ item.batchNumber || item.batchId }}</span>
-              </td>
-              <td class="text-center text-dark font-monospace fw-bold fs-6">
-                {{ item.sentQuantity }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- Details Body -->
+      <div class="card-body p-4 bg-white">
+        <!-- Section 1: Summary -->
+        <div class="row g-4 mb-4 border-bottom pb-4">
+          <div class="col-md-3 col-sm-6 border-end">
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Source Branch (Sender)</h6>
+            <div class="fw-bold text-dark fs-5 mb-1">{{ transferDetails.fromBranchName }}</div>
+            <div class="text-muted small">Branch ID: #{{ transferDetails.fromBranchId }}</div>
+          </div>
+          <div class="col-md-3 col-sm-6 border-end">
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Destination Branch (Receiver)</h6>
+            <div class="fw-bold text-dark fs-5 mb-1">{{ transferDetails.toBranchName }}</div>
+            <div class="text-muted small">Branch ID: #{{ transferDetails.toBranchId }}</div>
+          </div>
+          <div class="col-md-3 col-sm-6 border-end">
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Dispatched By</h6>
+            <div class="fw-bold text-dark fs-5 mb-1" *ngIf="transferDetails.dispatchedBy">{{ transferDetails.dispatchedBy }}</div>
+            <div class="fw-bold text-muted fs-5 mb-1" *ngIf="!transferDetails.dispatchedBy">System Core</div>
+            <div class="text-muted small">Dispatcher Signee</div>
+          </div>
+          <div class="col-md-3 col-sm-6">
+            <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-2" style="font-size: 0.8rem;">Requisition Ref</h6>
+            <div class="fw-bold text-dark fs-5 mb-1" *ngIf="transferDetails.requisitionNumber">{{ transferDetails.requisitionNumber }}</div>
+            <div class="fw-bold text-muted fs-5 mb-1" *ngIf="!transferDetails.requisitionNumber">Direct Transfer</div>
+            <div class="text-muted small">Requisition ID: #{{ transferDetails.requisitionId || 'N/A' }}</div>
+          </div>
+        </div>
 
-      <!-- Action Panel (Pending Approval) -->
-      <div class="d-flex align-items-center justify-content-end mt-4 pt-3 border-top border-light gap-2" *ngIf="transferDetails.status === 'PENDING'">
-        <button type="button" class="btn btn-outline-danger px-4 py-2 fw-semibold transition-all shadow-xs border-1" (click)="cancelTransfer()">
-          Cancel Transfer
-        </button>
-        <button type="button" class="btn btn-mint-primary px-4 py-2 fw-semibold transition-all shadow-sm border-0" (click)="approveTransfer()">
-          Approve & Dispatch
-        </button>
+        <!-- Section 2: Items Table -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3" style="font-size: 0.8rem;">Manifest Items Ledger</h6>
+        <div class="table-responsive border rounded-3 mb-4 overflow-hidden shadow-xs">
+          <table class="table align-middle mb-0 custom-ledger-table">
+            <thead class="table-light text-uppercase font-size-xs fw-bold text-muted border-bottom">
+              <tr>
+                <th scope="col" class="ps-3">Medicine Brand</th>
+                <th scope="col" class="text-center">Batch Number</th>
+                <th scope="col" class="text-center">Sent Quantity</th>
+                <th scope="col" class="text-center">Received Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of transferDetails.items" class="ledger-row">
+                <td class="ps-3">
+                  <div class="fw-bold text-dark">{{ item.medicineBrandName || ('Medicine Batch #' + item.batchId) }}</div>
+                </td>
+                <td class="text-center">
+                  <span class="badge bg-teal-light text-teal fw-bold font-monospace py-1.5 px-2.5 rounded">#{{ item.batchNumber || item.batchId }}</span>
+                </td>
+                <td class="text-center text-dark font-monospace fw-bold fs-6">
+                  {{ item.sentQuantity }}
+                </td>
+                <td class="text-center font-monospace fw-bold fs-6">
+                  <span *ngIf="item.receivedQuantity !== undefined && item.receivedQuantity !== null" class="text-success">
+                    {{ item.receivedQuantity }}
+                  </span>
+                  <span *ngIf="item.receivedQuantity === undefined || item.receivedQuantity === null" class="text-muted small">
+                    Pending
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="!transferDetails.items || transferDetails.items.length === 0">
+                <td colspan="4" class="text-center text-muted py-4">No manifest items listed for this stock transfer.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Action Panel -->
+        <div class="d-flex align-items-center justify-content-between mt-4 pt-3 border-top border-light flex-wrap gap-2">
+          <div>
+            <button type="button" class="btn btn-outline-secondary px-3 py-2 fw-semibold transition-all border-1" (click)="printManifest()">
+              <i class="bi bi-printer me-1"></i> Print Manifest
+            </button>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <!-- Pending Status Actions -->
+            <ng-container *ngIf="transferDetails.status === 'PENDING'">
+              <button type="button" class="btn btn-outline-danger px-4 py-2 fw-semibold transition-all shadow-xs border-1" (click)="cancelTransfer()">
+                Cancel Transfer
+              </button>
+              <button type="button" class="btn btn-mint-primary px-4 py-2 fw-semibold transition-all shadow-sm border-0" (click)="approveTransfer()">
+                Approve & Dispatch
+              </button>
+            </ng-container>
+
+            <!-- Dispatched Status Actions -->
+            <ng-container *ngIf="transferDetails.status === 'DISPATCHED'">
+              <button type="button" class="btn btn-outline-danger px-4 py-2 fw-semibold transition-all shadow-xs border-1" (click)="cancelTransfer()">
+                Cancel Transfer
+              </button>
+              <button type="button" class="btn btn-mint-primary px-4 py-2 fw-semibold transition-all shadow-sm border-0" (click)="receiveTransfer()">
+                <i class="bi bi-box-seam me-1"></i> Receive & Confirm Stock
+              </button>
+            </ng-container>
+
+            <!-- Received or Cancelled -->
+            <ng-container *ngIf="transferDetails.status === 'RECEIVED'">
+              <span class="badge bg-mint text-dark-teal px-3 py-2 fs-6 fw-bold">
+                <i class="bi bi-check-circle-fill me-1"></i> Transfer Fully Received
+              </span>
+            </ng-container>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -52,6 +52,9 @@ import { CustomerAdd } from './components/features/customer-management/customer-
 import { CustomerDetails } from './components/features/customer-management/customer-details/customer-details';
 import { CustomerEdit } from './components/features/customer-management/customer-edit/customer-edit';
 import { CustomerListComponent } from './components/features/customer-management/customer-list/customer-list';
+import { CreateReturnComponent } from './components/features/purchase-management/purchase-return/create-return/create-return';
+import { ReturnDetailsComponent } from './components/features/purchase-management/purchase-return/return-details/return-details';
+import { ReturnListComponent } from './components/features/purchase-management/purchase-return/return-list/return-list';
 
 
 export const routes: Routes = [
@@ -62,6 +65,11 @@ export const routes: Routes = [
   { path: 'customers/details', redirectTo: 'dashboard/customers/details', pathMatch: 'full' },
   { path: 'customers/:id', redirectTo: 'dashboard/customers/:id', pathMatch: 'full' },
   { path: 'customers', redirectTo: 'dashboard/customers', pathMatch: 'full' },
+  { path: 'purchase-returns/create', redirectTo: 'dashboard/purchase-returns/create', pathMatch: 'full' },
+  { path: 'purchase-returns/details', redirectTo: 'dashboard/purchase-returns/details', pathMatch: 'full' },
+  { path: 'purchase-returns/details/:id', redirectTo: 'dashboard/purchase-returns/details/:id', pathMatch: 'full' },
+  { path: 'purchase-returns/:id', redirectTo: 'dashboard/purchase-returns/:id', pathMatch: 'full' },
+  { path: 'purchase-returns', redirectTo: 'dashboard/purchase-returns', pathMatch: 'full' },
   { path: 'stock-movements/:id', redirectTo: 'dashboard/stock-movements/:id', pathMatch: 'full' },
   { path: 'stock-movements', redirectTo: 'dashboard/stock-movements', pathMatch: 'full' },
   { path: 'stock-adjustments/:id', redirectTo: 'dashboard/stock-adjustments/:id', pathMatch: 'full' },
@@ -151,6 +159,11 @@ export const routes: Routes = [
       { path: 'customers/edit', component: CustomerEdit },
       { path: 'customers/edit/:id', component: CustomerEdit },
       { path: 'customers/:id', component: CustomerDetails },
+      { path: 'purchase-returns', component: ReturnListComponent },
+      { path: 'purchase-returns/create', component: CreateReturnComponent },
+      { path: 'purchase-returns/details', component: ReturnDetailsComponent },
+      { path: 'purchase-returns/details/:id', component: ReturnDetailsComponent },
+      { path: 'purchase-returns/:id', component: ReturnDetailsComponent },
     ]
   }
 ];

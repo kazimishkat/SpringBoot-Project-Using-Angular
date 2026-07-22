@@ -1,0 +1,104 @@
+.bg-gradient-teal {
+  background: linear-gradient(135deg, #0fa895 0%, #0a4f45 100%);
+}
+
+.text-dark-teal {
+  color: #0a4f45;
+}
+
+.text-teal {
+  color: #0fa895;
+}
+
+.border-light-teal {
+  border-color: rgba(15, 168, 149, 0.1) !important;
+}
+
+.bg-teal-light {
+  background-color: rgba(15, 168, 149, 0.08) !important;
+}
+
+.bg-mint {
+  background-color: #d1f4f0 !important;
+  color: #0a4f45 !important;
+}
+
+.bg-light-warning {
+  background-color: #fef3c7 !important;
+}
+
+.text-warning-dark {
+  color: #856404;
+}
+
+.text-warning {
+  color: #d97706 !important;
+}
+
+.bg-light-danger {
+  background-color: #fee2e2 !important;
+}
+
+.text-danger-dark {
+  color: #721c24;
+}
+
+.text-danger {
+  color: #dc2626 !important;
+}
+
+.btn-mint-primary {
+  background-color: #0fa895;
+  color: #ffffff;
+  border: 1px solid #0fa895;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-mint-primary:hover {
+  background-color: #0a4f45;
+  border-color: #0a4f45;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 168, 149, 0.25);
+}
+
+.btn-outline-mint {
+  color: #0fa895;
+  border: 1px solid rgba(15, 168, 149, 0.3);
+  background-color: transparent;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-outline-mint:hover {
+  color: #0a4f45;
+  background-color: #f0fdf4;
+  border-color: #0fa895;
+}
+
+.hover-row {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.hover-row:hover {
+  background-color: rgba(15, 168, 149, 0.02) !important;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.font-size-xs {
+  font-size: 0.75rem;
+}

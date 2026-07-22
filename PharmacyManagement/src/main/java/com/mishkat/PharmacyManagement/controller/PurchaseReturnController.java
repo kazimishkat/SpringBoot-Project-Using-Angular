@@ -62,6 +62,12 @@ public class PurchaseReturnController {
         return returnService.updatePurchaseReturn(id, dto);
     }
 
+    // 🌟 [NEW]: PATCH /api/purchase-returns/1/approve
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<PurchaseReturnResponseDto> approve(@PathVariable Long id) {
+        return ResponseEntity.ok(returnService.approvePurchaseReturn(id));
+    }
+
     // DELETE /api/purchase-returns/1
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {

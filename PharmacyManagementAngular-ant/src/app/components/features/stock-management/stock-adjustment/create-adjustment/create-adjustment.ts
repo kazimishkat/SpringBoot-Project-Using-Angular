@@ -76,7 +76,7 @@ export class CreateAdjustmentComponent implements OnInit {
       batchId: undefined as any,
       quantityBefore: 0,
       quantityAfter: 0,
-      reason: AdjustmentReason.PHYSICAL_COUNT_DISCREPANCY,
+      reason: AdjustmentReason.PHYSICAL_COUNT_MISMATCH,
       remarks: ''
     });
     this.cdr.markForCheck();
@@ -116,7 +116,7 @@ export class CreateAdjustmentComponent implements OnInit {
       adjustmentNumber: 'ADJ-' + Math.floor(100000 + Math.random() * 900000),
       branchId: undefined as any,
       adjustmentDate: new Date().toISOString().split('T')[0],
-      items: [{ batchId: undefined as any, quantityBefore: 0, quantityAfter: 0, reason: AdjustmentReason.PHYSICAL_COUNT_DISCREPANCY, remarks: '' }],
+      items: [{ batchId: undefined as any, quantityBefore: 0, quantityAfter: 0, reason: AdjustmentReason.PHYSICAL_COUNT_MISMATCH, remarks: '' }],
       isActive: true
     };
     this.batchesMap = {};

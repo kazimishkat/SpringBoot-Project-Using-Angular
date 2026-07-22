@@ -4,11 +4,12 @@ import { BaseEntity } from './baseEntity.model';
 // Enums matching backend capabilities
 // ==========================================
 export enum AdjustmentReason {
-  PHYSICAL_COUNT_DISCREPANCY = 'PHYSICAL_COUNT_DISCREPANCY',
-  EXPIRED_STOCK = 'EXPIRED_STOCK',
-  DAMAGED_STOCK = 'DAMAGED_STOCK',
+  PHYSICAL_COUNT_MISMATCH = 'PHYSICAL_COUNT_MISMATCH',
+  EXPIRED = 'EXPIRED',
+  DAMAGED = 'DAMAGED',
   THEFT_OR_LOSS = 'THEFT_OR_LOSS',
-  DATA_ENTRY_ERROR = 'DATA_ENTRY_ERROR'
+  SYSTEM_ERROR_CORRECTION = 'SYSTEM_ERROR_CORRECTION',
+  OTHER = 'OTHER'
 }
 
 export enum AdjustmentStatus {

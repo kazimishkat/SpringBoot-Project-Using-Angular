@@ -4,7 +4,7 @@
   min-height: 100vh;
   width: 100%;
   font-family: 'Outfit', 'Inter', sans-serif;
-  overflow: hidden;
+  overflow-x: hidden;
   background-color: #fafdfc;
 }
 
@@ -14,20 +14,29 @@
   width: 260px;
   height: 100vh;
   z-index: 100;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
 }
 
 /* Main Workspace Area */
 .dashboard-workspace {
-  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background-color: #fafdfc;
+  flex-grow: 1;
 }
 
 /* Topbar Header Custom Styles */
 .dashboard-topbar {
   height: 70px;
   flex-shrink: 0;
-  z-index: 50;
+  z-index: 999;
   border-bottom: 1px solid rgba(15, 168, 149, 0.08) !important;
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
 }
 
 .workspace-title-area .breadcrumb {
@@ -91,7 +100,6 @@
 }
 
 .dashboard-content-canvas {
-  height: calc(100vh - 70px);
   outline: none;
 }
 

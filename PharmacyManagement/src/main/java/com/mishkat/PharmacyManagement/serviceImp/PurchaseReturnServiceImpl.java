@@ -10,6 +10,7 @@ import com.mishkat.PharmacyManagement.repository.BranchRepository;
 import com.mishkat.PharmacyManagement.repository.MedicineBatchRepository;
 import com.mishkat.PharmacyManagement.repository.PurchaseReturnRepository;
 import com.mishkat.PharmacyManagement.repository.SupplierRepository;
+import com.mishkat.PharmacyManagement.service.BranchInventoryService;
 import com.mishkat.PharmacyManagement.service.PurchaseReturnService;
 import com.mishkat.PharmacyManagement.service.StockMovementService;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,8 @@ public class PurchaseReturnServiceImpl implements PurchaseReturnService {
     private final BranchRepository branchRepository;
     private final MedicineBatchRepository medicineBatchRepository;
 
-    // Injecting Internal Stock Movement Ledger Engine
     private final StockMovementService stockMovementService;
+    private final BranchInventoryService branchInventoryService;
 
     private final PurchaseReturnMapper mapper = new PurchaseReturnMapper();
 
@@ -60,24 +61,57 @@ public class PurchaseReturnServiceImpl implements PurchaseReturnService {
             }
         }
 
+        // ডিফল্ট স্ট্যাটাস সেট করা (যদি Entity-তে ফিল্ডটি থাকে)
+        // purchaseReturn.setApprovalStatus(ApprovalStatus.PENDING);
+
         PurchaseReturn savedReturn = purchaseReturnRepository.save(purchaseReturn);
 
-        // Automatically log outward stock deduction to ledger since return transaction is closed
-        if (savedReturn.getItems() != null) {
-            for (PurchaseReturnItem item : savedReturn.getItems()) {
+        // 💡 নোট: তৈরি করার সময় যদি সরাসরি APPROVED স্ট্যাটাস আসে, তবে তখনই স্টক কাটবে
+        // if (savedReturn.getApprovalStatus() == ApprovalStatus.APPROVED) {
+        //     processInventoryDeduction(savedReturn);
+        // }
+
+        return mapper.toDTO(savedReturn);
+    }
+
+    // 🌟 [NEW]: Approve করার সময় স্টক ডিডাক্ট এবং মুভমেন্ট লগ করার লজিক
+    @Override
+    @Transactional
+    public PurchaseReturnResponseDto approvePurchaseReturn(Long id) {
+        PurchaseReturn purchaseReturn = purchaseReturnRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Purchase Return not found with id: " + id));
+
+        // স্ট্যাটাস পরিবর্তন (যদি Entity-তে ফিল্ডটি থাকে)
+        // purchaseReturn.setApprovalStatus(ApprovalStatus.APPROVED);
+
+        processInventoryDeduction(purchaseReturn);
+
+        PurchaseReturn savedReturn = purchaseReturnRepository.save(purchaseReturn);
+        return mapper.toDTO(savedReturn);
+    }
+
+    private void processInventoryDeduction(PurchaseReturn purchaseReturn) {
+        if (purchaseReturn.getItems() != null) {
+            for (PurchaseReturnItem item : purchaseReturn.getItems()) {
+                // ১. ইনভেন্টরি থেকে স্টক মাইনাস
+                branchInventoryService.deductStock(
+                        purchaseReturn.getBranch().getId(),
+                        item.getBatch().getId(),
+                        item.getQuantity()
+                );
+
+                // ২. লেজার ট্র্যাকিং রেকর্ড করা
                 stockMovementService.recordMovement(
-                        savedReturn.getBranch().getId(),
+                        purchaseReturn.getBranch().getId(),
                         item.getBatch().getId(),
                         StockMovementType.PURCHASE_RETURN,
-                        item.getQuantity(), // আপনার মডেলে রিটার্ন করা ফিল্ড নেম (যেমন quantity)
+                        item.getQuantity(),
                         "PURCHASE_RETURN",
-                        savedReturn.getId(),
-                        "Stock outward debit via supplier Return: " + savedReturn.getReturnNumber()
+                        purchaseReturn.getId(),
+                        "Stock outward debit via supplier Return: " + purchaseReturn.getReturnNumber()
                 );
             }
         }
-
-        return mapper.toDTO(savedReturn);
     }
 
     @Override
@@ -157,10 +191,6 @@ public class PurchaseReturnServiceImpl implements PurchaseReturnService {
         }
 
         PurchaseReturn savedReturn = purchaseReturnRepository.save(existingReturn);
-
-        // Note: Ledger entries are immutable, updating a return document typically
-        // requires adjusting accounting steps manually, but we log the current snapshot here.
-
         return mapper.toDTO(savedReturn);
     }
 
@@ -169,6 +199,18 @@ public class PurchaseReturnServiceImpl implements PurchaseReturnService {
     public void deletePurchaseReturn(Long id) {
         PurchaseReturn purchaseReturn = purchaseReturnRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Return not found with id: " + id));
+
+        // ডিলিট করার সময় কাটা স্টক ইনভেন্টরিতে ব্যাক করা (যদি অলরেডি ডিডাক্ট হয়ে থাকে)
+        if (purchaseReturn.getItems() != null) {
+            for (PurchaseReturnItem item : purchaseReturn.getItems()) {
+                branchInventoryService.addStock(
+                        purchaseReturn.getBranch().getId(),
+                        item.getBatch().getId(),
+                        item.getQuantity()
+                );
+            }
+        }
+
         purchaseReturnRepository.delete(purchaseReturn);
     }
 }

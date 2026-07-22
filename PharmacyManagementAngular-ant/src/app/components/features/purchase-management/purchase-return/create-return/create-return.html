@@ -1,0 +1,238 @@
+<div class="container-fluid p-0 animate-fade-in">
+  <!-- Page Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="fw-bold text-dark-teal mb-1">Create Purchase Return</h3>
+      <p class="text-muted small mb-0">Record and process a return to a supplier, automatically adjusting inventories upon approval.</p>
+    </div>
+    <div>
+      <button (click)="cancel()" class="btn btn-outline-mint d-flex align-items-center gap-2 px-3 py-2 fw-semibold shadow-sm">
+        <i class="bi bi-arrow-left"></i>
+        <span>Back to List</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+    <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
+  </div>
+
+  <!-- Form Card -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-gradient-teal py-3 px-4 text-white">
+      <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
+        <i class="bi bi-arrow-counterclockwise"></i>
+        <span>Purchase Return Form</span>
+      </h5>
+    </div>
+    <div class="card-body p-4">
+      <form #returnForm="ngForm" (ngSubmit)="submitReturn()" novalidate>
+        
+        <!-- SECTION 1: Primary Parameters -->
+        <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-3">Primary Information</h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label for="returnNumber" class="form-label fw-semibold">Return Number <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-qr-code"></i></span>
+              <input type="text" 
+                     id="returnNumber" 
+                     name="returnNumber" 
+                     class="form-control bg-light-focus border-start-0 font-monospace" 
+                     [(ngModel)]="returnRequest.returnNumber" 
+                     readonly 
+                     required />
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <label for="returnDate" class="form-label fw-semibold">Return Date <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+              <input type="date" 
+                     id="returnDate" 
+                     name="returnDate" 
+                     class="form-control bg-light-focus border-start-0" 
+                     [(ngModel)]="returnRequest.returnDate" 
+                     #dateInput="ngModel"
+                     required 
+                     [class.is-invalid]="dateInput.invalid && (dateInput.dirty || dateInput.touched || submitted)" />
+              <div class="invalid-feedback">
+                Return date is required.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <label for="branchId" class="form-label fw-semibold">Return Branch <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-shop"></i></span>
+              <select id="branchId" 
+                      name="branchId" 
+                      class="form-select bg-light-focus border-start-0" 
+                      [(ngModel)]="returnRequest.branchId" 
+                      #branchInput="ngModel"
+                      required
+                      [class.is-invalid]="branchInput.invalid && (branchInput.dirty || branchInput.touched || submitted)">
+                <option [ngValue]="undefined" disabled selected>-- Select Branch --</option>
+                <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+              </select>
+              <div class="invalid-feedback">
+                Please select a branch.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label for="supplierId" class="form-label fw-semibold">Supplier <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-building"></i></span>
+              <select id="supplierId" 
+                      name="supplierId" 
+                      class="form-select bg-light-focus border-start-0" 
+                      [(ngModel)]="returnRequest.supplierId" 
+                      (change)="loadPurchaseOrders()"
+                      #supplierInput="ngModel"
+                      required
+                      [class.is-invalid]="supplierInput.invalid && (supplierInput.dirty || supplierInput.touched || submitted)">
+                <option value="undefined" disabled selected>-- Select Supplier --</option>
+                <option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }} ({{ s.supplierCode }})</option>
+              </select>
+              <div class="invalid-feedback">
+                Please select a supplier.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label for="poId" class="form-label fw-semibold">Reference Purchase Order (Optional)</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-file-earmark-check"></i></span>
+              <select id="poId" 
+                      name="poId" 
+                      class="form-select bg-light-focus border-start-0" 
+                      [(ngModel)]="selectedPoId"
+                      (change)="loadPurchaseItems()"
+                      [disabled]="!returnRequest.supplierId">
+                <option value="" selected>-- Select Purchase Order to autofill items --</option>
+                <option *ngFor="let po of purchaseOrders" [value]="po.id">{{ po.poNumber }} ({{ po.orderDate | date:'yyyy-MM-dd' }})</option>
+              </select>
+            </div>
+            <div class="form-text text-muted small">Select a supplier first to view their Purchase Orders.</div>
+          </div>
+        </div>
+
+        <hr class="border-light-teal my-4">
+
+        <!-- SECTION 2: Return Items -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h6 class="text-teal fw-bold text-uppercase letter-spacing-1 mb-0">Return Items</h6>
+          <button type="button" class="btn btn-sm btn-outline-mint d-flex align-items-center gap-1.5 fw-semibold" (click)="addItem()">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add Item</span>
+          </button>
+        </div>
+
+        <div class="table-responsive mb-4">
+          <table class="table table-hover align-middle border rounded-3 overflow-hidden">
+            <thead class="table-light text-uppercase font-size-xs fw-bold text-muted">
+              <tr>
+                <th scope="col" style="width: 35%;">Medicine Batch <span class="text-danger">*</span></th>
+                <th scope="col" style="width: 25%;">Reason <span class="text-danger">*</span></th>
+                <th scope="col" style="width: 15%;">Quantity <span class="text-danger">*</span></th>
+                <th scope="col" style="width: 15%;">Credit Unit Price ($) <span class="text-danger">*</span></th>
+                <th scope="col" style="width: 10%;" class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of returnRequest.items; let i = index">
+                <td>
+                  <select name="batchId_{{i}}" 
+                          class="form-select form-select-sm bg-light-focus" 
+                          [(ngModel)]="item.batchId" 
+                          required
+                          #batchSelect="ngModel"
+                          [class.is-invalid]="batchSelect.invalid && (batchSelect.dirty || batchSelect.touched || submitted)">
+                    <option [value]="undefined" disabled selected>-- Select Batch --</option>
+                    <option *ngFor="let b of availableBatches" [value]="b.id">
+                      {{ b.batchNumber }} - {{ b.brandName }}
+                    </option>
+                  </select>
+                </td>
+                <td>
+                  <select name="reason_{{i}}" 
+                          class="form-select form-select-sm bg-light-focus" 
+                          [(ngModel)]="item.reason" 
+                          required>
+                    <option *ngFor="let r of reasons" [value]="r">{{ r }}</option>
+                  </select>
+                </td>
+                <td>
+                  <input type="number" 
+                         name="quantity_{{i}}" 
+                         class="form-control form-control-sm bg-light-focus" 
+                         [(ngModel)]="item.quantity" 
+                         min="1" 
+                         required
+                         #qtyInput="ngModel"
+                         [class.is-invalid]="qtyInput.invalid && (qtyInput.dirty || qtyInput.touched || submitted)" />
+                </td>
+                <td>
+                  <input type="number" 
+                         name="creditAmount_{{i}}" 
+                         class="form-control form-control-sm bg-light-focus" 
+                         [(ngModel)]="item.creditAmount" 
+                         min="0" 
+                         step="0.01" 
+                         required
+                         #amtInput="ngModel"
+                         [class.is-invalid]="amtInput.invalid && (amtInput.dirty || amtInput.touched || submitted)" />
+                </td>
+                <td class="text-center">
+                  <button type="button" 
+                          class="btn btn-sm btn-outline-danger" 
+                          (click)="removeItem(i)" 
+                          [disabled]="returnRequest.items.length <= 1">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Total Calculation & Summary -->
+        <div class="row justify-content-end mb-4">
+          <div class="col-md-4">
+            <div class="bg-light p-3 rounded-3 border d-flex justify-content-between align-items-center">
+              <span class="fw-bold text-dark-teal">Estimated Credit Total:</span>
+              <span class="fs-5 fw-bold text-teal">${{ calculateTotal() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Submission Actions -->
+        <div class="d-flex align-items-center justify-content-end gap-3 pt-3 border-top">
+          <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-semibold" (click)="cancel()">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-outline-mint px-4 py-2 fw-semibold" (click)="resetForm()">
+            Reset
+          </button>
+          <button type="submit" class="btn btn-mint-primary px-4 py-2 fw-semibold shadow-sm d-flex align-items-center gap-2">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Submit Return</span>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

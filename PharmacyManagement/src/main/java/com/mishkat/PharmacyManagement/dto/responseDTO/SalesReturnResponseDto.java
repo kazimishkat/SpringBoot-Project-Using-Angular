@@ -1,5 +1,6 @@
 package com.mishkat.PharmacyManagement.dto.responseDTO;
 
+import com.mishkat.PharmacyManagement.enums.ApprovalStatus;
 import com.mishkat.PharmacyManagement.enums.ReturnReason;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -13,6 +14,8 @@ public class SalesReturnResponseDto {
     private Long invoiceId;
     private String invoiceNumber;
     private LocalDate returnDate;
+    private ApprovalStatus status;
+    private Long processedById;
     private String processedByName;
     private List<SalesReturnItemResponseDto> items;
 

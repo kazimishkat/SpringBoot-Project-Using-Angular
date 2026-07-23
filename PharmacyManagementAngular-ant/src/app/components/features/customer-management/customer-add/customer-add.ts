@@ -1,12 +1,13 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CustomerService } from '../../../../services/customer.service';
-import { CustomerRequest, Gender } from '../../../../models/customer.model';
+import { CustomerRequest, CustomerResponse, Gender } from '../../../../models/customer.model';
 
 @Component({
   selector: 'app-customer-add',
+  standalone: true,
   imports: [FormsModule, CommonModule],
   templateUrl: './customer-add.html',
   styleUrl: './customer-add.css'
@@ -14,6 +15,14 @@ import { CustomerRequest, Gender } from '../../../../models/customer.model';
 export class CustomerAdd implements OnInit {
 
   @ViewChild('customerForm') customerForm!: NgForm;
+
+  // 🌟 CreateInvoice বা অন্য মোডাল কম্পোনেন্ট থেকে ডেটা পাওয়ার জন্য Inputs
+  @Input() isDialogMode: boolean = false;
+  @Input() initialPhone: string = '';
+
+  // 🌟 নতুন কাস্টমার সেভ হলে বা মোডাল বন্ধ করলে Event Emit করার জন্য Outputs
+  @Output() customerSaved = new EventEmitter<CustomerResponse>();
+  @Output() dialogClosed = new EventEmitter<void>();
 
   genders = Object.values(Gender);
   customerRequest!: CustomerRequest;
@@ -33,6 +42,11 @@ export class CustomerAdd implements OnInit {
 
   ngOnInit(): void {
     this.resetForm();
+    
+    // যদি ইনভয়েস সার্চ থেকে মোবাইল নম্বর পাঠানো হয়ে থাকে
+    if (this.initialPhone) {
+      this.customerRequest.phone = this.initialPhone;
+    }
   }
 
   onFileSelected(event: Event): void {
@@ -66,6 +80,11 @@ export class CustomerAdd implements OnInit {
       return;
     }
 
+    // 🌟 [FIX]: ইমেইল ফাঁকা বা শুধু স্পেস থাকলে undefined বানিয়ে দেওয়া (ডাটাবেজে 500 duplicate entry '' আটকানোর জন্য)
+    if (this.customerRequest.email && !this.customerRequest.email.trim()) {
+      this.customerRequest.email = undefined;
+    }
+
     if (this.customerRequest.createAccount) {
       if (!this.customerRequest.email) {
         this.errorMessage = 'Email is required when creating an online login account.';
@@ -78,11 +97,16 @@ export class CustomerAdd implements OnInit {
     }
 
     this.customerService.createCustomer(this.customerRequest, this.selectedFile).subscribe({
-      next: () => {
-        alert(this.customerRequest.createAccount 
-          ? 'Online Customer account created! Verification email dispatched.' 
-          : 'Walk-in Customer registered successfully.');
-        this.router.navigate(['/dashboard/customers']);
+      next: (savedCustomer: CustomerResponse) => {
+        if (this.isDialogMode) {
+          // 🌟 মোডাল মোডে কাস্টমার অবজেক্টটি Event Emit করা হচ্ছে
+          this.customerSaved.emit(savedCustomer);
+        } else {
+          alert(this.customerRequest.createAccount 
+            ? 'Online Customer account created! Verification email dispatched.' 
+            : 'Walk-in Customer registered successfully.');
+          this.router.navigate(['/dashboard/customers']);
+        }
       },
       error: (err) => {
         console.error(err);
@@ -95,16 +119,18 @@ export class CustomerAdd implements OnInit {
   resetForm(): void {
     this.customerRequest = {
       name: '',
-      phone: '',
+      phone: this.initialPhone || '',
       email: '',
       gender: undefined,
       age: undefined,
-      address: { addressLine1: '',
-      addressLine2: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      country: '' },
+      address: { 
+        addressLine1: '',
+        addressLine2: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: '' 
+      },
       createAccount: false,
       username: '',
       password: '',
@@ -117,12 +143,17 @@ export class CustomerAdd implements OnInit {
     this.errorMessage = '';
 
     if (this.customerForm) {
-      this.customerForm.resetForm();
+      this.customerForm.resetForm(this.customerRequest);
     }
     this.cdr.markForCheck();
   }
 
   cancel(): void {
-    this.router.navigate(['/dashboard/customers']);
+    if (this.isDialogMode) {
+      // 🌟 মোডাল মোডে ক্লোজ ইভেন্ট ট্রিগার করা হচ্ছে
+      this.dialogClosed.emit();
+    } else {
+      this.router.navigate(['/dashboard/customers']);
+    }
   }
 }

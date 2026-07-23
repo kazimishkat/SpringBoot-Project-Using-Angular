@@ -330,6 +330,113 @@
         </div>
       </li>
 
+      <!-- Sales Invoice Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleSalesInvoiceDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-receipt"></i>
+            <span>Sales Invoice</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isSalesInvoiceDropdownOpen" [class.bi-chevron-up]="isSalesInvoiceDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isSalesInvoiceDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/sales-invoices" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>invoice-list</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/sales-invoices/create" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>create-invoice</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/sales-invoices/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>invoice-details</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Sales Return Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleSalesReturnDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            <span>Sales Return</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isSalesReturnDropdownOpen" [class.bi-chevron-up]="isSalesReturnDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isSalesReturnDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/sales-returns" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>sales-return-list</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/sales-returns/create" routerLinkActive="active">
+                <i class="bi bi-plus-circle"></i>
+                <span>create-sales-return</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/sales-returns/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>sales-return-details</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
+      <!-- Payment Link with Dropdown -->
+      <li class="nav-item">
+        <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="togglePaymentDropdown()"
+          style="cursor: pointer;">
+          <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-cash-stack"></i>
+            <span>Payment</span>
+          </div>
+          <i class="bi" [class.bi-chevron-down]="!isPaymentDropdownOpen" [class.bi-chevron-up]="isPaymentDropdownOpen"
+            style="font-size: 0.75rem; transition: transform 0.2s;"></i>
+        </div>
+        <div class="submenu-collapse" [class.show]="isPaymentDropdownOpen">
+          <ul class="nav flex-column gap-1 submenu-list mt-1 ps-3">
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/payments" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">
+                <i class="bi bi-list-ul"></i>
+                <span>payment-list</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link submenu-link d-flex align-items-center gap-2.5 py-1.5"
+                routerLink="/dashboard/payments/details" routerLinkActive="active">
+                <i class="bi bi-info-circle"></i>
+                <span>payment-details</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
       <!-- Branch Link with Dropdown -->
       <li class="nav-item">
         <div class="nav-link d-flex align-items-center justify-content-between gap-3" (click)="toggleBranchDropdown()"

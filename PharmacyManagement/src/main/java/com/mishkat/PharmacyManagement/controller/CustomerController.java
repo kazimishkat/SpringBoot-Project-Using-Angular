@@ -19,7 +19,6 @@ import java.util.List;
 public class CustomerController {
     private final CustomerService customerService;
 
-    // 🟢 POST /api/customers (Walk-in & Online Multipart support)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponseDto> create(
             @RequestPart("customer") @Valid CustomerRequestDto dto,
@@ -41,6 +40,12 @@ public class CustomerController {
         return list.isEmpty()
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.ok(list);
+    }
+
+    // 🔍 [NEW]: GET /api/customers/search?query=...
+    @GetMapping("/search")
+    public ResponseEntity<List<CustomerResponseDto>> search(@RequestParam String query) {
+        return ResponseEntity.ok(customerService.searchCustomers(query));
     }
 
     @GetMapping("/{id}")

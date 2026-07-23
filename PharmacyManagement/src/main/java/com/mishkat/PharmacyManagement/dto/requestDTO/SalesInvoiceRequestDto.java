@@ -1,6 +1,7 @@
 package com.mishkat.PharmacyManagement.dto.requestDTO;
 
 import com.mishkat.PharmacyManagement.enums.InvoiceStatus;
+import com.mishkat.PharmacyManagement.enums.PaymentMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -44,6 +45,9 @@ public class SalesInvoiceRequestDto {
 
     @NotNull(message = "State invoice validation constraint check required")
     private InvoiceStatus status;
+
+    // ── 🟢 [NEW]: Payment Method Field ──
+    private PaymentMethod paymentMethod;
 
     @NotEmpty(message = "Sales order invoice checklist cannot run itemless empty requests")
     @Valid

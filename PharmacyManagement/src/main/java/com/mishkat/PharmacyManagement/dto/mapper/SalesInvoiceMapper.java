@@ -26,6 +26,9 @@ public class SalesInvoiceMapper {
         dto.setDueAmount(entity.getDueAmount());
         dto.setStatus(entity.getStatus());
 
+        // ── 🟢 [NEW]: Payment Method Mapping ──
+        dto.setPaymentMethod(entity.getPaymentMethod());
+
         if (entity.getBranch() != null) {
             dto.setBranchId(entity.getBranch().getId());
             dto.setBranchName(entity.getBranch().getName());
@@ -44,7 +47,6 @@ public class SalesInvoiceMapper {
             dto.setSoldByName(entity.getSoldBy().getFullName());
         }
 
-        // ── 🟢 অনলাইন অর্ডার ইনফরমেশন DTO-তে ম্যাপ করা হচ্ছে ──
         if (entity.getOnlineOrder() != null) {
             dto.setOnlineOrderId(entity.getOnlineOrder().getId());
             dto.setOnlineOrderNumber(entity.getOnlineOrder().getOrderNumber());
@@ -96,6 +98,9 @@ public class SalesInvoiceMapper {
         entity.setDueAmount(dto.getDueAmount());
         entity.setStatus(dto.getStatus());
 
+        // ── 🟢 [NEW]: Payment Method Entity Mapping ──
+        entity.setPaymentMethod(dto.getPaymentMethod());
+
         if (dto.getItems() != null) {
             List<SalesInvoiceItem> items = dto.getItems().stream()
                     .map(itemDto -> {
@@ -107,7 +112,6 @@ public class SalesInvoiceMapper {
             entity.setItems(items);
         }
 
-        // [নোট]: branchId, customerId, prescriptionId, soldById এবং onlineOrderId সার্ভিস লেয়ারে সেট করা হবে।
         return entity;
     }
 

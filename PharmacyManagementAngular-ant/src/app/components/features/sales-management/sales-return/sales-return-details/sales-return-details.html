@@ -1,0 +1,123 @@
+<div class="container-fluid py-4">
+  <!-- Top Navigation & Actions -->
+  <div class="d-flex align-items-center justify-content-between mb-4 no-print">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-secondary d-flex align-items-center gap-2" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i> Back
+      </button>
+
+      <!-- Return Switcher -->
+      <div class="d-flex align-items-center gap-2" *ngIf="allReturns.length > 0">
+        <label for="returnSwitcher" class="text-secondary small fw-medium mb-0 text-nowrap">Switch Return:</label>
+        <select id="returnSwitcher" class="form-select form-select-sm" style="max-width: 220px;"
+                [value]="returnId" (change)="onReturnChange($event)">
+          <option *ngFor="let ret of allReturns" [value]="ret.id">
+            {{ ret.returnNumber }} (Inv: {{ ret.invoiceNumber }})
+          </option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2" *ngIf="returnDetails && returnDetails.status === 'PENDING'">
+      <button class="btn btn-teal d-flex align-items-center gap-2" (click)="approveReturn()">
+        <i class="bi bi-check-circle"></i> Approve Return
+      </button>
+      <button class="btn btn-outline-danger d-flex align-items-center gap-2" (click)="rejectReturn()">
+        <i class="bi bi-x-circle"></i> Reject Return
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Card -->
+  <div *ngIf="errorMessage" class="alert alert-danger mb-4">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Return Details Card -->
+  <div class="card border-0 shadow-sm" *ngIf="returnDetails">
+    <div class="card-body p-5">
+      
+      <!-- Top header branding -->
+      <div class="d-flex flex-column flex-md-row justify-content-between pb-4 mb-4 border-bottom">
+        <div>
+          <h2 class="text-teal fw-bold mb-1">Sales Return Record</h2>
+          <p class="text-muted mb-0 small">Pharmacy returns and stock credits</p>
+        </div>
+        <div class="text-md-end mt-3 mt-md-0">
+          <h4 class="fw-bold mb-1">RETURN</h4>
+          <h5 class="text-secondary mb-2">#{{ returnDetails.returnNumber }}</h5>
+          <span class="badge py-2 px-3 text-uppercase" 
+                [ngClass]="{
+                  'bg-success-subtle text-success': returnDetails.status === 'APPROVED',
+                  'bg-warning-subtle text-warning': returnDetails.status === 'PENDING',
+                  'bg-danger-subtle text-danger': returnDetails.status === 'REJECTED' || returnDetails.status === 'CANCELLED'
+                }">
+            {{ returnDetails.status }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Metadata Customer / Seller -->
+      <div class="row g-4 mb-5">
+        <div class="col-sm-6">
+          <h6 class="text-muted fw-bold text-uppercase mb-2">Reference Info:</h6>
+          <p class="mb-1 text-secondary small"><strong>Parent Invoice:</strong> <code>{{ returnDetails.invoiceNumber }}</code></p>
+          <p class="mb-1 text-secondary small"><strong>Return Date:</strong> {{ returnDetails.returnDate | date:'medium' }}</p>
+          <p class="mb-0 text-secondary small" *ngIf="returnDetails.processedByName">
+            <strong>Processed By:</strong> {{ returnDetails.processedByName }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Itemized Table -->
+      <div class="table-responsive mb-4">
+        <table class="table align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="min-width: 250px;">Returned Medicine</th>
+              <th style="width: 150px;">Batch Code</th>
+              <th style="width: 120px;" class="text-center">Returned Qty</th>
+              <th style="width: 250px;">Reason</th>
+              <th style="width: 130px;" class="text-end">Refund Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of returnDetails.items">
+              <td>
+                <span class="fw-semibold text-dark">{{ item.medicineBrandName }}</span>
+              </td>
+              <td><code>{{ item.batchNumber }}</code></td>
+              <td class="text-center">{{ item.quantity }}</td>
+              <td>{{ item.reason }}</td>
+              <td class="text-end fw-semibold text-success">${{ item.refundAmount | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Total summary -->
+      <div class="row g-4">
+        <div class="col-md-7">
+          <div class="p-3 bg-light rounded-3">
+            <h6 class="fw-semibold small text-secondary mb-2">Terms & Information</h6>
+            <p class="small text-muted mb-0">Approved returns will credit corresponding batch stock counts in the current active branch automatically. Refund amounts are processed immediately to the customer payment method.</p>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="table-responsive">
+            <table class="table table-sm table-borderless align-middle mb-0">
+              <tbody>
+                <tr class="border-top">
+                  <td class="fs-5 fw-bold text-dark pt-2">Total Refund:</td>
+                  <td class="text-end fs-5 fw-bold text-success pt-2">${{ getTotalRefundAmount() | number:'1.2-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,7 +23,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final SalesInvoiceRepository salesInvoiceRepository;
 
-    // ম্যাপারের মেথডগুলো স্ট্যাটিক না হওয়ায় ইনস্ট্যান্স তৈরি করা হলো
     private final PaymentMapper mapper = new PaymentMapper();
 
     @Override
@@ -30,12 +30,10 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponseDto createPayment(PaymentRequestDto dto) {
         Payment payment = mapper.toEntity(dto);
 
-        // SalesInvoice অবজেক্ট ডেটাবেস থেকে খুঁজে সেট করা
         SalesInvoice invoice = salesInvoiceRepository.findById(dto.getInvoiceId())
                 .orElseThrow(() -> new RuntimeException("Sales Invoice not found with id: " + dto.getInvoiceId()));
         payment.setInvoice(invoice);
 
-        // Transaction Reference অটো-জেনারেট করা হচ্ছে (যেহেতু DTO তে নেই)
         payment.setTransactionReference("TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
         Payment savedPayment = paymentRepository.save(payment);
@@ -62,6 +60,22 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional(readOnly = true)
     public List<PaymentResponseDto> getPaymentsByInvoiceId(Long invoiceId) {
         return paymentRepository.findByInvoiceId(invoiceId).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PaymentResponseDto> searchPayments(String query) {
+        return paymentRepository.searchPayments(query).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PaymentResponseDto> filterPayments(Long invoiceId, String method, LocalDateTime startDate, LocalDateTime endDate) {
+        return paymentRepository.filterPayments(invoiceId, method, startDate, endDate).stream()
                 .map(mapper::toDTO)
                 .collect(Collectors.toList());
     }

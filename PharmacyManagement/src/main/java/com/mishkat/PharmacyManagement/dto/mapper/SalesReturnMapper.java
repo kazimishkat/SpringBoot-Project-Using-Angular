@@ -5,6 +5,7 @@ import com.mishkat.PharmacyManagement.dto.requestDTO.SalesReturnRequestDto;
 import com.mishkat.PharmacyManagement.dto.responseDTO.SalesReturnResponseDto;
 import com.mishkat.PharmacyManagement.entity.SalesReturn;
 import com.mishkat.PharmacyManagement.entity.SalesReturnItem;
+import com.mishkat.PharmacyManagement.enums.ApprovalStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,10 @@ public class SalesReturnMapper {
         dto.setReturnNumber(entity.getReturnNumber());
         dto.setReturnDate(entity.getReturnDate());
 
-        // [গুরুত্বপূর্ণ]: Lazy Loading এর কারণে NullPointerException এড়াতে নাল-চেক করা হয়েছে
+        // 🌟 [NEW]: Entity থেকে Status DTO-তে সেটিং
+        dto.setStatus(entity.getStatus());
+
+        // Lazy Loading এর কারণে NullPointerException এড়াতে নাল-চেক করা হয়েছে
         if (entity.getInvoice() != null) {
             dto.setInvoiceId(entity.getInvoice().getId());
             dto.setInvoiceNumber(entity.getInvoice().getInvoiceNumber());
@@ -31,7 +35,7 @@ public class SalesReturnMapper {
 
         // যে ইউজার রিটার্ন প্রসেস করেছে তার তথ্য ম্যাপ করা হচ্ছে
         if (entity.getProcessedBy() != null) {
-            // User এন্টিটির ডিজাইন অনুযায়ী getFirstName() বা getName() ব্যবহার করতে পারেন
+            dto.setProcessedById(entity.getProcessedBy().getId());
             dto.setProcessedByName(entity.getProcessedBy().getFullName());
         }
 
@@ -57,12 +61,12 @@ public class SalesReturnMapper {
         itemDto.setReason(item.getReason());
         itemDto.setRefundAmount(item.getRefundAmount());
 
-        // [নেস্টেড অবজেক্ট]: MedicineBatch এবং তার ভেতরের Medicine থেকে ডাটা নেওয়া হচ্ছে
+        // [নেস্টেড অবজেক্ট]: MedicineBatch এবং তার ভেতরের Medicine থেকে ডাটা নেওয়া হচ্ছে
         if (item.getBatch() != null) {
             itemDto.setBatchId(item.getBatch().getId());
             itemDto.setBatchNumber(item.getBatch().getBatchNumber());
 
-            // Medicine রিলেশন থেকে ব্র্যান্ডের নাম নেওয়া হচ্ছে
+            // Medicine রিলেশন থেকে ব্র্যান্ডের নাম নেওয়া হচ্ছে
             if (item.getBatch().getMedicine() != null) {
                 itemDto.setMedicineBrandName(item.getBatch().getMedicine().getBrandName());
             }
@@ -83,7 +87,10 @@ public class SalesReturnMapper {
         entity.setReturnNumber(dto.getReturnNumber());
         entity.setReturnDate(dto.getReturnDate());
 
-        // [খুবই গুরুত্বপূর্ণ]: JPA CascadeType.ALL কাজ করার জন্য প্যারেন্ট ও চাইল্ডের দ্বিমুখী সম্পর্ক (Bi-directional Link) তৈরি করা
+        // 🌟 [NEW]: DTO থেকে Status ম্যাপ করা (নাল পাঠালে ডিফল্ট PENDING হবে)
+        entity.setStatus(dto.getStatus() != null ? dto.getStatus() : ApprovalStatus.PENDING);
+
+        // JPA CascadeType.ALL কাজ করার জন্য প্যারেন্ট ও চাইল্ডের দ্বিমুখী সম্পর্ক (Bi-directional Link) তৈরি করা
         if (dto.getItems() != null) {
             List<SalesReturnItem> items = dto.getItems().stream()
                     .map(itemDto -> {
@@ -96,10 +103,6 @@ public class SalesReturnMapper {
                     .collect(Collectors.toCollection(ArrayList::new));
             entity.setItems(items);
         }
-
-        // [বিশেষ দ্রষ্টব্য]: invoiceId এবং processedById -এর মত রিলেশনাল অবজেক্টগুলো
-        // এখানে সরাসরি ম্যাপ করা সম্ভব নয়। এগুলো Service Layer-এ Repository.findById()
-        // ব্যবহার করে ডাটাবেজ থেকে তুলে এনে এই entity-তে সেট করতে হবে।
 
         return entity;
     }
@@ -114,9 +117,6 @@ public class SalesReturnMapper {
         itemEntity.setQuantity(itemDto.getQuantity());
         itemEntity.setReason(itemDto.getReason());
         itemEntity.setRefundAmount(itemDto.getRefundAmount());
-
-        // [বিশেষ দ্রষ্টব্য]: batchId ব্যবহার করে আসল MedicineBatch অবজেক্টটি
-        // Service Layer-এ খুঁজে বের করে এই itemEntity-তে সেট করতে হবে।
 
         return itemEntity;
     }

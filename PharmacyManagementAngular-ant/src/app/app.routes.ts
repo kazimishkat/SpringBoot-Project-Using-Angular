@@ -55,6 +55,14 @@ import { CustomerListComponent } from './components/features/customer-management
 import { CreateReturnComponent } from './components/features/purchase-management/purchase-return/create-return/create-return';
 import { ReturnDetailsComponent } from './components/features/purchase-management/purchase-return/return-details/return-details';
 import { ReturnListComponent } from './components/features/purchase-management/purchase-return/return-list/return-list';
+import { InvoiceListComponent } from './components/features/sales-management/sales-invoice/invoice-list/invoice-list';
+import { CreateInvoiceComponent } from './components/features/sales-management/sales-invoice/create-invoice/create-invoice';
+import { InvoiceDetailsComponent } from './components/features/sales-management/sales-invoice/invoice-details/invoice-details';
+import { SalesReturnListComponent } from './components/features/sales-management/sales-return/sales-return-list/sales-return-list';
+import { CreateSalesReturnComponent } from './components/features/sales-management/sales-return/create-sales-return/create-sales-return';
+import { SalesReturnDetailsComponent } from './components/features/sales-management/sales-return/sales-return-details/sales-return-details';
+import { PaymentListComponent } from './components/features/sales-management/payment/payment-list/payment-list';
+import { PaymentDetailsComponent } from './components/features/sales-management/payment/payment-details/payment-details';
 
 
 export const routes: Routes = [
@@ -164,6 +172,20 @@ export const routes: Routes = [
       { path: 'purchase-returns/details', component: ReturnDetailsComponent },
       { path: 'purchase-returns/details/:id', component: ReturnDetailsComponent },
       { path: 'purchase-returns/:id', component: ReturnDetailsComponent },
+      { path: 'sales-invoices', component: InvoiceListComponent },
+      { path: 'sales-invoices/create', component: CreateInvoiceComponent },
+      { path: 'sales-invoices/details', component: InvoiceDetailsComponent },
+      { path: 'sales-invoices/details/:id', component: InvoiceDetailsComponent },
+      { path: 'sales-invoices/:id', component: InvoiceDetailsComponent },
+      { path: 'sales-returns', component: SalesReturnListComponent },
+      { path: 'sales-returns/create', component: CreateSalesReturnComponent },
+      { path: 'sales-returns/details', component: SalesReturnDetailsComponent },
+      { path: 'sales-returns/details/:id', component: SalesReturnDetailsComponent },
+      { path: 'sales-returns/:id', component: SalesReturnDetailsComponent },
+      { path: 'payments', component: PaymentListComponent },
+      { path: 'payments/details', component: PaymentDetailsComponent },
+      { path: 'payments/details/:id', component: PaymentDetailsComponent },
+      { path: 'payments/:id', component: PaymentDetailsComponent },
     ]
   }
 ];

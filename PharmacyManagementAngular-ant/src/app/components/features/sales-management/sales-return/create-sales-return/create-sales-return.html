@@ -1,0 +1,178 @@
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="h3 mb-0 text-gray-800">Create Sales Return</h1>
+      <p class="text-muted mb-0">Record items returned by customers and restore stock</p>
+    </div>
+    <button class="btn btn-secondary d-flex align-items-center gap-2" (click)="cancel()">
+      <i class="bi bi-arrow-left"></i> Back to List
+    </button>
+  </div>
+
+  <!-- Error Card -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Search Parent Invoice Panel -->
+  <div class="card border-0 shadow-sm mb-4" *ngIf="!selectedInvoice">
+    <div class="card-header bg-white py-3">
+      <h5 class="card-title mb-0 fw-semibold">Select Parent Invoice</h5>
+    </div>
+    <div class="card-body">
+      <p class="text-muted small">Search for the original sales invoice by invoice number to load items for return:</p>
+      <div class="row g-3 align-items-end">
+        <div class="col-md-6">
+          <label for="invoiceSearchQuery" class="form-label fw-medium">Invoice Number</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+            <input type="text" id="invoiceSearchQuery" name="invoiceSearchQuery" class="form-control" 
+                   placeholder="e.g. INV-123456" [(ngModel)]="invoiceNumberQuery" (keyup.enter)="searchInvoice()">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <button type="button" class="btn btn-teal w-100 py-2.5 fw-semibold" (click)="searchInvoice()">
+            Load Invoice
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Return Form -->
+  <form #returnForm="ngForm" (ngSubmit)="submitReturn()" *ngIf="selectedInvoice" novalidate>
+    <div class="row g-4">
+      
+      <!-- Left Column: Details & Items -->
+      <div class="col-lg-8">
+        
+        <!-- Info Card -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0 fw-semibold">Return Information</h5>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="resetForm()">
+              Change Invoice
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label text-secondary small">Return Number</label>
+                <input type="text" class="form-control bg-light" [(ngModel)]="returnRequest.returnNumber" name="returnNumber" readonly>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label text-secondary small">Return Date</label>
+                <input type="date" class="form-control" [(ngModel)]="returnRequest.returnDate" name="returnDate" required>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label text-secondary small">Parent Invoice</label>
+                <input type="text" class="form-control bg-light" [value]="selectedInvoice.invoiceNumber" name="parentInvoiceNum" readonly>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label text-secondary small">Customer</label>
+                <input type="text" class="form-control bg-light" [value]="selectedInvoice.customerName || 'Walk-in Customer'" name="customerName" readonly>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Card -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0 fw-semibold">Returned items</h5>
+            <button type="button" class="btn btn-mint btn-sm d-flex align-items-center gap-1" (click)="addItem()">
+              <i class="bi bi-plus-circle"></i> Add Item
+            </button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table align-middle mb-0">
+                <thead class="table-light text-secondary">
+                  <tr>
+                    <th style="min-width: 250px;">Medicine Name</th>
+                    <th style="width: 110px;">Return Qty</th>
+                    <th style="width: 180px;">Reason</th>
+                    <th style="width: 140px;" class="text-end">Refund ($)</th>
+                    <th style="width: 60px;" class="text-center"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of returnRequest.items; let i = index">
+                    <td>
+                      <select [name]="'batchId_' + i" class="form-select" [(ngModel)]="item.batchId" 
+                              (change)="onQuantityOrPriceChange(item)" required>
+                        <option [value]="undefined" disabled>Select Medicine</option>
+                        <option *ngFor="let invItem of selectedInvoice.items" [value]="invItem.batchId">
+                          {{ invItem.medicineBrandName }} (Batch: {{ invItem.batchNumber }})
+                        </option>
+                      </select>
+                    </td>
+                    <td>
+                      <input type="number" [name]="'quantity_' + i" class="form-control" 
+                             [(ngModel)]="item.quantity" (input)="onQuantityOrPriceChange(item)" min="1" required>
+                    </td>
+                    <td>
+                      <select [name]="'reason_' + i" class="form-select" [(ngModel)]="item.reason" required>
+                        <option *ngFor="let reason of reasons" [value]="reason">{{ reason }}</option>
+                      </select>
+                    </td>
+                    <td class="text-end fw-semibold text-success">
+                      ${{ item.refundAmount | number:'1.2-2' }}
+                    </td>
+                    <td class="text-center">
+                      <button type="button" class="btn btn-outline-danger btn-sm border-0" 
+                              (click)="removeItem(i)" [disabled]="returnRequest.items.length <= 1">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Summary Block -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white py-3">
+            <h5 class="card-title mb-0 fw-semibold">Refund Summary</h5>
+          </div>
+          <div class="card-body">
+            
+            <div class="d-flex flex-column gap-3 mb-4 pb-4 border-bottom text-secondary">
+              <div class="d-flex justify-content-between">
+                <span>Items count:</span>
+                <span class="fw-semibold text-dark">{{ returnRequest.items.length }}</span>
+              </div>
+              <div class="d-flex justify-content-between fs-5 fw-bold text-success pt-2">
+                <span>Refund Total:</span>
+                <span>${{ calculateReturnAmount() | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-teal btn-lg py-3 fw-semibold d-flex align-items-center justify-content-center gap-2"
+                      [disabled]="returnForm.invalid">
+                <i class="bi bi-check-circle-fill"></i> Submit Sales Return
+              </button>
+              <button type="button" class="btn btn-outline-secondary py-2" (click)="cancel()">
+                Cancel
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>

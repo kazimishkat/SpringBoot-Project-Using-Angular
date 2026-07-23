@@ -1,0 +1,291 @@
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="h3 mb-0 text-gray-800">Create Sales Invoice</h1>
+      <p class="text-muted mb-0">Generate a new sales receipt and debit inventory</p>
+    </div>
+    <button class="btn btn-secondary d-flex align-items-center gap-2" (click)="cancel()">
+      <i class="bi bi-arrow-left"></i> Back to List
+    </button>
+  </div>
+
+  <!-- Error Card -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Invoice Form -->
+  <form #invoiceForm="ngForm" (ngSubmit)="submitInvoice()" novalidate>
+    <div class="row g-4">
+      
+      <!-- Left Column: Invoice Details & Items -->
+      <div class="col-lg-8">
+        
+        <!-- Details Card -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3">
+            <h5 class="card-title mb-0 fw-semibold">Invoice Metadata</h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="invoiceNumber" class="form-label">Invoice Number</label>
+                <input type="text" id="invoiceNumber" name="invoiceNumber" class="form-control bg-light"
+                       [(ngModel)]="invoiceRequest.invoiceNumber" readonly required>
+              </div>
+
+              <div class="col-md-6">
+                <label for="invoiceDate" class="form-label">Invoice Date</label>
+                <input type="datetime-local" id="invoiceDate" name="invoiceDate" class="form-control"
+                       [(ngModel)]="invoiceRequest.invoiceDate" required>
+              </div>
+
+              <div class="col-md-6">
+                <label for="branch" class="form-label">Branch <span class="text-danger">*</span></label>
+                <select id="branch" name="branchId" class="form-select" [(ngModel)]="invoiceRequest.branchId" required>
+                  <option [value]="undefined" disabled>Select Branch</option>
+                  <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
+                </select>
+              </div>
+
+              <!-- Customer Selection Component -->
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Customer <span class="text-danger">*</span></label>
+
+                <!-- A. If Customer Selected -->
+                <div *ngIf="selectedCustomer" class="alert alert-success d-flex justify-content-between align-items-center mb-0 py-2">
+                  <div>
+                    <strong class="d-block text-dark-teal">{{ selectedCustomer.name }}</strong>
+                    <small class="text-muted"><i class="bi bi-telephone me-1"></i>{{ selectedCustomer.phone }}</small>
+                  </div>
+                  <button type="button" class="btn btn-outline-danger btn-sm" (click)="clearSelectedCustomer()">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+
+                <!-- B. If No Customer Selected -->
+                <div *ngIf="!selectedCustomer">
+                  <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Search customer phone or name..."
+                           [(ngModel)]="customerSearchQuery" name="customerSearchQuery" (keyup.enter)="searchCustomer()">
+                    <button class="btn btn-primary" type="button" (click)="searchCustomer()" [disabled]="isSearchingCustomer">
+                      <span *ngIf="isSearchingCustomer" class="spinner-border spinner-border-sm me-1"></span>
+                      Search
+                    </button>
+                  </div>
+
+                  <div *ngIf="customerSearchResults.length > 0" class="list-group position-absolute shadow-lg w-100 z-3 mt-1" style="max-height: 200px; overflow-y: auto;">
+                    <button type="button" *ngFor="let c of customerSearchResults"
+                            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                            (click)="selectCustomer(c)">
+                      <div>
+                        <strong>{{ c.name }}</strong>
+                        <small class="d-block text-muted">{{ c.phone }}</small>
+                      </div>
+                      <span class="badge bg-primary rounded-pill">Select</span>
+                    </button>
+                  </div>
+
+                  <div *ngIf="hasCustomerSearched && customerSearchResults.length === 0 && !isSearchingCustomer" 
+                       class="d-flex align-items-center justify-content-between bg-light p-2 mt-1 rounded border">
+                    <small class="text-danger">No customer found.</small>
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 fw-bold" (click)="openCustomerAddModal()">
+                      + Add New Customer
+                    </button>
+                  </div>
+
+                  <div class="text-end mt-1" *ngIf="!hasCustomerSearched">
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0" (click)="openCustomerAddModal()">
+                      + Add New Customer
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table Card -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between">
+            <h5 class="card-title mb-0 fw-semibold">Medicines & Items</h5>
+            <button type="button" class="btn btn-mint btn-sm d-flex align-items-center gap-1" (click)="addMedicine()">
+              <i class="bi bi-plus-circle"></i> Add Medicine
+            </button>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table align-middle mb-0">
+                <thead class="table-light text-secondary">
+                  <tr>
+                    <th style="min-width: 250px;">Medicine Batch <span class="text-danger">*</span></th>
+                    <th style="width: 110px;">Qty <span class="text-danger">*</span></th>
+                    <th style="width: 130px;">Price ($)</th>
+                    <th style="width: 140px;">Discount Type</th>
+                    <th style="width: 120px;">Discount</th>
+                    <th style="width: 130px;" class="text-end">Total ($)</th>
+                    <th style="width: 60px;" class="text-center"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of invoiceRequest.items; let i = index">
+                    <td>
+                      <select [name]="'batchId_' + i" class="form-select" [(ngModel)]="item.batchId" 
+                              (change)="onBatchSelect(item, item.batchId)" required>
+                        <option [value]="undefined" disabled>Select Batch</option>
+                        <option *ngFor="let batch of availableBatches" [value]="batch.id">
+                          {{ batch.medicineBrandName }} ({{ batch.batchNumber }} - Stock: {{ batch.stockQuantity }})
+                        </option>
+                      </select>
+                    </td>
+                    <td>
+                      <input type="number" [name]="'quantity_' + i" class="form-control" 
+                             [(ngModel)]="item.quantity" (input)="recalculateSummary()" min="1" required>
+                    </td>
+                    <td>
+                      <input type="number" [name]="'unitPrice_' + i" class="form-control bg-light" 
+                             [(ngModel)]="item.unitPrice" readonly required>
+                    </td>
+                    <td>
+                      <select [name]="'discountType_' + i" class="form-select" 
+                              [(ngModel)]="item.discountType" (change)="recalculateSummary()">
+                        <option *ngFor="let type of discountTypes" [value]="type">{{ type }}</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input type="number" [name]="'discountValue_' + i" class="form-control" 
+                             [(ngModel)]="item.discountValue" (input)="recalculateSummary()" min="0">
+                    </td>
+                    <td class="text-end fw-semibold">
+                      {{ calculateItemLineTotal(item) | number:'1.2-2' }}
+                    </td>
+                    <td class="text-center">
+                      <button type="button" class="btn btn-outline-danger btn-sm border-0" 
+                              (click)="removeMedicine(i)" [disabled]="invoiceRequest.items.length <= 1">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Financial Summary & Payment Section -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3">
+            <h5 class="card-title mb-0 fw-semibold">Payment & Pricing</h5>
+          </div>
+          <div class="card-body">
+            
+            <div class="mb-4 pb-4 border-bottom">
+              <label class="form-label fw-medium text-secondary">Overall Discount</label>
+              <div class="input-group mb-2">
+                <select name="overallDiscountType" class="form-select" style="max-width: 100px;" 
+                        [(ngModel)]="overallDiscountType" (change)="recalculateSummary()">
+                  <option *ngFor="let type of discountTypes" [value]="type">{{ type }}</option>
+                </select>
+                <input type="number" name="overallDiscountValue" class="form-control" 
+                       [(ngModel)]="overallDiscountValue" (input)="recalculateSummary()" min="0" placeholder="Value">
+              </div>
+            </div>
+
+            <div class="mb-4 pb-4 border-bottom">
+              <label for="vatPercentage" class="form-label fw-medium text-secondary">VAT (%)</label>
+              <input type="number" id="vatPercentage" name="vatPercentage" class="form-control" 
+                     [(ngModel)]="vatPercentage" (input)="recalculateSummary()" min="0">
+            </div>
+
+            <div class="d-flex flex-column gap-2.5 mb-4 pb-4 border-bottom text-secondary">
+              <div class="d-flex justify-content-between">
+                <span>Subtotal:</span>
+                <span class="fw-semibold text-dark">${{ invoiceRequest.subTotal | number:'1.2-2' }}</span>
+              </div>
+              <div class="d-flex justify-content-between text-success">
+                <span>Discount:</span>
+                <span>-${{ invoiceRequest.discountAmount | number:'1.2-2' }}</span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>VAT:</span>
+                <span class="fw-semibold text-dark">+${{ invoiceRequest.vatAmount | number:'1.2-2' }}</span>
+              </div>
+              <div class="d-flex justify-content-between fs-5 fw-bold text-dark pt-2">
+                <span>Total Amount:</span>
+                <span>${{ invoiceRequest.totalAmount | number:'1.2-2' }}</span>
+              </div>
+            </div>
+
+            <!-- 🌟 [NEW]: Payment Method Dropdown Section -->
+            <div class="mb-3">
+              <label for="paymentMethod" class="form-label fw-semibold">Payment Method <span class="text-danger">*</span></label>
+              <select id="paymentMethod" name="paymentMethod" class="form-select" [(ngModel)]="invoiceRequest.paymentMethod" required>
+                <option *ngFor="let pm of paymentMethods" [value]="pm">{{ pm }}</option>
+              </select>
+            </div>
+
+            <div class="mb-4">
+              <label for="paidAmount" class="form-label fw-semibold">Paid Amount ($) <span class="text-danger">*</span></label>
+              <input type="number" id="paidAmount" name="paidAmount" class="form-control form-control-lg text-dark fw-bold bg-light-mint" 
+                     [(ngModel)]="invoiceRequest.paidAmount" (input)="onPaidAmountChange()" min="0" required>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-6">
+                <label for="dueAmount" class="form-label text-secondary small">Due Amount</label>
+                <input type="number" id="dueAmount" name="dueAmount" class="form-control bg-light text-danger fw-semibold" 
+                       [(ngModel)]="invoiceRequest.dueAmount" readonly>
+              </div>
+              <div class="col-6">
+                <label class="form-label text-secondary small">Status</label>
+                <span class="badge w-100 py-2.5 d-block text-uppercase" 
+                      [ngClass]="{
+                        'bg-success-subtle text-success': invoiceRequest.status === 'PAID' || invoiceRequest.status === 'COMPLETED',
+                        'bg-warning-subtle text-warning': invoiceRequest.status === 'PARTIALLY_PAID',
+                        'bg-danger-subtle text-danger': invoiceRequest.status === 'DRAFT' || invoiceRequest.status === 'CANCELLED'
+                      }">
+                  {{ invoiceRequest.status }}
+                </span>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-teal btn-lg py-3 fw-semibold d-flex align-items-center justify-content-center gap-2"
+                      [disabled]="invoiceForm.invalid || !selectedCustomer">
+                <i class="bi bi-check-circle-fill"></i> Save & Generate Invoice
+              </button>
+              <button type="button" class="btn btn-outline-secondary py-2" (click)="cancel()">
+                Cancel
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+  <!-- Quick Customer Add Modal -->
+  <div *ngIf="showAddCustomerModal" class="modal fade show d-block tab-modal-backdrop" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-body p-0">
+          <app-customer-add 
+            [isDialogMode]="true" 
+            [initialPhone]="customerSearchQuery"
+            (customerSaved)="onCustomerSaved($event)" 
+            (dialogClosed)="closeCustomerAddModal()">
+          </app-customer-add>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

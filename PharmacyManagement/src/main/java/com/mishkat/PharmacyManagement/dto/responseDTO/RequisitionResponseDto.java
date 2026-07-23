@@ -19,6 +19,8 @@ public class RequisitionResponseDto {
     private Long requestedById;
     private String requestedByName;
     private LocalDateTime createdAt;
+    private Long processedById;
+    private String processedByName;
     private List<RequisitionItemResponseDto> items;
 
     @Data

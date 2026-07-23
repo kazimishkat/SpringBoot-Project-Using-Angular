@@ -1,0 +1,73 @@
+/* Sales Invoice - Create Invoice Styling matching Purchase Return/Order */
+.btn-mint, .btn-teal {
+  background-color: #0fa895 !important;
+  color: #ffffff !important;
+  border: 1px solid #0fa895 !important;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-mint:hover, .btn-teal:hover {
+  background-color: #0a4f45 !important;
+  border-color: #0a4f45 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(15, 168, 149, 0.25);
+}
+
+.btn-secondary, .btn-outline-secondary {
+  color: #0fa895 !important;
+  border: 1px solid rgba(15, 168, 149, 0.3) !important;
+  background-color: transparent !important;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+}
+
+.btn-secondary:hover, .btn-outline-secondary:hover {
+  color: #0a4f45 !important;
+  background-color: #f0fdf4 !important;
+  border-color: #0fa895 !important;
+  box-shadow: 0 4px 12px rgba(15, 168, 149, 0.05);
+}
+
+.bg-light-mint {
+  background-color: #f0fdf4 !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #0fa895 !important;
+  box-shadow: 0 0 0 0.25rem rgba(15, 168, 149, 0.15) !important;
+}
+
+.card {
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #0fa895 0%, #0a4f45 100%) !important;
+  color: #ffffff !important;
+  border-bottom: none;
+}
+
+.card-header .card-title, .card-header h5 {
+  color: #ffffff !important;
+}
+
+.table th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 1rem 0.75rem;
+  color: #0a4f45 !important;
+  background-color: #f8fafc;
+}
+
+.table td {
+  padding: 0.75rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+}

@@ -3,7 +3,7 @@ angular command
 2.now give me complete branch-list,branch-add
 3.branch-details ts complete code under component,like supplier finalize ts you gave me take those as sample for branch
 4.these my service and model from angular
-
+5.comlete write code to all files,then ask me for permission,if i approve then you can permanent it
 stock-movement
 
 │
@@ -30,7 +30,7 @@ all data,so adjust all generic medicine database data in my screen,if need then 
 only under components and if need then dashborad section,keep my code clean
 
 create menu first then inside
-3.generate company-list,company-add,company-details UI inside dashborad,in sidebar section create 
+3.generate company-list,company-add,company-details UI inside dashborad,i want my UI style and colors like others,in sidebar section create 
 menu named Delivery Companies,by click this menu showing drop down menu and these menu names company-list,company-add,company-details.company-list,company-add,company-details code write only their html and css under component folder,
 also work only sidebar for add menues,dont go and change any other folder ,work route page in app.route.ts.
 or any others code in this project,dont add any dummy data for showing 

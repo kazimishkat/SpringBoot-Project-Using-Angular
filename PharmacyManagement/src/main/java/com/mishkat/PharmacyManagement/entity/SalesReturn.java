@@ -1,12 +1,6 @@
 package com.mishkat.PharmacyManagement.entity;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.mishkat.PharmacyManagement.enums.ApprovalStatus;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -30,6 +24,11 @@ public class SalesReturn extends BaseEntity{
 
     @Column(name = "return_date", nullable = false)
     private LocalDate returnDate;
+
+    // 🌟 [NEW]: অ্যাপ্রুভাল ওয়ার্কফ্লো হ্যান্ডেল করার জন্য স্ট্যাটাস ফিল্ড
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 30, nullable = false)
+    private ApprovalStatus status = ApprovalStatus.PENDING;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "processed_by")

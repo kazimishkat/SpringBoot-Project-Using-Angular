@@ -5,17 +5,20 @@ import com.mishkat.PharmacyManagement.dto.requestDTO.SalesReturnItemRequestDto;
 import com.mishkat.PharmacyManagement.dto.requestDTO.SalesReturnRequestDto;
 import com.mishkat.PharmacyManagement.dto.responseDTO.SalesReturnResponseDto;
 import com.mishkat.PharmacyManagement.entity.*;
+import com.mishkat.PharmacyManagement.enums.ApprovalStatus;
 import com.mishkat.PharmacyManagement.enums.StockMovementType;
 import com.mishkat.PharmacyManagement.repository.MedicineBatchRepository;
 import com.mishkat.PharmacyManagement.repository.SalesInvoiceRepository;
 import com.mishkat.PharmacyManagement.repository.SalesReturnRepository;
 import com.mishkat.PharmacyManagement.repository.UserRepository;
+import com.mishkat.PharmacyManagement.service.BranchInventoryService;
 import com.mishkat.PharmacyManagement.service.SalesReturnService;
 import com.mishkat.PharmacyManagement.service.StockMovementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,8 +30,9 @@ public class SalesReturnServiceImpl implements SalesReturnService {
     private final MedicineBatchRepository medicineBatchRepository;
     private final UserRepository userRepository;
 
-    // Injecting Internal Stock Movement Ledger Engine
     private final StockMovementService stockMovementService;
+    // 🌟 [NEW]: Branch Inventory Service Inject
+    private final BranchInventoryService branchInventoryService;
 
     private final SalesReturnMapper mapper = new SalesReturnMapper();
 
@@ -62,24 +66,77 @@ public class SalesReturnServiceImpl implements SalesReturnService {
             }
         }
 
-        SalesReturn savedReturn = salesReturnRepository.save(salesReturn);
+        // PENDING Status set upon creation
+        salesReturn.setStatus(ApprovalStatus.PENDING);
 
-        // Automatically log inward stock addition back to branch inventory tracker
-        if (savedReturn.getItems() != null) {
-            for (SalesReturnItem item : savedReturn.getItems()) {
+        SalesReturn savedReturn = salesReturnRepository.save(salesReturn);
+        return mapper.toDTO(savedReturn);
+    }
+
+    // 🌟 [NEW]: Approve Sales Return Workflow
+    @Override
+    @Transactional
+    public SalesReturnResponseDto approveReturn(Long id) {
+        SalesReturn salesReturn = salesReturnRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sales Return not found with id: " + id));
+
+        if (salesReturn.getStatus() == ApprovalStatus.APPROVED) {
+            throw new RuntimeException("Return is already approved.");
+        }
+
+        salesReturn.setStatus(ApprovalStatus.APPROVED);
+
+        // Add back items to inventory upon approval
+        if (salesReturn.getItems() != null) {
+            for (SalesReturnItem item : salesReturn.getItems()) {
+                branchInventoryService.addStock(
+                        salesReturn.getInvoice().getBranch().getId(),
+                        item.getBatch().getId(),
+                        item.getQuantity()
+                );
+
                 stockMovementService.recordMovement(
-                        invoice.getBranch().getId(), // Extracting the branch context chain via mapped invoice
+                        salesReturn.getInvoice().getBranch().getId(),
                         item.getBatch().getId(),
                         StockMovementType.SALE_RETURN,
                         item.getQuantity(),
                         "SALES_RETURN",
-                        savedReturn.getId(),
-                        "Stock roll back inward credit via customer sales Return manifest: " + savedReturn.getReturnNumber()
+                        salesReturn.getId(),
+                        "Stock roll back inward credit via customer sales Return manifest: " + salesReturn.getReturnNumber()
                 );
             }
         }
 
+        SalesReturn savedReturn = salesReturnRepository.save(salesReturn);
         return mapper.toDTO(savedReturn);
+    }
+
+    // 🌟 [NEW]: Reject Sales Return Workflow
+    @Override
+    @Transactional
+    public SalesReturnResponseDto rejectReturn(Long id) {
+        SalesReturn salesReturn = salesReturnRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Sales Return not found with id: " + id));
+
+        salesReturn.setStatus(ApprovalStatus.REJECTED);
+        SalesReturn savedReturn = salesReturnRepository.save(salesReturn);
+        return mapper.toDTO(savedReturn);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesReturnResponseDto> searchReturns(String query) {
+        return salesReturnRepository.searchReturns(query).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesReturnResponseDto> filterReturns(Long invoiceId, ApprovalStatus status, LocalDate startDate, LocalDate endDate) {
+        return salesReturnRepository.filterReturns(invoiceId, status, startDate, endDate).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Override

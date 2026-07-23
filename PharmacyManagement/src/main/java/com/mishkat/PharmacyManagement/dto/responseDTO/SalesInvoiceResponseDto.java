@@ -2,6 +2,7 @@ package com.mishkat.PharmacyManagement.dto.responseDTO;
 
 import com.mishkat.PharmacyManagement.enums.DiscountType;
 import com.mishkat.PharmacyManagement.enums.InvoiceStatus;
+import com.mishkat.PharmacyManagement.enums.PaymentMethod;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,6 +26,8 @@ public class SalesInvoiceResponseDto {
     private BigDecimal paidAmount;
     private BigDecimal dueAmount;
     private InvoiceStatus status;
+    // ── 🟢 [NEW]: Payment Method Field ──
+    private PaymentMethod paymentMethod;
     private List<SalesInvoiceItemResponseDto> items;
     // ── 🟢 নতুন যুক্ত করা হলো: ফ্রন্ট-এন্ড কাস্টমার যেন তার ইনভয়েসের সাথে মূল অর্ডার লিংক দেখতে পায় ──
     private Long onlineOrderId;

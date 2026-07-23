@@ -40,26 +40,34 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public CustomerResponseDto createCustomer(CustomerRequestDto dto, MultipartFile image) {
+        // ইমেইল বা ফোন ফাঁকা হলে null হ্যান্ডলিং
+        if (dto.getEmail() != null && dto.getEmail().isBlank()) {
+            dto.setEmail(null);
+        }
+
         // ডুপ্লিকেট ফোন এবং ইমেইল চেক
         if (customerRepository.findByPhone(dto.getPhone()).isPresent()) {
             throw new RuntimeException("Customer with this phone number already exists: " + dto.getPhone());
         }
-        if (dto.getEmail() != null && !dto.getEmail().isBlank() && customerRepository.findByEmail(dto.getEmail()).isPresent()) {
+        if (dto.getEmail() != null && customerRepository.findByEmail(dto.getEmail()).isPresent()) {
             throw new RuntimeException("Customer with this email already exists: " + dto.getEmail());
         }
 
         // ১. DTO থেকে Customer Entity তৈরি
         Customer customer = CustomerMapper.toEntity(dto);
+
+        // 🌟 [FIX]: ইমেইল যদি ব্ল্যাঙ্ক/ফাঁকা স্ট্রিং হয়, তবে বাধ্যতামূলক null সেট করা
+        if (customer.getEmail() != null && customer.getEmail().isBlank()) {
+            customer.setEmail(null);
+        }
+
         customer.setIsActive(true);
 
-        // ২. ইমেজ আপলোড প্রসেস (যদি ইমেজ থাকে)
         if (image != null && !image.isEmpty()) {
             customer.setImage(uploadImage(image, dto.getName()));
         }
 
-        // 🟢 ৩. অ্যাকাউন্ট খোলার লজিক (Walk-in vs Online Customer Flow)
         if (Boolean.TRUE.equals(dto.getCreateAccount())) {
-
             if (dto.getUsername() == null || dto.getUsername().isBlank()) {
                 throw new RuntimeException("Username is required to create a user account");
             }
@@ -73,7 +81,6 @@ public class CustomerServiceImpl implements CustomerService {
                 throw new RuntimeException("Username already taken: " + dto.getUsername());
             }
 
-            // User তৈরি
             User user = new User();
             user.setFullName(dto.getName());
             user.setUsername(dto.getUsername());
@@ -81,19 +88,17 @@ public class CustomerServiceImpl implements CustomerService {
             user.setPhone(dto.getPhone());
             user.setPassword(encoder.encode(dto.getPassword()));
             user.setRole(UserRole.CUSTOMER);
-            user.setEnabled(false); // ইমেইল ভেরিফিকেশনের জন্য ডিফল্টভাবে False
+            user.setEnabled(false);
 
             if (customer.getImage() != null) {
                 user.setImage(customer.getImage());
             }
 
             User savedUser = userRepository.save(user);
-            customer.setUser(savedUser); // Customer - User লিংক তৈরি
+            customer.setUser(savedUser);
 
-            // অ্যাকাউন্ট এক্টিভেশনের জন্য ইমেইল পাঠানো
             authService.sendVerificationEmail(savedUser.getEmail());
         } else {
-            // Walk-in Customer-এর ক্ষেত্রে User null থাকবে
             customer.setUser(null);
         }
 
@@ -139,6 +144,15 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = customerRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Customer not found with email: " + email));
         return CustomerMapper.toDTO(customer);
+    }
+
+    // 🔍 [NEW]: কাস্টমার সার্চ মেথড ইমপ্লিমেন্টেশন
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomerResponseDto> searchCustomers(String query) {
+        return customerRepository.searchCustomers(query).stream()
+                .map(CustomerMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Override

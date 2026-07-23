@@ -1,0 +1,119 @@
+<div class="container-fluid py-4">
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="h3 mb-0 text-gray-800">Payment Transactions</h1>
+      <p class="text-muted mb-0">Monitor patient payments, card transactions, and bank transfers</p>
+    </div>
+    <button class="btn btn-outline-secondary d-flex align-items-center gap-2" (click)="refresh()">
+      <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+  </div>
+
+  <!-- Error Card -->
+  <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Filters Block -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-4">
+      <div class="row g-3">
+        <!-- Search -->
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label text-secondary small fw-medium">Search payments</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" class="form-control border-start-0" placeholder="Txn # or Invoice #..." 
+                   [(ngModel)]="searchKeyword" (input)="searchPayments()">
+          </div>
+        </div>
+
+        <!-- Method Filter -->
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label text-secondary small fw-medium">Payment Method</label>
+          <select class="form-select" [(ngModel)]="selectedMethod" (change)="filterPayments()">
+            <option value="">All Methods</option>
+            <option *ngFor="let method of paymentMethods" [value]="method">{{ method }}</option>
+          </select>
+        </div>
+
+        <!-- Date Range -->
+        <div class="col-lg-4 col-md-8">
+          <label class="form-label text-secondary small fw-medium">Date Range</label>
+          <div class="input-group">
+            <input type="date" class="form-control" [(ngModel)]="fromDate" (change)="filterPayments()">
+            <span class="input-group-text bg-light border-start-0 border-end-0">to</span>
+            <input type="date" class="form-control" [(ngModel)]="toDate" (change)="filterPayments()">
+          </div>
+        </div>
+
+        <!-- Refresh / Reset Button -->
+        <div class="col-lg-2 col-md-4 d-flex align-items-end">
+          <button class="btn btn-teal w-100 py-2" (click)="refresh()">
+            Reset Filters
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payments Table Card -->
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table align-middle mb-0">
+          <thead class="table-light text-secondary">
+            <tr>
+              <th class="ps-4">Transaction #</th>
+              <th>Invoice #</th>
+              <th>Payment Date</th>
+              <th>Method</th>
+              <th>Amount Paid</th>
+              <th>Status</th>
+              <th class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="payments.length === 0">
+              <td colspan="7" class="text-center py-5 text-muted">
+                <i class="bi bi-cash-stack fs-1 d-block mb-3"></i>
+                No payments recorded.
+              </td>
+            </tr>
+            <tr *ngFor="let pay of payments">
+              <td class="ps-4 fw-semibold text-dark">
+                <code>{{ pay.transactionNumber || 'N/A' }}</code>
+              </td>
+              <td>{{ pay.invoiceNumber || 'N/A' }}</td>
+              <td>{{ pay.paymentDate | date:'mediumDate' }}</td>
+              <td>
+                <span class="badge bg-secondary text-uppercase small">{{ pay.paymentMethod }}</span>
+              </td>
+              <td class="fw-semibold text-success">${{ pay.amount | number:'1.2-2' }}</td>
+              <td>
+                <span class="badge py-2 px-2.5 text-uppercase" 
+                      [ngClass]="{
+                        'bg-success-subtle text-success': pay.paymentStatus === 'COMPLETED',
+                        'bg-warning-subtle text-warning': pay.paymentStatus === 'PENDING',
+                        'bg-danger-subtle text-danger': pay.paymentStatus === 'FAILED' || pay.paymentStatus === 'CANCELLED',
+                        'bg-secondary-subtle text-secondary': pay.paymentStatus === 'REFUNDED'
+                      }">
+                  {{ pay.paymentStatus }}
+                </span>
+              </td>
+              <td class="text-end pe-4">
+                <button class="btn btn-outline-teal btn-sm" (click)="viewDetails(pay.id)">
+                  <i class="bi bi-eye"></i> View details
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

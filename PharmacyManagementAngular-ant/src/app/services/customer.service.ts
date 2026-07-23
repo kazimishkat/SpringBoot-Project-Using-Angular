@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CustomerRequest, CustomerResponse } from '../models/customer.model';
@@ -33,10 +33,12 @@ export class CustomerService {
     return this.http.get<CustomerResponse>(`${this.apiUrl}/email/${email}`);
   }
 
-  /**
-   * Creates a new customer (Walk-in or Online) with optional Multipart profile image.
-   * Spring Boot expects @RequestPart("customer") and optional @RequestPart("image")
-   */
+  // 🌟 [NEW]: ইনভয়েস থেকে নাম বা ফোন নম্বর দিয়ে কাস্টমার খোঁজার মেথড
+  searchCustomers(query: string): Observable<CustomerResponse[]> {
+    const params = new HttpParams().set('query', query);
+    return this.http.get<CustomerResponse[]>(`${this.apiUrl}/search`, { params });
+  }
+
   createCustomer(dto: CustomerRequest, imageFile?: File): Observable<CustomerResponse> {
     const formData = new FormData();
     formData.append('customer', new Blob([JSON.stringify(dto)], { type: 'application/json' }));
@@ -48,9 +50,6 @@ export class CustomerService {
     return this.http.post<CustomerResponse>(this.apiUrl, formData);
   }
 
-  /**
-   * Updates customer details with optional Multipart image payload.
-   */
   updateCustomer(id: number, dto: CustomerRequest, imageFile?: File): Observable<CustomerResponse> {
     const formData = new FormData();
     formData.append('customer', new Blob([JSON.stringify(dto)], { type: 'application/json' }));

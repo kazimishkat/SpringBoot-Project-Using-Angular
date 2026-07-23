@@ -1,5 +1,6 @@
 package com.mishkat.PharmacyManagement.dto.requestDTO;
 
+import com.mishkat.PharmacyManagement.enums.ApprovalStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -18,6 +19,8 @@ public class SalesReturnRequestDto {
 
     @NotNull(message = "Reversal tracking transaction calendar booking execution date is required")
     private LocalDate returnDate;
+
+    private ApprovalStatus status;
 
     private Long processedById;
 

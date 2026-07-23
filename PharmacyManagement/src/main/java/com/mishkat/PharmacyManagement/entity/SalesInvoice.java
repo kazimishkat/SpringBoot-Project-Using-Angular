@@ -1,5 +1,6 @@
 package com.mishkat.PharmacyManagement.entity;
 import com.mishkat.PharmacyManagement.enums.InvoiceStatus;
+import com.mishkat.PharmacyManagement.enums.PaymentMethod;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -59,6 +60,11 @@ public class SalesInvoice extends BaseEntity{
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private InvoiceStatus status;
+
+    // ── 🟢 [NEW]: Payment Method Field ──
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", length = 30)
+    private PaymentMethod paymentMethod;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SalesInvoiceItem> items = new ArrayList<>();

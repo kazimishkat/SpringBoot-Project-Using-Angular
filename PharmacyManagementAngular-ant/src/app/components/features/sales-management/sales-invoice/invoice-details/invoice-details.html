@@ -1,0 +1,197 @@
+<div class="container-fluid py-4">
+  <!-- Top Navigation & Actions -->
+  <div class="d-flex align-items-center justify-content-between mb-4 no-print">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-secondary d-flex align-items-center gap-2" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i> Back
+      </button>
+      
+      <!-- Invoice Switcher -->
+      <div class="d-flex align-items-center gap-2" *ngIf="allInvoices.length > 0">
+        <label for="invoiceSwitcher" class="text-secondary small fw-medium mb-0 text-nowrap">Switch Invoice:</label>
+        <select id="invoiceSwitcher" class="form-select form-select-sm" style="max-width: 200px;"
+                [value]="invoiceId" (change)="onInvoiceChange($event)">
+          <option *ngFor="let inv of allInvoices" [value]="inv.id">
+            {{ inv.invoiceNumber }} ({{ inv.customerName || 'Walk-in' }})
+          </option>
+        </select>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2" *ngIf="invoiceDetails">
+      <button class="btn btn-outline-secondary d-flex align-items-center gap-2" (click)="printInvoice()">
+        <i class="bi bi-printer"></i> Print Invoice
+      </button>
+      <button class="btn btn-outline-secondary d-flex align-items-center gap-2" (click)="downloadInvoicePdf(invoiceDetails.id)">
+        <i class="bi bi-file-pdf text-danger"></i> PDF
+      </button>
+      <button class="btn btn-outline-danger d-flex align-items-center gap-2" 
+              *ngIf="invoiceDetails.status !== 'CANCELLED'" 
+              (click)="cancelInvoice(invoiceDetails.id)">
+        <i class="bi bi-x-circle"></i> Cancel Invoice
+      </button>
+      <button class="btn btn-teal d-flex align-items-center gap-2" 
+              *ngIf="invoiceDetails.status === 'PAID' || invoiceDetails.status === 'COMPLETED'" 
+              (click)="createSalesReturn()">
+        <i class="bi bi-arrow-counterclockwise"></i> Create Sales Return
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Card -->
+  <div *ngIf="errorMessage" class="alert alert-danger mb-4 no-print">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Main Invoice Details Card -->
+  <div class="card border-0 shadow-sm invoice-print-container" *ngIf="invoiceDetails">
+    <div class="card-body p-5">
+      
+      <!-- Top header branding -->
+      <div class="d-flex flex-column flex-md-row justify-content-between pb-4 mb-4 border-bottom">
+        <div>
+          <h2 class="text-teal fw-bold mb-1">MPhram Pharmacy</h2>
+          <p class="text-muted mb-0 small">{{ invoiceDetails.branchName }} branch</p>
+        </div>
+        <div class="text-md-end mt-3 mt-md-0">
+          <h4 class="fw-bold mb-1">INVOICE</h4>
+          <h5 class="text-secondary mb-2">#{{ invoiceDetails.invoiceNumber }}</h5>
+          <span class="badge py-2 px-3 text-uppercase" 
+                [ngClass]="{
+                  'bg-success-subtle text-success': invoiceDetails.status === 'PAID' || invoiceDetails.status === 'COMPLETED',
+                  'bg-warning-subtle text-warning': invoiceDetails.status === 'PARTIALLY_PAID',
+                  'bg-danger-subtle text-danger': invoiceDetails.status === 'DRAFT' || invoiceDetails.status === 'CANCELLED',
+                  'bg-secondary-subtle text-secondary': invoiceDetails.status === 'REFUNDED'
+                }">
+            {{ invoiceDetails.status }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Metadata Customer / Seller -->
+      <div class="row g-4 mb-5">
+        <div class="col-sm-6">
+          <h6 class="text-muted fw-bold text-uppercase mb-2">Invoice To:</h6>
+          <h5 class="mb-1 fw-bold text-dark">{{ invoiceDetails.customerName || 'Walk-in Customer' }}</h5>
+          <p class="text-secondary small mb-0">Registered Pharmacy Patient</p>
+        </div>
+        <div class="col-sm-6 text-sm-end">
+          <h6 class="text-muted fw-bold text-uppercase mb-2">Details:</h6>
+          <p class="mb-1 text-secondary small"><strong>Date:</strong> {{ invoiceDetails.invoiceDate | date:'medium' }}</p>
+          <p class="mb-1 text-secondary small"><strong>Sold By:</strong> {{ invoiceDetails.soldByName }}</p>
+          <p class="mb-0 text-secondary small" *ngIf="invoiceDetails.onlineOrderNumber">
+            <strong>Online Order Ref:</strong> {{ invoiceDetails.onlineOrderNumber }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Itemized Table -->
+      <div class="table-responsive mb-4">
+        <table class="table align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="min-width: 250px;">Medicine Description</th>
+              <th style="width: 150px;">Batch Code</th>
+              <th style="width: 100px;" class="text-end">Unit Price</th>
+              <th style="width: 100px;" class="text-center">Quantity</th>
+              <th style="width: 120px;" class="text-end">Discount</th>
+              <th style="width: 130px;" class="text-end">Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of invoiceDetails.items">
+              <td>
+                <span class="fw-semibold text-dark">{{ item.medicineBrandName }}</span>
+              </td>
+              <td><code>{{ item.batchNumber }}</code></td>
+              <td class="text-end">${{ item.unitPrice | number:'1.2-2' }}</td>
+              <td class="text-center">{{ item.quantity }}</td>
+              <td class="text-end text-success">
+                <span *ngIf="item.discountValue > 0">
+                  -${{ item.discountValue | number:'1.2-2' }}
+                  <small class="text-muted d-block small">({{ item.discountType }})</small>
+                </span>
+                <span *ngIf="!item.discountValue || item.discountValue <= 0">-</span>
+              </td>
+              <td class="text-end fw-semibold">${{ item.totalAmount | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Total summary side-by-side -->
+      <div class="row g-4 mb-5">
+        <div class="col-md-7">
+          <!-- Short note / pharmacy info -->
+          <div class="p-3 bg-light rounded-3">
+            <h6 class="fw-semibold small text-secondary mb-2">Terms & Information</h6>
+            <p class="small text-muted mb-0">Please keep this invoice as proof of purchase. Drugs returned are subject to the standard return policy terms and conditions.</p>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <!-- Pricing Summary Table -->
+          <div class="table-responsive">
+            <table class="table table-sm table-borderless align-middle mb-0">
+              <tbody>
+                <tr>
+                  <td class="text-secondary small">Subtotal:</td>
+                  <td class="text-end fw-semibold text-dark">${{ invoiceDetails.subTotal | number:'1.2-2' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-success small">Discount:</td>
+                  <td class="text-end text-success">-${{ invoiceDetails.discountAmount | number:'1.2-2' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-secondary small">VAT Amount:</td>
+                  <td class="text-end fw-semibold text-dark">+${{ invoiceDetails.vatAmount | number:'1.2-2' }}</td>
+                </tr>
+                <tr class="border-top">
+                  <td class="fs-5 fw-bold text-dark pt-2">Total Amount:</td>
+                  <td class="text-end fs-5 fw-bold text-dark pt-2">${{ invoiceDetails.totalAmount | number:'1.2-2' }}</td>
+                </tr>
+                <tr>
+                  <td class="text-success small fw-semibold">Paid Amount:</td>
+                  <td class="text-end text-success fw-bold">${{ invoiceDetails.paidAmount | number:'1.2-2' }}</td>
+                </tr>
+                <tr class="border-top-double">
+                  <td class="text-danger small fw-semibold">Due Amount:</td>
+                  <td class="text-end text-danger fw-bold">${{ invoiceDetails.dueAmount | number:'1.2-2' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment History Logs -->
+      <div *ngIf="paymentHistory && paymentHistory.length > 0" class="no-print pt-4 border-top">
+        <h5 class="fw-bold mb-3 text-secondary"><i class="bi bi-clock-history me-2"></i> Payment History Logs</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle table-sm">
+            <thead class="table-light text-secondary">
+              <tr>
+                <th>Receipt #</th>
+                <th>Payment Date</th>
+                <th>Method</th>
+                <th class="text-end">Amount Paid</th>
+                <th>Status</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let pay of paymentHistory">
+                <td class="fw-semibold"><code>{{ pay.paymentNumber }}</code></td>
+                <td>{{ pay.paymentDate | date:'medium' }}</td>
+                <td><span class="badge bg-secondary text-uppercase small">{{ pay.paymentMethod }}</span></td>
+                <td class="text-end fw-bold text-success">${{ pay.amount | number:'1.2-2' }}</td>
+                <td><span class="badge bg-success-subtle text-success small">{{ pay.status }}</span></td>
+                <td><span class="text-muted small">{{ pay.notes || 'None' }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,0 +1,82 @@
+<div class="container-fluid py-4">
+  <!-- Top Navigation & Actions -->
+  <div class="d-flex align-items-center justify-content-between mb-4 no-print">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-secondary d-flex align-items-center gap-2" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i> Back
+      </button>
+
+      <!-- Payment Switcher -->
+      <div class="d-flex align-items-center gap-2" *ngIf="allPayments.length > 0">
+        <label for="paymentSwitcher" class="text-secondary small fw-medium mb-0 text-nowrap">Switch Payment:</label>
+        <select id="paymentSwitcher" class="form-select form-select-sm" style="max-width: 220px;"
+                [value]="paymentId" (change)="onPaymentChange($event)">
+          <option *ngFor="let p of allPayments" [value]="p.id">
+            {{ p.transactionNumber || 'Txn: ' + p.id }}
+          </option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="d-flex align-items-center gap-2" *ngIf="paymentDetails">
+      <button class="btn btn-outline-secondary d-flex align-items-center gap-2" (click)="printReceipt()">
+        <i class="bi bi-printer"></i> Print Receipt
+      </button>
+      <button class="btn btn-teal d-flex align-items-center gap-2" (click)="viewParentInvoice()">
+        <i class="bi bi-receipt"></i> View Parent Invoice
+      </button>
+      <button class="btn btn-outline-danger d-flex align-items-center gap-2" (click)="deletePayment()">
+        <i class="bi bi-trash"></i> Delete Payment Record
+      </button>
+    </div>
+  </div>
+
+  <!-- Error Card -->
+  <div *ngIf="errorMessage" class="alert alert-danger mb-4">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Details Card -->
+  <div class="card border-0 shadow-sm invoice-print-container" *ngIf="paymentDetails">
+    <div class="card-body p-5">
+      
+      <!-- Top header branding -->
+      <div class="d-flex flex-column flex-md-row justify-content-between pb-4 mb-4 border-bottom">
+        <div>
+          <h2 class="text-teal fw-bold mb-1">MPhram Pharmacy</h2>
+          <p class="text-muted mb-0 small">Transaction Payment Receipt</p>
+        </div>
+        <div class="text-md-end mt-3 mt-md-0">
+          <h4 class="fw-bold mb-1">RECEIPT</h4>
+          <h5 class="text-secondary mb-2">#{{ paymentDetails.transactionNumber || 'N/A' }}</h5>
+          <span class="badge py-2 px-3 text-uppercase" 
+                [ngClass]="{
+                  'bg-success-subtle text-success': paymentDetails.paymentStatus === 'COMPLETED',
+                  'bg-warning-subtle text-warning': paymentDetails.paymentStatus === 'PENDING',
+                  'bg-danger-subtle text-danger': paymentDetails.paymentStatus === 'FAILED' || paymentDetails.paymentStatus === 'CANCELLED',
+                  'bg-secondary-subtle text-secondary': paymentDetails.paymentStatus === 'REFUNDED'
+                }">
+            {{ paymentDetails.paymentStatus }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Metadata Customer / Seller -->
+      <div class="row g-4 mb-4">
+        <div class="col-sm-6">
+          <h6 class="text-muted fw-bold text-uppercase mb-2">Payment Details:</h6>
+          <p class="mb-1 text-secondary small"><strong>Parent Invoice:</strong> <code>{{ paymentDetails.invoiceNumber || 'N/A' }}</code></p>
+          <p class="mb-1 text-secondary small"><strong>Payment Date:</strong> {{ paymentDetails.paymentDate | date:'medium' }}</p>
+          <p class="mb-0 text-secondary small"><strong>Payment Method:</strong> {{ paymentDetails.paymentMethod }}</p>
+        </div>
+        <div class="col-sm-6 text-sm-end">
+          <h6 class="text-muted fw-bold text-uppercase mb-2">Transaction Total:</h6>
+          <h2 class="text-success fw-bold">${{ paymentDetails.amount | number:'1.2-2' }}</h2>
+          <p class="text-secondary small mb-0">Processed on {{ paymentDetails.createdAt | date:'short' }}</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

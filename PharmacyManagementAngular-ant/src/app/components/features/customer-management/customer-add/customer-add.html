@@ -1,83 +1,85 @@
-<div class="container-fluid py-4 animate-fade-in">
+<div class="container-fluid py-3 animate-fade-in">
   <!-- Page Header -->
-  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
     <div>
-      <h2 class="fw-bold text-dark-teal mb-1">Add New Customer</h2>
-      <p class="text-muted mb-0">Register a new customer profile for walk-in transactions or online portal access.</p>
+      <h3 class="fw-bold text-dark-teal mb-1">
+        {{ isDialogMode ? 'Quick Add Customer' : 'Add New Customer' }}
+      </h3>
+      <p class="text-muted mb-0 small">Register a new customer profile for walk-in transactions or online portal access.</p>
     </div>
     <div class="d-flex gap-2">
-      <button type="button" (click)="cancel()" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+      <button type="button" (click)="cancel()" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
         <i class="bi bi-x-circle"></i>
-        <span>Cancel</span>
+        <span>{{ isDialogMode ? 'Close' : 'Cancel' }}</span>
       </button>
     </div>
   </div>
 
   <!-- Error Notification Banner -->
-  <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-4 shadow-sm rounded-3">
+  <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 mb-3 shadow-sm rounded-3">
     <i class="bi bi-exclamation-triangle-fill fs-5"></i>
     <span class="small">{{ errorMessage }}</span>
   </div>
 
   <!-- Customer Form Card -->
   <form #customerForm="ngForm" (ngSubmit)="saveCustomer()" novalidate>
-    <div class="row g-4">
+    <div class="row g-3">
 
       <!-- Left Column: Personal Information & Photo -->
       <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-3 mb-4">
-          <div class="card-header bg-transparent border-bottom py-3">
-            <h5 class="fw-bold text-dark-teal mb-0">
+        <div class="card border-0 shadow-sm rounded-3 mb-3">
+          <div class="card-header bg-transparent border-bottom py-2">
+            <h6 class="fw-bold text-dark-teal mb-0">
               <i class="bi bi-person-lines-fill me-2"></i>Personal Details
-            </h5>
+            </h6>
           </div>
-          <div class="card-body p-4">
+          <div class="card-body p-3">
             <div class="row g-3">
 
               <!-- Full Name -->
               <div class="col-md-6">
-                <label for="name" class="form-label fw-semibold text-dark-teal">Full Name <span class="text-danger">*</span></label>
-                <div class="input-group">
+                <label for="name" class="form-label fw-semibold text-dark-teal small">Full Name <span class="text-danger">*</span></label>
+                <div class="input-group input-group-sm">
                   <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
                   <input type="text" 
                          id="name" 
                          name="name" 
                          class="form-control" 
-                         placeholder="Enter customer full name" 
+                         placeholder="Enter full name" 
                          [(ngModel)]="customerRequest.name" 
                          #name="ngModel" 
                          required 
                          [class.is-invalid]="(name.invalid && (name.touched || submitted))" />
                 </div>
-                <div *ngIf="name.invalid && (name.touched || submitted)" class="invalid-feedback d-block">
+                <div *ngIf="name.invalid && (name.touched || submitted)" class="invalid-feedback d-block extra-small">
                   Full name is required.
                 </div>
               </div>
 
               <!-- Phone Number -->
               <div class="col-md-6">
-                <label for="phone" class="form-label fw-semibold text-dark-teal">Phone Number <span class="text-danger">*</span></label>
-                <div class="input-group">
+                <label for="phone" class="form-label fw-semibold text-dark-teal small">Phone Number <span class="text-danger">*</span></label>
+                <div class="input-group input-group-sm">
                   <span class="input-group-text bg-light"><i class="bi bi-telephone"></i></span>
                   <input type="tel" 
                          id="phone" 
                          name="phone" 
                          class="form-control" 
-                         placeholder="e.g. +1 555-0192" 
+                         placeholder="e.g. 01700000000" 
                          [(ngModel)]="customerRequest.phone" 
                          #phone="ngModel" 
                          required 
                          [class.is-invalid]="(phone.invalid && (phone.touched || submitted))" />
                 </div>
-                <div *ngIf="phone.invalid && (phone.touched || submitted)" class="invalid-feedback d-block">
+                <div *ngIf="phone.invalid && (phone.touched || submitted)" class="invalid-feedback d-block extra-small">
                   Phone number is required.
                 </div>
               </div>
 
               <!-- Email Address -->
               <div class="col-md-6">
-                <label for="email" class="form-label fw-semibold text-dark-teal">Email Address</label>
-                <div class="input-group">
+                <label for="email" class="form-label fw-semibold text-dark-teal small">Email Address</label>
+                <div class="input-group input-group-sm">
                   <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
                   <input type="email" 
                          id="email" 
@@ -90,8 +92,8 @@
 
               <!-- Gender -->
               <div class="col-md-3">
-                <label for="gender" class="form-label fw-semibold text-dark-teal">Gender</label>
-                <select id="gender" name="gender" class="form-select" [(ngModel)]="customerRequest.gender">
+                <label for="gender" class="form-label fw-semibold text-dark-teal small">Gender</label>
+                <select id="gender" name="gender" class="form-select form-select-sm" [(ngModel)]="customerRequest.gender">
                   <option [ngValue]="undefined">Select Gender</option>
                   <option *ngFor="let g of genders" [value]="g">{{ g }}</option>
                 </select>
@@ -99,159 +101,35 @@
 
               <!-- Age -->
               <div class="col-md-3">
-                <label for="age" class="form-label fw-semibold text-dark-teal">Age</label>
+                <label for="age" class="form-label fw-semibold text-dark-teal small">Age</label>
                 <input type="number" 
                        id="age" 
                        name="age" 
-                       class="form-control" 
+                       class="form-control form-control-sm" 
                        placeholder="Years" 
                        min="1" 
                        max="120" 
                        [(ngModel)]="customerRequest.age" />
               </div>
 
-              <!-- Status Switch -->
-              <div class="col-12 mt-3">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" 
-                         type="checkbox" 
-                         id="isActive" 
-                         name="isActive" 
-                         [(ngModel)]="customerRequest.isActive" />
-                  <label class="form-check-label fw-semibold text-dark-teal" for="isActive">
-                    Mark Profile as Active
-                  </label>
-                </div>
-              </div>
-
             </div>
           </div>
         </div>
 
-        <!-- Address Card -->
-        <div class="card border-0 shadow-sm rounded-3 mb-4" *ngIf="customerRequest.address">
-          <div class="card-header bg-transparent border-bottom py-3">
-            <h5 class="fw-bold text-dark-teal mb-0">
+        <!-- Address Collapsible / Simple Section -->
+        <div class="card border-0 shadow-sm rounded-3 mb-3" *ngIf="customerRequest.address">
+          <div class="card-header bg-transparent border-bottom py-2">
+            <h6 class="fw-bold text-dark-teal mb-0">
               <i class="bi bi-geo-alt-fill me-2"></i>Address Details
-            </h5>
+            </h6>
           </div>
-          <div class="card-body p-4">
-            <div class="row g-3">
+          <div class="card-body p-3">
+            <div class="row g-2">
               <div class="col-md-6">
-                <label for="addressLine1" class="form-label fw-semibold text-dark-teal">Address Line 1</label>
-                <input type="text" 
-                       id="addressLine1" 
-                       name="addressLine1" 
-                       class="form-control" 
-                       placeholder="Street address or P.O. Box" 
-                       [(ngModel)]="customerRequest.address.addressLine1" />
+                <input type="text" id="addressLine1" name="addressLine1" class="form-control form-control-sm" placeholder="Address Line 1" [(ngModel)]="customerRequest.address.addressLine1" />
               </div>
-
               <div class="col-md-6">
-                <label for="addressLine2" class="form-label fw-semibold text-dark-teal">Address Line 2</label>
-                <input type="text" 
-                       id="addressLine2" 
-                       name="addressLine2" 
-                       class="form-control" 
-                       placeholder="Apartment, suite, unit, etc." 
-                       [(ngModel)]="customerRequest.address.addressLine2" />
-              </div>
-
-              <div class="col-md-4">
-                <label for="city" class="form-label fw-semibold text-dark-teal">City</label>
-                <input type="text" 
-                       id="city" 
-                       name="city" 
-                       class="form-control" 
-                       placeholder="City" 
-                       [(ngModel)]="customerRequest.address.city" />
-              </div>
-
-              <div class="col-md-4">
-                <label for="state" class="form-label fw-semibold text-dark-teal">State / Province</label>
-                <input type="text" 
-                       id="state" 
-                       name="state" 
-                       class="form-control" 
-                       placeholder="State" 
-                       [(ngModel)]="customerRequest.address.state" />
-              </div>
-
-              <div class="col-md-4">
-                <label for="postalCode" class="form-label fw-semibold text-dark-teal">Postal Code</label>
-                <input type="text" 
-                       id="postalCode" 
-                       name="postalCode" 
-                       class="form-control" 
-                       placeholder="Zip/Postal code" 
-                       [(ngModel)]="customerRequest.address.postalCode" />
-              </div>
-
-              <div class="col-md-6">
-                <label for="country" class="form-label fw-semibold text-dark-teal">Country</label>
-                <input type="text" 
-                       id="country" 
-                       name="country" 
-                       class="form-control" 
-                       placeholder="Country" 
-                       [(ngModel)]="customerRequest.address.country" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Online Customer Account Registration Card -->
-        <div class="card border-0 shadow-sm rounded-3 mb-4">
-          <div class="card-header bg-transparent border-bottom py-3 d-flex align-items-center justify-content-between">
-            <h5 class="fw-bold text-dark-teal mb-0">
-              <i class="bi bi-shield-lock-fill me-2"></i>Online Customer Portal Account
-            </h5>
-            <div class="form-check form-switch mb-0">
-              <input class="form-check-input" 
-                     type="checkbox" 
-                     id="createAccount" 
-                     name="createAccount" 
-                     [(ngModel)]="customerRequest.createAccount" 
-                     (change)="onCreateAccountToggle()" />
-              <label class="form-check-label fw-semibold text-dark-teal" for="createAccount">
-                Enable Portal Access
-              </label>
-            </div>
-          </div>
-          <div class="card-body p-4" *ngIf="customerRequest.createAccount">
-            <p class="text-muted small mb-3">
-              Enabling this option registers online login credentials for the customer to access patient prescriptions & web orders.
-            </p>
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label for="username" class="form-label fw-semibold text-dark-teal">Username <span class="text-danger">*</span></label>
-                <input type="text" 
-                       id="username" 
-                       name="username" 
-                       class="form-control" 
-                       placeholder="Desired username" 
-                       [(ngModel)]="customerRequest.username" 
-                       required />
-              </div>
-              <div class="col-md-4">
-                <label for="password" class="form-label fw-semibold text-dark-teal">Password <span class="text-danger">*</span></label>
-                <input type="password" 
-                       id="password" 
-                       name="password" 
-                       class="form-control" 
-                       placeholder="Set password" 
-                       [(ngModel)]="customerRequest.password" 
-                       required />
-              </div>
-              <div class="col-md-4">
-                <label for="confirmPassword" class="form-label fw-semibold text-dark-teal">Confirm Password <span class="text-danger">*</span></label>
-                <input type="password" 
-                       id="confirmPassword" 
-                       name="confirmPassword" 
-                       class="form-control" 
-                       placeholder="Re-type password" 
-                       [(ngModel)]="confirmPassword" 
-                       required />
+                <input type="text" id="city" name="city" class="form-control form-control-sm" placeholder="City" [(ngModel)]="customerRequest.address.city" />
               </div>
             </div>
           </div>
@@ -259,20 +137,15 @@
 
       </div>
 
-      <!-- Right Column: Profile Picture Upload & Summary -->
+      <!-- Right Column: Profile Picture Upload & Actions -->
       <div class="col-lg-4">
         <!-- Photo Upload Card -->
-        <div class="card border-0 shadow-sm rounded-3 mb-4 text-center">
-          <div class="card-header bg-transparent border-bottom py-3 text-start">
-            <h5 class="fw-bold text-dark-teal mb-0">
-              <i class="bi bi-image me-2"></i>Profile Image
-            </h5>
-          </div>
-          <div class="card-body p-4">
-            <div class="avatar-preview-container mx-auto mb-3">
+        <div class="card border-0 shadow-sm rounded-3 mb-3 text-center">
+          <div class="card-body p-3">
+            <div class="avatar-preview-container mx-auto mb-2">
               <img *ngIf="imagePreview; else defaultAvatar" [src]="imagePreview" alt="Customer Preview" class="w-100 h-100 object-fit-cover rounded-circle shadow-sm" />
               <ng-template #defaultAvatar>
-                <div class="default-avatar-placeholder d-flex align-items-center justify-content-center rounded-circle bg-mint text-dark-teal fw-bold fs-1">
+                <div class="default-avatar-placeholder d-flex align-items-center justify-content-center rounded-circle bg-mint text-dark-teal fw-bold fs-2">
                   <i class="bi bi-person-fill"></i>
                 </div>
               </ng-template>
@@ -281,19 +154,18 @@
               <i class="bi bi-upload me-1"></i> Upload Photo
               <input type="file" (change)="onFileSelected($event)" accept="image/*" class="d-none" />
             </label>
-            <p class="text-muted extra-small mt-2 mb-0">Supported formats: JPG, PNG. Max size 2MB.</p>
           </div>
         </div>
 
         <!-- Submit Controls Card -->
-        <div class="card border-0 shadow-sm rounded-3 p-4">
-          <button type="submit" class="btn btn-mint-primary w-100 py-2.5 mb-2 d-flex align-items-center justify-content-center gap-2 fw-semibold">
+        <div class="card border-0 shadow-sm rounded-3 p-3">
+          <button type="submit" class="btn btn-mint-primary w-100 py-2 mb-2 d-flex align-items-center justify-content-center gap-2 fw-semibold">
             <i class="bi bi-check-circle-fill"></i>
-            <span>Register Customer</span>
+            <span>{{ isDialogMode ? 'Save & Select' : 'Register Customer' }}</span>
           </button>
-          <button type="button" (click)="resetForm()" class="btn btn-light text-muted w-100 py-2 d-flex align-items-center justify-content-center gap-2">
+          <button type="button" (click)="resetForm()" class="btn btn-light text-muted w-100 py-1.5 d-flex align-items-center justify-content-center gap-2 small">
             <i class="bi bi-arrow-counterclockwise"></i>
-            <span>Reset Form</span>
+            <span>Reset</span>
           </button>
         </div>
       </div>

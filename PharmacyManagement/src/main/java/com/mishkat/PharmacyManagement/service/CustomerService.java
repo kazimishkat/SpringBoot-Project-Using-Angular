@@ -15,4 +15,8 @@ public interface CustomerService {
     CustomerResponseDto getCustomerByEmail(String email);
     CustomerResponseDto updateCustomer(Long id, CustomerRequestDto dto, MultipartFile image);
     void deleteCustomer(Long id);
+    // 🔍 [NEW]: সার্চ মেথড ডিক্লেয়ারেশন
+    List<CustomerResponseDto> searchCustomers(String query);
+
+    ;
 }

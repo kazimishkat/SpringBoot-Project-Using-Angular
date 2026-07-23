@@ -1,14 +1,16 @@
 import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar',
-  imports: [RouterLink, RouterLinkActive, CommonModule],
+  standalone: true,
+  imports: [CommonModule, RouterModule],
   templateUrl: './sidebar.html',
-  styleUrl: './sidebar.css',
+  styleUrls: ['./sidebar.css']
 })
 export class Sidebar {
+  // Dropdown Toggle States
   isSupplierDropdownOpen = false;
   isBranchDropdownOpen = false;
   isBranchInventoryDropdownOpen = false;
@@ -25,7 +27,11 @@ export class Sidebar {
   isUserDropdownOpen = false;
   isCustomerDropdownOpen = false;
   isPurchaseReturnDropdownOpen = false;
+  isSalesInvoiceDropdownOpen = false;
+  isSalesReturnDropdownOpen = false;
+  isPaymentDropdownOpen = false;
 
+  // Toggle Methods
   toggleSupplierDropdown(): void {
     this.isSupplierDropdownOpen = !this.isSupplierDropdownOpen;
   }
@@ -89,6 +95,16 @@ export class Sidebar {
   togglePurchaseReturnDropdown(): void {
     this.isPurchaseReturnDropdownOpen = !this.isPurchaseReturnDropdownOpen;
   }
+
+  toggleSalesInvoiceDropdown(): void {
+    this.isSalesInvoiceDropdownOpen = !this.isSalesInvoiceDropdownOpen;
+  }
+
+  toggleSalesReturnDropdown(): void {
+    this.isSalesReturnDropdownOpen = !this.isSalesReturnDropdownOpen;
+  }
+
+  togglePaymentDropdown(): void {
+    this.isPaymentDropdownOpen = !this.isPaymentDropdownOpen;
+  }
 }
-
-

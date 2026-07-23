@@ -1,14 +1,17 @@
 package com.mishkat.PharmacyManagement.serviceImp;
 
+import com.mishkat.PharmacyManagement.dto.mapper.PaymentMapper;
 import com.mishkat.PharmacyManagement.dto.mapper.SalesInvoiceMapper;
 import com.mishkat.PharmacyManagement.dto.requestDTO.SalesInvoiceItemRequestDto;
 import com.mishkat.PharmacyManagement.dto.requestDTO.SalesInvoiceRequestDto;
+import com.mishkat.PharmacyManagement.dto.responseDTO.PaymentResponseDto;
 import com.mishkat.PharmacyManagement.dto.responseDTO.SalesInvoiceResponseDto;
 import com.mishkat.PharmacyManagement.entity.*;
 import com.mishkat.PharmacyManagement.enums.DiscountType;
 import com.mishkat.PharmacyManagement.enums.InvoiceStatus;
 import com.mishkat.PharmacyManagement.enums.StockMovementType;
 import com.mishkat.PharmacyManagement.repository.*;
+import com.mishkat.PharmacyManagement.service.BranchInventoryService;
 import com.mishkat.PharmacyManagement.service.SalesInvoiceService;
 import com.mishkat.PharmacyManagement.service.StockMovementService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,11 +34,13 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
     private final UserRepository userRepository;
     private final MedicineBatchRepository medicineBatchRepository;
     private final OnlineOrderRepository onlineOrderRepository;
+    private final PaymentRepository paymentRepository;
 
-    // Injecting Internal Stock Movement Ledger Engine
     private final StockMovementService stockMovementService;
+    private final BranchInventoryService branchInventoryService;
 
     private final SalesInvoiceMapper mapper = new SalesInvoiceMapper();
+    private final PaymentMapper paymentMapper = new PaymentMapper();
 
     @Override
     @Transactional
@@ -88,7 +94,6 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
 
         SalesInvoice savedInvoice = salesInvoiceRepository.save(invoice);
 
-        // Log stock movements if paid or partially paid immediately upon creation
         if (savedInvoice.getStatus() == InvoiceStatus.PAID || savedInvoice.getStatus() == InvoiceStatus.PARTIALLY_PAID) {
             logStockMovementsForInvoice(savedInvoice);
         }
@@ -167,6 +172,9 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
         existingInvoice.setPaidAmount(updatedData.getPaidAmount());
         existingInvoice.setDueAmount(updatedData.getDueAmount());
 
+        // ── 🟢 [NEW]: Update Payment Method ──
+        existingInvoice.setPaymentMethod(updatedData.getPaymentMethod());
+
         InvoiceStatus oldStatus = existingInvoice.getStatus();
         existingInvoice.setStatus(updatedData.getStatus());
 
@@ -199,7 +207,6 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
 
         SalesInvoice savedInvoice = salesInvoiceRepository.save(existingInvoice);
 
-        // Deduct stock if transitioned to a valid payout status state from an unpaid one
         if ((savedInvoice.getStatus() == InvoiceStatus.PAID || savedInvoice.getStatus() == InvoiceStatus.PARTIALLY_PAID)
                 && (oldStatus != InvoiceStatus.PAID && oldStatus != InvoiceStatus.PARTIALLY_PAID)) {
             logStockMovementsForInvoice(savedInvoice);
@@ -234,6 +241,63 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
         salesInvoiceRepository.delete(invoice);
     }
 
+    @Override
+    @Transactional
+    public SalesInvoiceResponseDto cancelInvoice(Long id) {
+        SalesInvoice invoice = salesInvoiceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
+
+        if (invoice.getStatus() == InvoiceStatus.CANCELLED) {
+            throw new RuntimeException("Invoice is already cancelled.");
+        }
+
+        invoice.setStatus(InvoiceStatus.CANCELLED);
+
+        if (invoice.getItems() != null) {
+            for (SalesInvoiceItem item : invoice.getItems()) {
+                branchInventoryService.addStock(
+                        invoice.getBranch().getId(),
+                        item.getBatch().getId(),
+                        item.getQuantity()
+                );
+            }
+        }
+
+        SalesInvoice savedInvoice = salesInvoiceRepository.save(invoice);
+        return mapper.toDTO(savedInvoice);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesInvoiceResponseDto> searchInvoices(String query) {
+        return salesInvoiceRepository.searchInvoices(query).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SalesInvoiceResponseDto> filterInvoices(Long customerId, InvoiceStatus status, LocalDateTime startDate, LocalDateTime endDate) {
+        return salesInvoiceRepository.filterInvoices(customerId, status, startDate, endDate).stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PaymentResponseDto> getInvoicePayments(Long invoiceId) {
+        return paymentRepository.findByInvoiceId(invoiceId).stream()
+                .map(paymentMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public byte[] printInvoicePdf(Long id) {
+        SalesInvoice invoice = salesInvoiceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Invoice not found with id: " + id));
+        return ("PDF DATA FOR INVOICE: " + invoice.getInvoiceNumber()).getBytes();
+    }
+
     private BigDecimal calculateLineTotalWithDiscount(BigDecimal baseTotal, DiscountType type, BigDecimal discountValue) {
         if (discountValue == null || discountValue.compareTo(BigDecimal.ZERO) == 0 || type == null) {
             return baseTotal;
@@ -251,6 +315,12 @@ public class SalesInvoiceServiceImpl implements SalesInvoiceService {
     private void logStockMovementsForInvoice(SalesInvoice invoice) {
         if (invoice.getItems() != null) {
             for (SalesInvoiceItem item : invoice.getItems()) {
+                branchInventoryService.deductStock(
+                        invoice.getBranch().getId(),
+                        item.getBatch().getId(),
+                        item.getQuantity()
+                );
+
                 stockMovementService.recordMovement(
                         invoice.getBranch().getId(),
                         item.getBatch().getId(),
